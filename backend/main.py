@@ -403,6 +403,15 @@ def get_overview():
         agreement_level: "Strong"    ← "Strong" | "Moderate" | "Mixed"
     }
     """
+    # Cached after first computation — the underlying prediction CSVs are
+    # static for the lifetime of this process (no retraining happens on the
+    # live server), so recomputing this 44-ticker aggregation on every
+    # request bought nothing but real latency on Render's throttled free
+    # tier (observed 7-17s per call vs. low-milliseconds once cached).
+    # /dashboard calls this function too, so both get the speedup.
+    if "overview_rows" in _cache:
+        return _cache["overview_rows"]
+
     tickers = _cache.get("tickers", [])
     if not tickers:
         raise HTTPException(status_code=503, detail="No prediction data loaded")
@@ -465,7 +474,9 @@ def get_overview():
             "risk_level"         : risk_level,
         })
 
-    return {"data": overview, "count": len(overview)}
+    result = {"data": overview, "count": len(overview)}
+    _cache["overview_rows"] = result
+    return result
 
 
 @app.get("/market-news")
