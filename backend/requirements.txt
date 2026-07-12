@@ -21,8 +21,15 @@ shap
 # Sentiment & Emotion
 vaderSentiment
 transformers
-torch
 datasets
+
+# PyTorch — CPU-only build. Plain "torch" on Linux pulls the CUDA build
+# (1-2GB+) by default, which is wasted weight with no GPU on Render's free
+# tier and can blow past its build time/memory limits. --extra-index-url
+# applies file-wide (not just to this line) but is harmless for every other
+# package here since PyPI is still checked first/normally for those.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
 
 # News fetching
 gdeltdoc
