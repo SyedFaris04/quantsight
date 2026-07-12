@@ -34,5 +34,8 @@ torch
 # News fetching
 gdeltdoc
 
+# Live prices — Market page Live Mode, Portfolio real-time prices, /live/{ticker}
+yfinance
+
 # Utilities
 python-multipart
