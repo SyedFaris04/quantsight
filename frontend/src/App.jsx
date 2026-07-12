@@ -9,6 +9,7 @@
 
 import { useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
 import Sidebar     from "./components/Sidebar";
 import Dashboard   from "./pages/Dashboard";
 import Overview    from "./pages/Overview";
@@ -17,11 +18,13 @@ import Compare     from "./pages/Compare";
 import Leaderboard from "./pages/Leaderboard";
 import Game        from "./pages/Game";
 import Portfolio   from "./pages/Portfolio";
+import Login       from "./pages/Login";
 
 export default function App() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   return (
+    <AuthProvider>
     <div className="min-h-screen bg-gray-950 text-gray-100 flex">
       <Sidebar isOpen={mobileNavOpen} onClose={() => setMobileNavOpen(false)} />
 
@@ -51,10 +54,12 @@ export default function App() {
             <Route path="/leaderboard"    element={<Leaderboard />} />
             <Route path="/portfolio"      element={<Portfolio />} />
             <Route path="/game"           element={<Game />}      />
+            <Route path="/login"          element={<Login />}     />
             <Route path="*"               element={<Navigate to="/" replace />} />
           </Routes>
         </main>
       </div>
     </div>
+    </AuthProvider>
   );
 }

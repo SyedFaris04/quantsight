@@ -12,8 +12,9 @@
  * every page's content into an unreadably narrow column.
  */
 
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
 
 const NAV_LINKS = [
   { to: "/",          label: "Dashboard",  icon: "⬛" },
@@ -23,6 +24,46 @@ const NAV_LINKS = [
   { to: "/portfolio", label: "Portfolio",  icon: "💼" },
   { to: "/game",       label: "Game",       icon: "🎮" },
 ];
+
+function AccountSection() {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  if (!user) {
+    return (
+      <button
+        onClick={() => navigate("/login")}
+        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium
+                   text-gray-400 hover:text-gray-200 hover:bg-gray-800 border border-gray-800
+                   transition-colors"
+      >
+        <span className="w-6 h-6 rounded-full bg-gray-800 flex items-center justify-center text-xs">
+          👤
+        </span>
+        Sign In
+      </button>
+    );
+  }
+
+  const initial = (user.email?.[0] || "?").toUpperCase();
+  return (
+    <div className="flex items-center gap-2.5 px-1">
+      <span className="w-7 h-7 rounded-full bg-indigo-500/20 border border-indigo-600/40
+                       flex items-center justify-center text-indigo-400 font-semibold text-xs flex-shrink-0">
+        {initial}
+      </span>
+      <span className="flex-1 min-w-0 text-xs text-gray-400 truncate" title={user.email}>
+        {user.email}
+      </span>
+      <button
+        onClick={() => signOut()}
+        className="text-xs text-gray-500 hover:text-gray-300 flex-shrink-0"
+      >
+        Sign Out
+      </button>
+    </div>
+  );
+}
 
 export default function Sidebar({ isOpen = false, onClose = () => {} }) {
   const location = useLocation();
@@ -95,6 +136,11 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
             </NavLink>
           ))}
         </nav>
+
+        {/* Account */}
+        <div className="px-3 py-3 border-t border-gray-800 flex-shrink-0">
+          <AccountSection />
+        </div>
 
         {/* Live status */}
         <div className="px-5 py-4 border-t border-gray-800 flex-shrink-0">

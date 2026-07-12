@@ -4,9 +4,11 @@
  * Portfolio Tracker — enter your holdings, get model-based
  * recommendations (HOLD / SELL / BUY MORE) and see what to buy next.
  *
- * All data stays in the browser (localStorage) — no account needed.
- * Prices come from your existing /stock/{ticker} endpoint.
- * Signals come from /explain/{ticker}.
+ * Guest mode: data stays in the browser (localStorage), no account needed.
+ * Signed in: holdings sync to Supabase (portfolio_holdings table, RLS-scoped
+ * to the signed-in user) instead, so they follow you across devices. Prices
+ * come from your existing /stock/{ticker} endpoint. Signals come from
+ * /explain/{ticker}.
  * ─────────────────────────────────────────────────────────────────
  */
 
@@ -15,6 +17,8 @@ import { useNavigate } from "react-router-dom";
 import { useApi } from "../hooks/useApi";
 import api from "../hooks/useApi";
 import { companyName } from "../data/companyNames";
+import { useAuth } from "../context/AuthContext";
+import { supabase } from "../lib/supabaseClient";
 
 // ── Storage helpers ────────────────────────────────────────────────────────────
 const STORAGE_KEY = "nuroquant_portfolio";
@@ -280,6 +284,7 @@ function SummaryCard({ label, value, sub, color }) {
 // ── Main Component ─────────────────────────────────────────────────────────────
 
 export default function Portfolio() {
+  const { user } = useAuth();
   const [holdings,    setHoldings]    = useState(loadPortfolio);
   const [showForm,    setShowForm]    = useState(false);
   const [formTicker,  setFormTicker]  = useState("");
@@ -287,6 +292,7 @@ export default function Portfolio() {
   const [formPrice,   setFormPrice]   = useState("");
   const [formError,   setFormError]   = useState("");
   const [holdingStats, setHoldingStats] = useState({}); // ticker -> {value, costBasis, plAmt, todaysPlAmt}
+  const [importPrompt, setImportPrompt] = useState(false);
 
   const { data: tickerData } = useApi("/tickers");
   const availableTickers = tickerData?.tickers || [];
@@ -294,6 +300,48 @@ export default function Portfolio() {
   const updateStats = useCallback((ticker, stats) => {
     setHoldingStats(prev => ({ ...prev, [ticker]: stats }));
   }, []);
+
+  // On sign-in, load holdings from Supabase instead of localStorage. If the
+  // account has none yet but this browser has guest-mode holdings, offer a
+  // one-time, non-destructive import rather than silently losing them.
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("portfolio_holdings")
+        .select("ticker, shares, buy_price")
+        .order("created_at");
+      if (cancelled) return;
+      if (error) {
+        console.error("Failed to load portfolio from Supabase:", error);
+        return;
+      }
+      const remote = data.map(r => ({ ticker: r.ticker, shares: r.shares, buyPrice: r.buy_price }));
+      setHoldings(remote);
+
+      const local = loadPortfolio();
+      if (remote.length === 0 && local.length > 0) setImportPrompt(true);
+    })();
+    return () => { cancelled = true; };
+  }, [user]);
+
+  async function importLocalHoldings() {
+    const local = loadPortfolio();
+    setImportPrompt(false);
+    if (!user || local.length === 0) return;
+    const rows = local.map(h => ({
+      user_id: user.id, ticker: h.ticker, shares: h.shares, buy_price: h.buyPrice,
+    }));
+    const { error } = await supabase
+      .from("portfolio_holdings")
+      .upsert(rows, { onConflict: "user_id,ticker" });
+    if (error) {
+      console.error("Failed to import local holdings:", error);
+      return;
+    }
+    setHoldings(local);
+  }
 
   // Portfolio-wide KPIs — real aggregates from each row's live-fetched price.
   // No "Win Rate" card here: that would need historical trade outcomes we
@@ -309,12 +357,14 @@ export default function Portfolio() {
     return { totalValue, totalPlAmt, totalReturnPct, todaysPlAmt, pricedCount: rows.length };
   }, [holdings, holdingStats]);
 
-  // Persist to localStorage whenever holdings change
+  // Guest mode only — logged-in holdings persist to Supabase directly from
+  // addHolding/removeHolding below, not via a watch-and-sync effect, so
+  // localStorage (and guest mode) stays completely untouched once signed in.
   useEffect(() => {
-    savePortfolio(holdings);
-  }, [holdings]);
+    if (!user) savePortfolio(holdings);
+  }, [holdings, user]);
 
-  function addHolding() {
+  async function addHolding() {
     setFormError("");
     const ticker   = formTicker.trim().toUpperCase();
     const shares   = parseFloat(formShares);
@@ -335,16 +385,50 @@ export default function Portfolio() {
     setFormShares("");
     setFormPrice("");
     setShowForm(false);
+
+    if (user) {
+      const { error } = await supabase.from("portfolio_holdings").insert({
+        user_id: user.id, ticker, shares, buy_price: buyPrice,
+      });
+      if (error) console.error("Failed to save holding to Supabase:", error);
+    }
   }
 
-  function removeHolding(ticker) {
+  async function removeHolding(ticker) {
     setHoldings(prev => prev.filter(h => h.ticker !== ticker));
+
+    if (user) {
+      const { error } = await supabase.from("portfolio_holdings").delete().eq("ticker", ticker);
+      if (error) console.error("Failed to delete holding from Supabase:", error);
+    }
   }
 
   const portfolioTickers = holdings.map(h => h.ticker);
 
   return (
     <div className="space-y-6">
+
+      {/* ── Import prompt — shown once, only if signing in finds an empty
+          account but a non-empty guest-mode localStorage portfolio ── */}
+      {importPrompt && (
+        <div className="bg-indigo-900/20 border border-indigo-800 rounded-lg px-4 py-3
+                         flex items-center justify-between gap-4 text-sm">
+          <span className="text-indigo-300">
+            You have holdings saved on this device from before signing in. Import them into your account?
+          </span>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button onClick={importLocalHoldings} className="btn-primary text-xs px-3 py-1.5">
+              Import
+            </button>
+            <button
+              onClick={() => setImportPrompt(false)}
+              className="text-xs text-gray-400 hover:text-gray-200 px-2"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── Header ── */}
       <div className="flex items-start justify-between">

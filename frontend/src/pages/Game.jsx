@@ -36,6 +36,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useApi, postApi } from "../hooks/useApi";
 import { companyName } from "../data/companyNames";
+import { useAuth } from "../context/AuthContext";
+import { supabase } from "../lib/supabaseClient";
 
 // ── Persistence — mirrors Portfolio.jsx's localStorage pattern, so
 // "Your Progress" is genuinely cumulative across visits instead of
@@ -267,6 +269,8 @@ function HistoryRow({ entry, index }) {
 // ── Main Component ─────────────────────────────────────────────────────────────
 
 export default function Game() {
+  const { user } = useAuth();
+
   // ── Settings ────────────────────────────────────────────────────
   const [difficulty, setDifficulty]   = useState("medium");
   const [modelKey,   setModelKey]     = useState("xgb_sentiment");
@@ -279,7 +283,8 @@ export default function Game() {
   const [answering, setAnswering] = useState(false);
 
   // ── Score tracking — initialized from localStorage so progress is
-  // genuinely cumulative across visits, not wiped on every page load ──
+  // genuinely cumulative across visits, not wiped on every page load.
+  // Overridden from Supabase below once signed in. ──────────────────
   const saved = loadProgress();
   const [score,     setScore]     = useState(saved?.score ?? 0);
   const [streak,    setStreak]    = useState(saved?.streak ?? 0);
@@ -287,14 +292,81 @@ export default function Game() {
   const [total,     setTotal]     = useState(saved?.total ?? 0);
   const [correct,   setCorrect]   = useState(saved?.correct ?? 0);
   const [history,   setHistory]   = useState(saved?.history ?? []);
+  const [importPrompt, setImportPrompt] = useState(false);
 
   const accuracy = total > 0 ? ((correct / total) * 100).toFixed(0) : "—";
   const { level, title: levelTitle } = getLevel(score);
 
-  // Persist on every change — same pattern as Portfolio.jsx's holdings effect
+  // On sign-in, load progress from Supabase (one row per user). If the
+  // account has no row yet but this browser has real guest-mode progress,
+  // offer a one-time, non-destructive import instead of silently losing it.
   useEffect(() => {
-    saveProgress({ score, streak, highScore, total, correct, history });
-  }, [score, streak, highScore, total, correct, history]);
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("game_progress")
+        .select("score, streak, high_score, total, correct, history")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (cancelled) return;
+      if (error) {
+        console.error("Failed to load game progress from Supabase:", error);
+        return;
+      }
+      if (data) {
+        setScore(data.score);
+        setStreak(data.streak);
+        setHighScore(data.high_score);
+        setTotal(data.total);
+        setCorrect(data.correct);
+        setHistory(data.history || []);
+      } else {
+        const local = loadProgress();
+        if (local && (local.total ?? 0) > 0) setImportPrompt(true);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user]);
+
+  async function importLocalProgress() {
+    const local = loadProgress();
+    setImportPrompt(false);
+    if (!user || !local) return;
+    const { error } = await supabase.from("game_progress").upsert({
+      user_id    : user.id,
+      score      : local.score ?? 0,
+      streak     : local.streak ?? 0,
+      high_score : local.highScore ?? 0,
+      total      : local.total ?? 0,
+      correct    : local.correct ?? 0,
+      history    : local.history ?? [],
+    });
+    if (error) {
+      console.error("Failed to import game progress:", error);
+      return;
+    }
+    setScore(local.score ?? 0);
+    setStreak(local.streak ?? 0);
+    setHighScore(local.highScore ?? 0);
+    setTotal(local.total ?? 0);
+    setCorrect(local.correct ?? 0);
+    setHistory(local.history ?? []);
+  }
+
+  // Persist on every change — Supabase (one upserted row) when signed in,
+  // localStorage (guest mode, untouched by signing in) otherwise.
+  useEffect(() => {
+    if (user) {
+      supabase.from("game_progress").upsert({
+        user_id: user.id, score, streak, high_score: highScore, total, correct, history,
+      }).then(({ error }) => {
+        if (error) console.error("Failed to save game progress to Supabase:", error);
+      });
+    } else {
+      saveProgress({ score, streak, highScore, total, correct, history });
+    }
+  }, [score, streak, highScore, total, correct, history, user]);
 
   // ── Fetch a new question ─────────────────────────────────────────
   const fetchQuestion = useCallback(async () => {
@@ -370,6 +442,28 @@ export default function Game() {
             Test your market intuition — guess BUY or SELL based on technical hints
           </p>
         </div>
+
+        {/* Import prompt — shown once, only if signing in finds an empty
+            account but real guest-mode progress on this device */}
+        {importPrompt && (
+          <div className="bg-indigo-900/20 border border-indigo-800 rounded-lg px-4 py-3
+                           flex items-center justify-between gap-4 text-sm">
+            <span className="text-indigo-300">
+              You have game progress saved on this device from before signing in. Import it into your account?
+            </span>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button onClick={importLocalProgress} className="btn-primary text-xs px-3 py-1.5">
+                Import
+              </button>
+              <button
+                onClick={() => setImportPrompt(false)}
+                className="text-xs text-gray-400 hover:text-gray-200 px-2"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Your Progress — real, persisted across visits */}
         {total > 0 && (
