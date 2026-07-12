@@ -71,6 +71,11 @@ backend/data/models/transformer_lstm.pt
 # backend/data/predictions/*.csv
 # backend/data/predictions/model_metrics.json
 
+# ── Secrets — real API keys live here locally + in Render/Vercel env vars,
+# never in git. backend/.env.example documents the required variable with
+# a blank value; frontend/.env is a pre-existing exception (see note there).
+backend/.env
+
 # ── OS / Editor ───────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db

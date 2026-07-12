@@ -20,6 +20,7 @@ import Game        from "./pages/Game";
 import Portfolio   from "./pages/Portfolio";
 import Login       from "./pages/Login";
 import Settings    from "./pages/Settings";
+import ChatWidget  from "./components/ChatWidget";
 
 export default function App() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -61,6 +62,8 @@ export default function App() {
           </Routes>
         </main>
       </div>
+
+      <ChatWidget />
     </div>
     </AuthProvider>
   );

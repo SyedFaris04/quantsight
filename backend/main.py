@@ -23,6 +23,7 @@ ALL ENDPOINTS:
     GET  /realtime/{ticker}         real-time price for one ticker (Portfolio page)
     GET  /game/question             random stock question for prediction game
     POST /game/answer               submit game answer, get result + score
+    POST /chat                      AI Assistant — streamed reply, grounded via tool-calling
 
 HOW TO RUN LOCALLY:
     pip install fastapi uvicorn pandas numpy
@@ -38,15 +39,23 @@ Restrict to your Vercel domain before final submission.
 
 import json
 import random
+import time
 import numpy as np
 import pandas as pd
 from pathlib import Path
 from typing import Optional
-from fastapi import FastAPI, HTTPException, Query
+from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import logging
+
+# Loads backend/.env for local dev (GROQ_API_KEY). Never overrides a real
+# env var that's already set, so this is a no-op in production (Render sets
+# GROQ_API_KEY directly, no .env file present there).
+load_dotenv()
 
 # Real-time price via yfinance
 try:
@@ -59,6 +68,7 @@ except ImportError:
 
 from copilot_engine import explain, get_all_model_metrics, get_ticker_comparison, calculate_risk_level, get_latest_features, get_prediction_history, get_accuracy_track_record
 from live_signals import get_live_signal, get_live_signals_batch
+import chatbot_engine
 
 # ── Logging ────────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -1083,3 +1093,98 @@ def submit_game_answer(answer: GameAnswer) -> GameResult:
         explanation   = explanation,
         points_earned = points_earned,
     )
+
+
+# ── AI Assistant ─────────────────────────────────────────────────────────────
+# Chat is stateless server-side — the client (localStorage) owns history and
+# resends recent turns each request. Tool executors below are thin wrappers
+# around functions this module already has loaded, so chatbot_engine.py never
+# needs to import main.py (avoids a circular import).
+
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+class ChatRequest(BaseModel):
+    messages: list[ChatMessage]
+    page_context: Optional[dict] = None
+
+
+def _tool_list_tickers():
+    return {"tickers": _cache.get("tickers", [])}
+
+def _tool_get_market_overview():
+    return get_dashboard()
+
+def _tool_get_stock_signal(ticker: str):
+    ticker = ticker.upper()
+    if ticker not in _cache.get("tickers", []):
+        return {"error": f"Unknown ticker '{ticker}'. Call list_tickers for what's available."}
+    row = next((r for r in get_overview()["data"] if r["ticker"] == ticker), None)
+    return row or {"error": f"No signal data for {ticker}"}
+
+def _tool_get_ai_explanation(ticker: str):
+    ticker = ticker.upper()
+    if ticker not in _cache.get("tickers", []):
+        return {"error": f"Unknown ticker '{ticker}'. Call list_tickers for what's available."}
+    result = explain(ticker)
+    result.pop("lstm_attention", None)
+    return result
+
+def _tool_get_live_price_signal(ticker: str):
+    if not YFINANCE_AVAILABLE:
+        return {"error": "Live pricing is unavailable on this server right now."}
+    return get_live_signal(ticker.upper())
+
+def _tool_get_market_sentiment():
+    result = get_market_sentiment(days=14)
+    result.pop("trend", None)
+    return result
+
+TOOL_EXECUTORS = {
+    "list_tickers"            : _tool_list_tickers,
+    "get_market_overview"     : _tool_get_market_overview,
+    "get_stock_signal"        : _tool_get_stock_signal,
+    "get_ai_explanation"      : _tool_get_ai_explanation,
+    "get_live_price_signal"   : _tool_get_live_price_signal,
+    "get_market_sentiment"    : _tool_get_market_sentiment,
+}
+
+# Simple in-memory rate limit — protects the shared free Groq quota from a
+# single client hammering the endpoint. Fine for a single-instance deploy;
+# resets on redeploy, which is an acceptable tradeoff for this scale.
+_chat_rate_limit: dict[str, list[float]] = {}
+CHAT_RATE_LIMIT_PER_MIN = 12
+
+def _check_rate_limit(client_id: str):
+    now = time.time()
+    hits = [t for t in _chat_rate_limit.get(client_id, []) if now - t < 60]
+    if len(hits) >= CHAT_RATE_LIMIT_PER_MIN:
+        raise HTTPException(status_code=429, detail="Too many messages — please wait a moment before sending another.")
+    hits.append(now)
+    _chat_rate_limit[client_id] = hits
+
+
+@app.post("/chat")
+def chat(req: ChatRequest, request: Request):
+    """
+    AI Assistant — streams back a reply (plain text chunks). Grounded in
+    QuantSight's real data via tool-calling (see chatbot_engine.py), not
+    a generic hallucinating chatbot.
+    """
+    if not req.messages:
+        raise HTTPException(status_code=400, detail="messages must not be empty")
+
+    _check_rate_limit(request.client.host if request.client else "unknown")
+
+    messages = [m.model_dump() for m in req.messages]
+
+    def generate():
+        try:
+            for chunk in chatbot_engine.run_chat_stream(messages, TOOL_EXECUTORS, req.page_context):
+                yield chunk
+        except RuntimeError as e:
+            # e.g. GROQ_API_KEY missing
+            yield str(e)
+
+    return StreamingResponse(generate(), media_type="text/plain")
