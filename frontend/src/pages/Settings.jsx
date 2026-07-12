@@ -102,6 +102,42 @@ export default function Settings() {
   const [pwBusy, setPwBusy] = useState(false);
   const [pwMessage, setPwMessage] = useState(null); // { type: "error"|"success", text }
 
+  const [displayName, setDisplayNameState] = useState("");
+  const [dnBusy, setDnBusy] = useState(false);
+  const [dnMessage, setDnMessage] = useState("");
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    supabase
+      .from("game_progress")
+      .select("display_name")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled && data?.display_name) setDisplayNameState(data.display_name);
+      });
+    return () => { cancelled = true; };
+  }, [user]);
+
+  async function handleSaveDisplayName(e) {
+    e.preventDefault();
+    setDnMessage("");
+    const trimmed = displayName.trim().slice(0, 24);
+    setDnBusy(true);
+    const { error } = await supabase
+      .from("game_progress")
+      .upsert({ user_id: user.id, display_name: trimmed || null }, { onConflict: "user_id" });
+    setDnBusy(false);
+    if (error) {
+      setDnMessage(error.message);
+      return;
+    }
+    setDisplayNameState(trimmed);
+    setDnMessage("Saved.");
+    setTimeout(() => setDnMessage(""), 2000);
+  }
+
   // ── Data management ───────────────────────────────────────────
   const [exportBusy, setExportBusy] = useState(null); // "portfolio" | "game" | null
   const [confirmingClear, setConfirmingClear] = useState(false);
@@ -217,7 +253,27 @@ export default function Settings() {
       >
         {user ? (
           <>
-            <form onSubmit={handlePasswordChange} className="space-y-2.5">
+            <form onSubmit={handleSaveDisplayName} className="space-y-2.5">
+              <p className="text-xs text-gray-500">
+                Display name — shown on the Game leaderboard instead of your email
+              </p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="e.g. StockWhisperer"
+                  value={displayName}
+                  onChange={e => setDisplayNameState(e.target.value)}
+                  maxLength={24}
+                  className="input flex-1"
+                />
+                <button type="submit" disabled={dnBusy} className="btn-secondary text-sm disabled:opacity-50">
+                  {dnBusy ? "Saving…" : "Save"}
+                </button>
+              </div>
+              {dnMessage && <p className="text-xs text-green-400">{dnMessage}</p>}
+            </form>
+
+            <form onSubmit={handlePasswordChange} className="space-y-2.5 pt-3 border-t border-gray-800">
               <p className="text-xs text-gray-500">Change password</p>
               <input
                 type="password"

@@ -6,11 +6,9 @@
  * historical date. Score/streak/level/history persist in localStorage
  * across visits (see loadProgress/saveProgress above).
  *
- * The wireframe this page is styled after has a multi-player
- * Leaderboard slot — there is no user-account/multi-player backend in
- * this project, so that slot is intentionally filled with the
- * player's own real "Recent Results" history instead of invented
- * other players.
+ * Signed-in players also get a real cross-user leaderboard (top high
+ * scores from Supabase's game_progress table, RLS allows public SELECT
+ * on that table specifically for this) — see LeaderboardPanel below.
  *
  * Layout:
  *   ┌──────────────────────────────────────────────────┐
@@ -272,6 +270,107 @@ function HistoryRow({ entry, index }) {
   );
 }
 
+// Real cross-user leaderboard — top high scores from Supabase's
+// game_progress table. RLS allows public SELECT on that table (see the
+// leaderboard migration), while insert/update/delete stay locked to each
+// user's own row, so nobody can see this and also can't tamper with
+// anyone else's score.
+function LeaderboardPanel({ user }) {
+  const [rows, setRows] = useState(null);
+  const [myRank, setMyRank] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("game_progress")
+        .select("user_id, display_name, high_score, total, correct")
+        .order("high_score", { ascending: false })
+        .limit(10);
+
+      if (cancelled) return;
+      if (error) {
+        console.error("Failed to load leaderboard:", error);
+        setRows([]);
+        setLoading(false);
+        return;
+      }
+      setRows(data || []);
+
+      if (user && !data?.some(r => r.user_id === user.id)) {
+        const { data: mine } = await supabase
+          .from("game_progress")
+          .select("high_score")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (mine?.high_score > 0) {
+          const { count } = await supabase
+            .from("game_progress")
+            .select("*", { count: "exact", head: true })
+            .gt("high_score", mine.high_score);
+          if (!cancelled) setMyRank({ rank: (count ?? 0) + 1, high_score: mine.high_score });
+        }
+      }
+      setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [user]);
+
+  const nameFor = (row) => row.display_name || `Player-${row.user_id.slice(0, 4)}`;
+
+  if (loading) {
+    return (
+      <div className="space-y-2">
+        {[1, 2, 3].map(i => <div key={i} className="h-10 bg-gray-800 rounded-lg animate-pulse" />)}
+      </div>
+    );
+  }
+
+  if (!rows || rows.length === 0) {
+    return <p className="text-gray-600 text-sm">No games played yet — be the first on the board!</p>;
+  }
+
+  return (
+    <div className="space-y-1.5">
+      {rows.map((r, i) => {
+        const isMe = user && r.user_id === user.id;
+        const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : null;
+        const acc = r.total > 0 ? Math.round((r.correct / r.total) * 100) : null;
+        return (
+          <div
+            key={r.user_id}
+            className={`flex items-center gap-3 px-3 py-2 rounded-lg ${
+              isMe ? "bg-indigo-900/30 border border-indigo-700" : "bg-gray-800/40"
+            }`}
+          >
+            <span className="w-6 text-center text-sm">
+              {medal || <span className="text-gray-500 text-xs">#{i + 1}</span>}
+            </span>
+            <span className={`flex-1 text-sm truncate ${isMe ? "text-indigo-300 font-medium" : "text-gray-300"}`}>
+              {nameFor(r)}{isMe && <span className="text-xs text-indigo-500"> (you)</span>}
+            </span>
+            {acc != null && <span className="text-xs text-gray-600 hidden sm:inline">{acc}% acc</span>}
+            <span className="text-sm font-bold text-white tabular-nums">{r.high_score}</span>
+          </div>
+        );
+      })}
+
+      {!user && (
+        <p className="text-xs text-gray-600 pt-1">Sign in to appear on the leaderboard yourself.</p>
+      )}
+      {user && myRank && (
+        <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-indigo-900/20 border border-dashed border-indigo-800 mt-2">
+          <span className="w-6 text-center text-xs text-gray-500">#{myRank.rank}</span>
+          <span className="flex-1 text-sm text-indigo-300">You</span>
+          <span className="text-sm font-bold text-white tabular-nums">{myRank.high_score}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function CelebrationToast({ celebration }) {
   if (!celebration) return null;
   return (
@@ -454,10 +553,11 @@ export default function Game() {
       setTotal(t => t + 1);
 
       if (res.correct) {
-        const newScore  = score + res.points_earned;
-        const newStreak = streak + 1;
-        const oldLevel  = getLevel(score).level;
-        const newLevel  = getLevel(newScore).level;
+        const newScore       = score + res.points_earned;
+        const newStreak      = streak + 1;
+        const oldLevel       = getLevel(score).level;
+        const newLevel       = getLevel(newScore).level;
+        const isNewHighScore = newScore > highScore && total >= 2; // skip the trivial first-answer "record"
 
         setScore(newScore);
         setCorrect(c => c + 1);
@@ -469,6 +569,10 @@ export default function Game() {
           playTone("levelup");
           confettiFromButton(buyBtnRef, ["#6366f1", "#818cf8", "#fbbf24", "#22c55e"]);
           celebrate("🚀", `Level up! You're now a ${getLevel(newScore).title}`);
+        } else if (isNewHighScore) {
+          playTone("levelup");
+          confettiFromButton(btnRef, ["#fbbf24", "#f59e0b", "#6366f1", "#818cf8"]);
+          celebrate("🏆", `New high score! ${newScore} pts`);
         } else if (STREAK_MILESTONES.includes(newStreak)) {
           playTone("milestone");
           confettiFromButton(btnRef, ["#fbbf24", "#f59e0b", "#22c55e"]);
@@ -499,6 +603,19 @@ export default function Game() {
       setAnswering(false);
     }
   }
+
+  // ── Keyboard shortcuts — B/S to answer while a question is live,
+  // skipped while typing in an input/textarea elsewhere on the page. ──
+  useEffect(() => {
+    function onKeyDown(e) {
+      if (!gameStarted || !question || result || answering) return;
+      if (["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName)) return;
+      if (e.key.toLowerCase() === "b") handleAnswer("BUY");
+      else if (e.key.toLowerCase() === "s") handleAnswer("SELL");
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  });
 
   // ── Settings screen ──────────────────────────────────────────────
   if (!gameStarted) {
@@ -550,6 +667,12 @@ export default function Game() {
             </div>
           </div>
         )}
+
+        {/* Leaderboard — real cross-user high scores from Supabase */}
+        <div className="card">
+          <p className="section-title mb-3">🏆 Leaderboard</p>
+          <LeaderboardPanel user={user} />
+        </div>
 
         {/* Difficulty */}
         <div className="card space-y-3">
@@ -797,6 +920,10 @@ export default function Game() {
               ▼ SELL
             </button>
           </div>
+          <p className="text-center text-xs text-gray-700">
+            Keyboard shortcuts: <kbd className="px-1.5 py-0.5 rounded bg-gray-800 border border-gray-700">B</kbd>
+            {" "}for Buy, <kbd className="px-1.5 py-0.5 rounded bg-gray-800 border border-gray-700">S</kbd> for Sell
+          </p>
         </div>
       ) : null}
 

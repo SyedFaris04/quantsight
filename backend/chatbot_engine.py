@@ -74,6 +74,10 @@ directly answering a "should I buy/sell" style question — don't repeat it \
 on every message.
 - General finance/investing education questions (e.g. "what is RSI") don't \
 need a tool call — answer directly from what you know.
+- If the user asks whether a signal can be trusted, or how accurate a model \
+has been, call get_track_record — QuantSight backtests every model's real \
+historical accuracy per ticker, so you can answer with an actual number \
+instead of a vague reassurance. This is how QuantSight avoids overclaiming.
 - If the user is currently viewing a specific ticker's page (given in the \
 context below), you can assume questions like "what about this one" refer \
 to it."""
@@ -138,6 +142,18 @@ TOOLS = [
             "name": "get_market_sentiment",
             "description": "Real-time overall news sentiment (% positive/neutral/negative) across recent market headlines.",
             "parameters": {"type": "object", "properties": {}, "required": []},
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_track_record",
+            "description": "How often each model has ACTUALLY been right historically for one specific ticker — real backtested accuracy, not the current signal. Use this whenever the user asks whether a signal can be trusted, how reliable a model is, or anything about past accuracy/track record for a stock.",
+            "parameters": {
+                "type": "object",
+                "properties": {"ticker": {"type": "string", "description": "Stock ticker symbol, e.g. AAPL"}},
+                "required": ["ticker"],
+            },
         },
     },
 ]

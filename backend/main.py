@@ -1141,6 +1141,12 @@ def _tool_get_market_sentiment():
     result.pop("trend", None)
     return result
 
+def _tool_get_track_record(ticker: str):
+    ticker = ticker.upper()
+    if ticker not in _cache.get("tickers", []):
+        return {"error": f"Unknown ticker '{ticker}'. Call list_tickers for what's available."}
+    return get_accuracy_track_record(ticker)
+
 TOOL_EXECUTORS = {
     "list_tickers"            : _tool_list_tickers,
     "get_market_overview"     : _tool_get_market_overview,
@@ -1148,6 +1154,7 @@ TOOL_EXECUTORS = {
     "get_ai_explanation"      : _tool_get_ai_explanation,
     "get_live_price_signal"   : _tool_get_live_price_signal,
     "get_market_sentiment"    : _tool_get_market_sentiment,
+    "get_track_record"        : _tool_get_track_record,
 }
 
 # Simple in-memory rate limit — protects the shared free Groq quota from a
