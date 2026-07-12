@@ -1,0 +1,7 @@
+Strategy,Total Return,Annual Return,Annual Vol,Sharpe Ratio,Sortino Ratio,Max Drawdown,Win Rate
+XGBoost Finance,29.89%,14.57%,18.89%,0.771,0.958,-15.81%,56.00%
+XGBoost + Sentiment,14.74%,7.41%,20.27%,0.366,0.446,-21.73%,57.00%
+LSTM Finance,12.20%,6.30%,18.24%,0.345,0.569,-20.33%,48.98%
+LSTM + Sentiment,48.49%,23.34%,18.25%,1.279,2.068,-17.52%,57.14%
+Ensemble (avg. of 4),19.47%,9.90%,18.62%,0.532,0.781,-15.97%,52.04%
+SPY Buy&Hold,49.83%,23.66%,12.92%,1.832,2.836,-9.80%,61.62%

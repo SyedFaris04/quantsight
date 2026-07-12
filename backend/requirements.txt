@@ -1,0 +1,31 @@
+# backend/requirements.txt
+# ─────────────────────────────────────────────────────
+# Install: pip install -r requirements.txt
+# ─────────────────────────────────────────────────────
+
+# API server
+fastapi
+uvicorn[standard]
+pydantic
+
+# Data
+pandas
+numpy
+pyarrow
+
+# Machine learning
+xgboost
+scikit-learn
+shap
+
+# Sentiment & Emotion
+vaderSentiment
+transformers
+torch
+datasets
+
+# News fetching
+gdeltdoc
+
+# Utilities
+python-multipart

@@ -1,0 +1,135 @@
+{
+  "xgb_finance": {
+    "top_features": [
+      {
+        "feature": "market_volatility",
+        "mean_abs_shap": 0.0936092659831047,
+        "pct_of_total": 10.807022094726562
+      },
+      {
+        "feature": "spy_return_5",
+        "mean_abs_shap": 0.08980907499790192,
+        "pct_of_total": 10.368297576904297
+      },
+      {
+        "feature": "rsi_rel_market",
+        "mean_abs_shap": 0.08305106312036514,
+        "pct_of_total": 9.588096618652344
+      },
+      {
+        "feature": "return5_rel_market",
+        "mean_abs_shap": 0.045677557587623596,
+        "pct_of_total": 5.273392200469971
+      },
+      {
+        "feature": "atr",
+        "mean_abs_shap": 0.03899893909692764,
+        "pct_of_total": 4.5023579597473145
+      },
+      {
+        "feature": "macd_hist",
+        "mean_abs_shap": 0.038364484906196594,
+        "pct_of_total": 4.429111003875732
+      },
+      {
+        "feature": "return_10",
+        "mean_abs_shap": 0.03596334159374237,
+        "pct_of_total": 4.1519036293029785
+      },
+      {
+        "feature": "volume_sma_10",
+        "mean_abs_shap": 0.034685321152210236,
+        "pct_of_total": 4.004358291625977
+      },
+      {
+        "feature": "bb_upper",
+        "mean_abs_shap": 0.03414322808384895,
+        "pct_of_total": 3.941774606704712
+      },
+      {
+        "feature": "macd_signal",
+        "mean_abs_shap": 0.03383040055632591,
+        "pct_of_total": 3.9056591987609863
+      }
+    ],
+    "low_importance_features": [],
+    "baseline_metrics": {
+      "accuracy": 51.66,
+      "f1": 61.57,
+      "auc_roc": 50.24
+    },
+    "reduced_metrics": null
+  },
+  "xgb_sentiment": {
+    "top_features": [
+      {
+        "feature": "spy_return_5",
+        "mean_abs_shap": 0.08981308341026306,
+        "pct_of_total": 10.40799617767334
+      },
+      {
+        "feature": "market_volatility",
+        "mean_abs_shap": 0.08967383950948715,
+        "pct_of_total": 10.391860008239746
+      },
+      {
+        "feature": "rsi_rel_market",
+        "mean_abs_shap": 0.08100911229848862,
+        "pct_of_total": 9.387747764587402
+      },
+      {
+        "feature": "return5_rel_market",
+        "mean_abs_shap": 0.044696908444166183,
+        "pct_of_total": 5.179704666137695
+      },
+      {
+        "feature": "macd_hist",
+        "mean_abs_shap": 0.03869365155696869,
+        "pct_of_total": 4.4840168952941895
+      },
+      {
+        "feature": "atr",
+        "mean_abs_shap": 0.03433223068714142,
+        "pct_of_total": 3.978593111038208
+      },
+      {
+        "feature": "return_10",
+        "mean_abs_shap": 0.03349216282367706,
+        "pct_of_total": 3.881241798400879
+      },
+      {
+        "feature": "volatility_20",
+        "mean_abs_shap": 0.03142926096916199,
+        "pct_of_total": 3.6421825885772705
+      },
+      {
+        "feature": "bb_upper",
+        "mean_abs_shap": 0.0312320739030838,
+        "pct_of_total": 3.6193313598632812
+      },
+      {
+        "feature": "volume_sma_10",
+        "mean_abs_shap": 0.031149232760071754,
+        "pct_of_total": 3.6097311973571777
+      }
+    ],
+    "low_importance_features": [
+      "wsb_sentiment",
+      "gdelt_pos",
+      "gdelt_compound",
+      "gdelt_neg",
+      "gdelt_article_count"
+    ],
+    "baseline_metrics": {
+      "accuracy": 51.63,
+      "f1": 61.55,
+      "auc_roc": 50.31
+    },
+    "reduced_metrics": {
+      "accuracy": 51.72,
+      "f1": 61.69,
+      "auc_roc": 50.2,
+      "n_features": 37
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "model": "SamLowe/roberta-base-go_emotions",
+  "test_examples": 5427,
+  "threshold": 0.3,
+  "macro_f1": 0.499,
+  "micro_f1": 0.609,
+  "finance_emotion_f1": {
+    "fear": 0.662,
+    "optimism": 0.539,
+    "anger": 0.509,
+    "excitement": 0.441,
+    "confusion": 0.431,
+    "disappointment": 0.365
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "xgb_finance": {
+    "model": "xgb_finance",
+    "n_total": 21208,
+    "n_dropped_no_ground_truth": 0,
+    "overall_accuracy": 51.66,
+    "buy_rate_pct": 71.55,
+    "buckets": [
+      {
+        "bucket": "Low (<50%)",
+        "n_predictions": 6033,
+        "pct_of_total": 28.45,
+        "accuracy": 45.47
+      },
+      {
+        "bucket": "Medium (50-69%)",
+        "n_predictions": 15175,
+        "pct_of_total": 71.55,
+        "accuracy": 54.12
+      },
+      {
+        "bucket": "High (>=70%)",
+        "n_predictions": 0,
+        "pct_of_total": 0.0,
+        "accuracy": null
+      }
+    ]
+  },
+  "xgb_sentiment": {
+    "model": "xgb_sentiment",
+    "n_total": 21208,
+    "n_dropped_no_ground_truth": 0,
+    "overall_accuracy": 51.63,
+    "buy_rate_pct": 71.57,
+    "buckets": [
+      {
+        "bucket": "Low (<50%)",
+        "n_predictions": 6030,
+        "pct_of_total": 28.43,
+        "accuracy": 45.41
+      },
+      {
+        "bucket": "Medium (50-69%)",
+        "n_predictions": 15178,
+        "pct_of_total": 71.57,
+        "accuracy": 54.1
+      },
+      {
+        "bucket": "High (>=70%)",
+        "n_predictions": 0,
+        "pct_of_total": 0.0,
+        "accuracy": null
+      }
+    ]
+  },
+  "lstm_finance": {
+    "model": "lstm_finance",
+    "n_total": 20768,
+    "n_dropped_no_ground_truth": 0,
+    "overall_accuracy": 51.56,
+    "buy_rate_pct": 45.19,
+    "buckets": [
+      {
+        "bucket": "Low (<50%)",
+        "n_predictions": 6253,
+        "pct_of_total": 30.11,
+        "accuracy": 54.6
+      },
+      {
+        "bucket": "Medium (50-69%)",
+        "n_predictions": 13232,
+        "pct_of_total": 63.71,
+        "accuracy": 50.48
+      },
+      {
+        "bucket": "High (>=70%)",
+        "n_predictions": 1283,
+        "pct_of_total": 6.18,
+        "accuracy": 47.86
+      }
+    ]
+  },
+  "lstm_sentiment": {
+    "model": "lstm_sentiment",
+    "n_total": 20768,
+    "n_dropped_no_ground_truth": 0,
+    "overall_accuracy": 53.02,
+    "buy_rate_pct": 48.55,
+    "buckets": [
+      {
+        "bucket": "Low (<50%)",
+        "n_predictions": 6483,
+        "pct_of_total": 31.22,
+        "accuracy": 56.67
+      },
+      {
+        "bucket": "Medium (50-69%)",
+        "n_predictions": 14285,
+        "pct_of_total": 68.78,
+        "accuracy": 51.36
+      },
+      {
+        "bucket": "High (>=70%)",
+        "n_predictions": 0,
+        "pct_of_total": 0.0,
+        "accuracy": null
+      }
+    ]
+  }
+}

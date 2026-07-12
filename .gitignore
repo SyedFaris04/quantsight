@@ -1,0 +1,78 @@
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.log
+
+# ── Virtual environment — NEVER commit this ───────────────────────────────────
+.venv/
+venv/
+env/
+
+# ── Frontend build artifacts — NEVER commit these ─────────────────────────────
+node_modules/
+dist/
+.vite/
+
+# ── Claude Code tool state — not project content ──────────────────────────────
+.claude/
+
+# ── Stray local files, not part of the app ─────────────────────────────────────
+/ALPHA25_BLACK7.png
+/Jul*.png
+
+# ── Dev-only raw data — inputs to the offline pipeline (notebooks 01-14),
+# never read by the running API (main.py / copilot_engine.py / live_signals.py),
+# and 496MB combined — nowhere near appropriate for a deploy repo. Paths are
+# anchored under backend/ since that's where .gitignore's mid-path patterns
+# actually resolve from (repo root, not backend/) ─────────────────────────────
+backend/data/raw/sentiment/
+backend/data/raw/stocks/
+
+# GDELT per-ticker parquets are re-created by fetch_news.py and unused at
+# runtime, BUT all_news.parquet IS read live by /market-sentiment and
+# /market-news (load_news() in main.py) — keep that one file.
+backend/data/raw/news/*.parquet
+!backend/data/raw/news/all_news.parquet
+
+# ── Dev-only / legacy processed files — intermediate pipeline artifacts or
+# superseded-by-newer-file outputs, never read by the running API ────────────
+backend/data/processed/features_stock.csv
+backend/data/processed/final_dataset.csv
+backend/data/processed/*_clean.csv
+backend/data/processed/wsb_clean.csv
+backend/data/processed/wsb_emotion.csv
+backend/data/processed/wsb_sentiment.csv
+backend/data/processed/gdelt_sentiment.csv
+backend/data/processed/yahoo_news_clean.csv
+backend/data/processed/yahoo_news_sentiment.csv
+
+# features_finance.csv / features_sentiment.csv are NOT excluded — main.py
+# and copilot_engine.py read them directly at runtime (OHLCV history,
+# indicator lookups, the per-ticker accuracy track record) and there is no
+# server-side path to regenerate them (build_features.py needs the raw data
+# excluded above), so they have to actually ship. ~58MB and ~63MB — both
+# comfortably under GitHub's 100MB single-file limit.
+
+# ── Legacy model files — superseded by the current naming (xgb_finance.pkl
+# etc.), not loaded by any current code path ──────────────────────────────────
+backend/data/models/xgboost_model.pkl
+backend/data/models/scaler.pkl
+backend/data/models/scaler_lstm.pkl
+backend/data/models/transformer_lstm.pt
+
+# lstm_finance.pt / lstm_sentiment.pt are NOT excluded — tiny (45-52KB) and
+# needed for the Live Mode feature. Every other trained model file (XGBoost,
+# Random Forest, Logistic Regression, GRU, TransformerEncoder) is well under
+# 1MB each — none of them need special handling.
+
+# ── Prediction CSVs and metrics — DO commit these. There's no retraining
+# step on Render, so the app serves whatever predictions ship in the repo.
+# backend/data/predictions/*.csv
+# backend/data/predictions/model_metrics.json
+
+# ── OS / Editor ───────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+*.code-workspace
