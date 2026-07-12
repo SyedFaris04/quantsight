@@ -12,7 +12,7 @@
  * ─────────────────────────────────────────────────────────────────
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -27,10 +27,11 @@ export default function Login() {
   const [info, setInfo] = useState("");
   const [busy, setBusy] = useState(false);
 
-  if (user) {
-    navigate("/", { replace: true });
-    return null;
-  }
+  useEffect(() => {
+    if (user) navigate("/", { replace: true });
+  }, [user, navigate]);
+
+  if (user) return null;
 
   async function handleOAuth(fn) {
     setError("");
