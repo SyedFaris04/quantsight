@@ -33,11 +33,12 @@
  * ─────────────────────────────────────────────────────────────────
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useApi, postApi } from "../hooks/useApi";
 import { companyName } from "../data/companyNames";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabaseClient";
+import { useCountUp, playTone, burstConfetti, isSoundOn, setSoundOn } from "../lib/gameFx";
 
 // ── Persistence — mirrors Portfolio.jsx's localStorage pattern, so
 // "Your Progress" is genuinely cumulative across visits instead of
@@ -111,16 +112,21 @@ const STREAK_MILESTONES = [3, 5, 10, 15, 20];
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
-function StatCard({ label, value, sub, accent }) {
+function StatCard({ label, value, sub, accent, animate = false }) {
   const accentMap = {
     indigo : "border-indigo-600/40",
     green  : "border-green-600/40",
     amber  : "border-amber-600/40",
     purple : "border-purple-600/40",
   };
+  // Only numeric values can count up — strings like "87%" render as-is.
+  const numeric = typeof value === "number";
+  const displayed = useCountUp(numeric ? value : 0, 500);
   return (
-    <div className={`card border ${accentMap[accent] || "border-gray-800"} text-center`}>
-      <div className="text-2xl font-bold text-white">{value}</div>
+    <div className={`card border ${accentMap[accent] || "border-gray-800"} text-center transition-transform`}>
+      <div className="text-2xl font-bold text-white tabular-nums">
+        {animate && numeric ? displayed : value}
+      </div>
       <div className="text-xs text-gray-500 mt-0.5">{label}</div>
       {sub && <div className="text-xs text-gray-600 mt-0.5">{sub}</div>}
     </div>
@@ -183,7 +189,7 @@ function ResultCard({ result, onNext }) {
   const { correct, actual_signal, confidence, explanation, points_earned } = result;
   return (
     <div
-      className={`rounded-2xl border p-6 space-y-4 ${
+      className={`qs-card-in rounded-2xl border p-6 space-y-4 ${
         correct
           ? "bg-green-900/20 border-green-700"
           : "bg-red-900/20 border-red-700"
@@ -192,7 +198,7 @@ function ResultCard({ result, onNext }) {
       {/* Result header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <span className="text-3xl">{correct ? "✅" : "❌"}</span>
+          <span className="text-3xl qs-pop-in">{correct ? "✅" : "❌"}</span>
           <div>
             <div className={`text-lg font-bold ${correct ? "text-green-400" : "text-red-400"}`}>
               {correct ? "Correct!" : "Wrong!"}
@@ -215,7 +221,7 @@ function ResultCard({ result, onNext }) {
 
         {/* Points */}
         {correct && (
-          <div className="text-center bg-amber-900/30 border border-amber-700
+          <div className="qs-pop-in text-center bg-amber-900/30 border border-amber-700
                           rounded-xl px-4 py-2">
             <div className="text-2xl font-bold text-amber-400">+{points_earned}</div>
             <div className="text-xs text-amber-600">points</div>
@@ -266,10 +272,50 @@ function HistoryRow({ entry, index }) {
   );
 }
 
+function CelebrationToast({ celebration }) {
+  if (!celebration) return null;
+  return (
+    <div
+      key={celebration.key}
+      className="qs-toast fixed top-6 left-1/2 z-50 flex items-center gap-2
+                 rounded-full border border-indigo-600/50 bg-gray-900/95 backdrop-blur-sm
+                 px-5 py-2.5 shadow-2xl shadow-indigo-950/50"
+    >
+      <span className="text-xl">{celebration.emoji}</span>
+      <span className="text-sm font-semibold text-white">{celebration.text}</span>
+    </div>
+  );
+}
+
 // ── Main Component ─────────────────────────────────────────────────────────────
 
 export default function Game() {
   const { user } = useAuth();
+  const [soundOn, setSoundOnState] = useState(isSoundOn);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [celebration, setCelebration] = useState(null);
+  const buyBtnRef = useRef(null);
+  const sellBtnRef = useRef(null);
+  const celebrationTimerRef = useRef(null);
+
+  function toggleSound() {
+    const next = !soundOn;
+    setSoundOnState(next);
+    setSoundOn(next);
+  }
+
+  function celebrate(emoji, text) {
+    clearTimeout(celebrationTimerRef.current);
+    setCelebration({ emoji, text, key: Date.now() });
+    celebrationTimerRef.current = setTimeout(() => setCelebration(null), 2400);
+  }
+
+  function confettiFromButton(ref, colors) {
+    const el = ref.current;
+    if (!el) { burstConfetti({ colors }); return; }
+    const rect = el.getBoundingClientRect();
+    burstConfetti({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, colors });
+  }
 
   // ── Settings ────────────────────────────────────────────────────
   const [difficulty, setDifficulty]   = useState("medium");
@@ -373,6 +419,7 @@ export default function Game() {
     setLoading(true);
     setResult(null);
     setQuestion(null);
+    setSelectedAnswer(null);
     try {
       const res = await fetch(
         `${import.meta.env.VITE_API_URL || "/api"}/game/question` +
@@ -392,6 +439,7 @@ export default function Game() {
   async function handleAnswer(userSignal) {
     if (!question || answering) return;
     setAnswering(true);
+    setSelectedAnswer(userSignal);
 
     try {
       const res = await postApi("/game/answer", {
@@ -405,13 +453,32 @@ export default function Game() {
       setTotal(t => t + 1);
 
       if (res.correct) {
-        const newScore = score + res.points_earned;
+        const newScore  = score + res.points_earned;
+        const newStreak = streak + 1;
+        const oldLevel  = getLevel(score).level;
+        const newLevel  = getLevel(newScore).level;
+
         setScore(newScore);
         setCorrect(c => c + 1);
-        setStreak(s => s + 1);
+        setStreak(newStreak);
         if (newScore > highScore) setHighScore(newScore);
+
+        const btnRef = userSignal === "BUY" ? buyBtnRef : sellBtnRef;
+        if (newLevel > oldLevel) {
+          playTone("levelup");
+          confettiFromButton(buyBtnRef, ["#6366f1", "#818cf8", "#fbbf24", "#22c55e"]);
+          celebrate("🚀", `Level up! You're now a ${getLevel(newScore).title}`);
+        } else if (STREAK_MILESTONES.includes(newStreak)) {
+          playTone("milestone");
+          confettiFromButton(btnRef, ["#fbbf24", "#f59e0b", "#22c55e"]);
+          celebrate("🔥", `${newStreak} in a row! You're on fire!`);
+        } else {
+          playTone("correct");
+          confettiFromButton(btnRef, ["#22c55e", "#4ade80", "#6366f1"]);
+        }
       } else {
         setStreak(0);
+        playTone("wrong");
       }
 
       setHistory(h => [
@@ -558,17 +625,27 @@ export default function Game() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
 
+      <CelebrationToast celebration={celebration} />
+
       {/* ── Header stats ── */}
       <div className="flex items-center justify-between">
         <span className="text-xs px-2.5 py-1 rounded-full bg-indigo-900/30 text-indigo-300 border border-indigo-700 font-medium">
           Level {level} · {levelTitle}
         </span>
+        <button
+          onClick={toggleSound}
+          title={soundOn ? "Mute sound effects" : "Unmute sound effects"}
+          className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400
+                     hover:bg-gray-800 hover:text-white transition-colors text-sm"
+        >
+          {soundOn ? "🔊" : "🔇"}
+        </button>
       </div>
       <div className="grid grid-cols-4 gap-3">
-        <StatCard label="Score"      value={score}         accent="indigo" />
-        <StatCard label="High Score" value={highScore}     accent="amber"  />
+        <StatCard label="Score"      value={score}         accent="indigo" animate />
+        <StatCard label="High Score" value={highScore}     accent="amber"  animate />
         <StatCard label="Accuracy"   value={`${accuracy}%`} accent="green" />
-        <StatCard label="Answered"   value={total}         accent="purple" />
+        <StatCard label="Answered"   value={total}         accent="purple" animate />
       </div>
 
       {/* Streak badge */}
@@ -632,7 +709,7 @@ export default function Game() {
           </div>
         </div>
       ) : question && !result ? (
-        <div className="card space-y-5">
+        <div key={`${question.ticker}-${question.date}`} className="qs-card-in card space-y-5">
           {/* Ticker + date */}
           <div className="flex items-start justify-between">
             <div>
@@ -695,22 +772,26 @@ export default function Game() {
           {/* BUY / SELL buttons */}
           <div className="grid grid-cols-2 gap-4">
             <button
+              ref={buyBtnRef}
               onClick={() => handleAnswer("BUY")}
               disabled={answering}
-              className="py-5 rounded-2xl border-2 border-green-700 bg-green-900/20
+              className={`py-5 rounded-2xl border-2 border-green-700 bg-green-900/20
                          hover:bg-green-900/40 text-green-400 font-bold text-xl
-                         transition-all active:scale-95 disabled:opacity-50
-                         disabled:cursor-not-allowed"
+                         transition-all active:scale-95 disabled:cursor-not-allowed
+                         ${selectedAnswer === "BUY" ? "qs-locked scale-95" : ""}
+                         ${answering && selectedAnswer !== "BUY" ? "opacity-30" : ""}`}
             >
               ▲ BUY
             </button>
             <button
+              ref={sellBtnRef}
               onClick={() => handleAnswer("SELL")}
               disabled={answering}
-              className="py-5 rounded-2xl border-2 border-red-700 bg-red-900/20
+              className={`py-5 rounded-2xl border-2 border-red-700 bg-red-900/20
                          hover:bg-red-900/40 text-red-400 font-bold text-xl
-                         transition-all active:scale-95 disabled:opacity-50
-                         disabled:cursor-not-allowed"
+                         transition-all active:scale-95 disabled:cursor-not-allowed
+                         ${selectedAnswer === "SELL" ? "qs-locked scale-95" : ""}
+                         ${answering && selectedAnswer !== "SELL" ? "opacity-30" : ""}`}
             >
               ▼ SELL
             </button>

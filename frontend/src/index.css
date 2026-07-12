@@ -116,3 +116,35 @@ body {
            rounded-full animate-spin;
   }
 }
+
+/* ── Game page "juice" ─────────────────────────────────────────── */
+@keyframes qs-pop-in {
+  0%   { transform: scale(0.6); opacity: 0; }
+  60%  { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); }
+}
+@keyframes qs-card-in {
+  0%   { transform: translateY(10px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+@keyframes qs-toast-in {
+  0%   { transform: translate(-50%, -16px); opacity: 0; }
+  15%  { transform: translate(-50%, 0); opacity: 1; }
+  85%  { transform: translate(-50%, 0); opacity: 1; }
+  100% { transform: translate(-50%, -10px); opacity: 0; }
+}
+@keyframes qs-locked-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.5); }
+  50%      { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
+}
+
+.qs-pop-in    { animation: qs-pop-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.qs-card-in   { animation: qs-card-in 0.25s ease-out both; }
+.qs-toast     { animation: qs-toast-in 2.4s ease-in-out both; }
+.qs-locked    { animation: qs-locked-pulse 0.9s ease-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .qs-pop-in, .qs-card-in, .qs-toast, .qs-locked {
+    animation: none !important;
+  }
+}
