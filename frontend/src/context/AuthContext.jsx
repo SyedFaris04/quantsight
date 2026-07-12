@@ -34,6 +34,13 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  function signInWithGoogle() {
+    return supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: window.location.origin },
+    });
+  }
+
   function signInWithEmail(email, password) {
     return supabase.auth.signInWithPassword({ email, password });
   }
@@ -50,6 +57,7 @@ export function AuthProvider({ children }) {
     session,
     user: session?.user ?? null,
     loading,
+    signInWithGoogle,
     signInWithEmail,
     signUpWithEmail,
     signOut,

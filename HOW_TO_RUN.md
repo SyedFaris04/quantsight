@@ -9,9 +9,14 @@ further down is only for when you need to regenerate data/models from scratch
 
 ```
 quantsightv2/
+├── .github/workflows/
+│   └── daily-predictions.yml    ← scheduled trigger for the live prediction tracker
 ├── backend/
 │   ├── main.py              ← FastAPI app (the API server)
 │   ├── copilot_engine.py    ← explanation/XAI engine used by /explain
+│   ├── chatbot_engine.py    ← AI Assistant — Groq + tool-calling (used by /chat)
+│   ├── prediction_tracker.py ← live prediction log + daily resolution job
+│   ├── live_signals.py      ← live (Yahoo Finance) signal generation
 │   ├── build_features.py    ← merges price + sentiment + emotion into training data
 │   ├── train_xgboost.py     ← trains XGBoost (Finance / Finance+Sentiment)
 │   ├── train_lstm.py        ← trains LSTM+Attention (Finance / Finance+Sentiment)
@@ -19,6 +24,7 @@ quantsightv2/
 │   ├── score_wsb_emotion.py ← GoEmotions emotion scoring over WSB posts
 │   ├── score_news_sentiment_finbert.py
 │   ├── requirements.txt
+│   ├── .env                  ← GROQ_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, ADMIN_JOB_SECRET (all optional, gitignored)
 │   ├── .venv/                ← Python virtual environment (already created)
 │   └── data/
 │       ├── raw/               ← original stock/news/WSB CSVs
@@ -27,8 +33,12 @@ quantsightv2/
 │       └── predictions/       ← *_predictions.csv, model_metrics.json, ...
 ├── frontend/
 │   ├── package.json
-│   ├── .env                  ← VITE_API_URL=http://127.0.0.1:8000
+│   ├── .env                  ← VITE_API_URL, VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY
 │   └── src/
+│       ├── context/AuthContext.jsx   ← Supabase auth state (user is null in guest mode)
+│       ├── lib/supabaseClient.js     ← shared Supabase client
+│       ├── lib/gameFx.js             ← Game page sound/confetti/prefs
+│       └── components/ChatWidget.jsx ← floating AI Assistant, on every page
 └── notebooks/                ← numbered one-off scripts (01–19), data pipeline history
 ```
 
@@ -79,7 +89,8 @@ VITE ready
 
 **http://localhost:3000** — that's the whole app. Both terminals must stay
 running while you use it. Navigation is a left sidebar (Dashboard / Market /
-AI Compare / Portfolio / Game).
+AI Compare / Leaderboard / Track Record / Portfolio / Game / Settings), plus
+a floating AI Assistant button (bottom-right) on every page.
 
 | Page | URL | What it shows |
 |---|---|---|
@@ -87,8 +98,29 @@ AI Compare / Portfolio / Game).
 | Market | `/market` | All 44 tickers as cards (with company names), all 4 model signals each, filters, Live Mode |
 | Detail | `/detail/AAPL` (any ticker) | Real OHLC candlestick chart + volume, radial confidence gauge, AI Copilot explanation, tabs: **Overview / Technical / Sentiment & Emotion / History / Learn** — includes the LSTM attention chart and a per-ticker Sentiment Impact comparison |
 | AI Compare | `/compare` | Accuracy table + charts across all 4 model variants, sentiment+emotion impact, Confidence Boost KPI |
-| Portfolio | `/portfolio` | Your tracked holdings (localStorage) + live prices + BUY suggestions |
-| Game | `/game` | Prediction quiz — score/streak/level persist across visits, real per-question result history |
+| Leaderboard | `/leaderboard` | The 4 *model* variants ranked by accuracy — not the Game's player leaderboard, see below |
+| Track Record | `/track-record` | Live, forward-looking prediction accuracy — needs the optional Supabase/GitHub Actions setup below to show real data, otherwise a clean empty state |
+| Portfolio | `/portfolio` | Your tracked holdings (localStorage in guest mode, Supabase if signed in) + live prices + BUY suggestions |
+| Game | `/game` | Prediction quiz — score/streak/level, sound/confetti/celebrations, a real cross-user leaderboard (needs sign-in to appear on it, viewable by anyone) |
+| Login | `/login` | Optional — Google or email/password |
+| Settings | `/settings` | Account, game preferences, accessibility, CSV export |
+
+### Optional — sign-in, AI Assistant, live tracker
+
+Everything above works with zero extra setup. Three features are additive
+and need their own `.env` values, each degrading gracefully (clear message,
+never a crash) if skipped:
+
+| Feature | Needs | Where |
+|---|---|---|
+| Sign-in (Google/email) + synced Portfolio/Game | Supabase project | `frontend/.env`: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` |
+| AI Assistant (chat widget) | Free Groq key | `backend/.env`: `GROQ_API_KEY` |
+| Live Prediction Track Record | Supabase service role key + admin secret + a scheduled trigger | `backend/.env`: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_JOB_SECRET` |
+
+`backend/.env.example` documents every backend variable. See
+[README.md → Deployment](README.md#deployment) for the full Supabase/Groq/
+GitHub Actions setup, or **[CHECKLIST.md](CHECKLIST.md)** for the literal
+click-by-click version.
 
 If a page shows "Loading…" forever or an error banner, check Terminal 1 for a
 Python traceback first — the frontend never fabricates data, so an empty/error

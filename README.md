@@ -85,9 +85,15 @@ sources — see [No-Mock-Data Policy](#no-mock-data-policy) below.
 ```
 quantsightv2/
 │
+├── .github/workflows/
+│   └── daily-predictions.yml             Scheduled trigger for the live prediction tracker
+│
 ├── backend/                              ← Python FastAPI server
 │   ├── main.py                           FastAPI app — all endpoints
 │   ├── copilot_engine.py                 XAI explanation engine (/explain)
+│   ├── chatbot_engine.py                 AI Assistant — Groq + tool-calling
+│   ├── prediction_tracker.py             Live prediction log + daily resolution job
+│   ├── live_signals.py                   Live (Yahoo Finance) signal generation
 │   ├── build_features.py                 Merges price + technicals + sentiment + emotion
 │   ├── score_news_sentiment_finbert.py   FinBERT sentiment over GDELT news
 │   ├── score_wsb_emotion.py              GoEmotions emotion over WSB posts
@@ -95,6 +101,8 @@ quantsightv2/
 │   ├── train_lstm.py                     Trains LSTM+Attention × 2 variants
 │   ├── extract_lstm_attention.py         Saves per-day attention weights (no retraining)
 │   ├── requirements.txt
+│   ├── .env                              GROQ_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, ADMIN_JOB_SECRET (gitignored)
+│   ├── .env.example                      Documents the required variables, safe to commit
 │   └── data/
 │       ├── raw/                          Original stock/news/WSB data
 │       ├── processed/                    features_finance.csv, features_sentiment.csv, ...
@@ -108,23 +116,32 @@ quantsightv2/
     ├── package.json
     ├── vite.config.js
     ├── tailwind.config.js
-    ├── .env                              VITE_API_URL=http://127.0.0.1:8000
+    ├── .env                              VITE_API_URL, VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY
     └── src/
-        ├── App.jsx                       Router — sidebar layout, 7 pages
+        ├── App.jsx                       Router — sidebar layout, 11 pages + global chat widget
         ├── components/
-        │   ├── Sidebar.jsx               Left nav
+        │   ├── Sidebar.jsx               Left nav + account section (sign in / avatar)
+        │   ├── ChatWidget.jsx            Floating AI Assistant, present on every page
         │   ├── CandlestickChart.jsx      Real OHLCV candlestick (custom Recharts shape)
         │   └── RadialProgress.jsx        SVG confidence ring
+        ├── context/
+        │   └── AuthContext.jsx           Supabase auth state — user is null in guest mode
+        ├── lib/
+        │   ├── supabaseClient.js         Shared Supabase client (auth + Postgres)
+        │   └── gameFx.js                 Game page "juice" — sound, confetti, count-up, prefs
         ├── data/
         │   └── companyNames.js           Ticker → company name reference data
         └── pages/
             ├── Dashboard.jsx             KPIs, Top Opportunities, Market Sentiment, AI Insight
             ├── Overview.jsx              Market — all 44 tickers, 4-model signals, filters
             ├── Detail.jsx                Candlestick chart, AI Copilot, 5 tabs
-            ├── Compare.jsx                4-model accuracy comparison, Confidence Boost
+            ├── Compare.jsx               4-model accuracy comparison, Confidence Boost
             ├── Leaderboard.jsx           4 models ranked by accuracy, sortable, vs. random baseline
-            ├── Portfolio.jsx             Holdings tracker (localStorage) + live prices
-            └── Game.jsx                  Prediction game — persistent score/streak/level
+            ├── TrackRecord.jsx           Live, forward-looking prediction accuracy (not backtested)
+            ├── Portfolio.jsx             Holdings tracker (Supabase if signed in, else localStorage)
+            ├── Game.jsx                  Prediction game — score/streak/level, player leaderboard
+            ├── Login.jsx                 Google OAuth + email/password, optional
+            └── Settings.jsx              Account, game prefs, accessibility, data export
 ```
 
 ---
@@ -149,11 +166,15 @@ npm install
 npm run dev
 ```
 
-Then open **http://localhost:3000**.
+Then open **http://localhost:3000**. Every core feature (predictions,
+explanations, Portfolio, Game) works immediately with zero configuration —
+sign-in, the AI Assistant, and the live prediction tracker are additive and
+degrade gracefully without their `.env` values (see
+[Deployment](#deployment) below for what each one unlocks).
 
 ---
 
-## Dashboard Pages
+## Pages
 
 | Page | URL | What it shows |
 |---|---|---|
@@ -161,9 +182,68 @@ Then open **http://localhost:3000**.
 | Market | `/market` | All 44 tickers as cards, all 4 model signals each, filters, Live Mode |
 | Detail | `/detail/:ticker` | Real OHLC candlestick chart, AI Copilot explanation, tabs: Overview / Technical (incl. LSTM attention) / Sentiment & Emotion / History / Learn |
 | AI Compare | `/compare` | Accuracy table + charts across all 4 variants, sentiment+emotion impact, Confidence Boost |
-| Leaderboard | `/leaderboard` | The 4 model variants ranked by accuracy/F1/precision/recall/AUC-ROC, sortable columns, vs. a 50% random-guess baseline |
-| Portfolio | `/portfolio` | Your tracked holdings, live prices, BUY/HOLD/SELL recommendations |
-| Game | `/game` | Guess what the model predicted on a real historical day — score/streak/level persist across visits |
+| Leaderboard | `/leaderboard` | The 4 *model* variants ranked by accuracy/F1/precision/recall/AUC-ROC, sortable columns, vs. a 50% random-guess baseline |
+| Track Record | `/track-record` | QuantSight's own live, forward-looking accuracy — predictions logged daily, checked the next trading day (see [Live Prediction Track Record](#live-prediction-track-record)) |
+| Portfolio | `/portfolio` | Your tracked holdings, live prices, BUY/HOLD/SELL recommendations — synced via Supabase if signed in, localStorage otherwise |
+| Game | `/game` | Guess what the model predicted on a real historical day — score/streak/level, sound/confetti/celebrations, a real cross-*user* leaderboard, keyboard shortcuts (B/S) |
+| Login | `/login` | Google OAuth or email/password — entirely optional, see [Accounts & Sign-In](#accounts--sign-in) |
+| Settings | `/settings` | Account (password, display name, sign out), game preferences, accessibility (reduce motion), CSV export, clear local data |
+
+An AI Assistant (floating chat button, bottom-right) is available on every
+page — see [AI Assistant](#ai-assistant) below.
+
+---
+
+## Accounts & Sign-In
+
+Signing in is entirely optional — every feature works fully in **guest
+mode** (data in `localStorage`, on this device/browser only). Signing in
+(Google or email/password, via Supabase Auth) upgrades Portfolio holdings
+and Game progress to sync across devices through Postgres instead, with Row
+Level Security scoping every row to its owner. The first time an existing
+guest-mode user signs in, if their account has no data yet, they're offered
+a one-time, non-destructive import of what's already in this browser.
+
+`backend/main.py` has zero concept of accounts — auth and per-account data
+are handled entirely by the frontend talking directly to Supabase
+(`@supabase/supabase-js`), which is the standard, simplest pattern for this
+scale and avoids adding JWT-verification middleware to the API.
+
+---
+
+## AI Assistant
+
+A floating chat widget, present on every page, backed by
+[Groq](https://console.groq.com)'s free tier (Llama 3.3 70B). It isn't a
+generic chatbot bolted on for show — it's wired via tool-calling to
+QuantSight's own real endpoints (`backend/chatbot_engine.py`), so a question
+like "why is AAPL a BUY" or "can I trust this?" gets answered from an actual
+tool call (current signal, full explanation, live price-based signal,
+backtested per-ticker accuracy, live track record, market-wide sentiment),
+never an invented number. Same no-mock-data policy as the rest of the app,
+just applied to an LLM instead of a chart.
+
+---
+
+## Live Prediction Track Record
+
+The forward-looking counterpart to the historical backtests: every trading
+day, a scheduled [GitHub Actions workflow](.github/workflows/daily-predictions.yml)
+(Render's free tier has no cron/background process of its own) triggers
+`backend/prediction_tracker.py`, which:
+
+1. Logs the live model's signal for every ticker (today's real prediction,
+   locked in before the outcome is known)
+2. Resolves any prediction logged on an earlier day by checking today's
+   price against it — the same next-day-direction labeling the models were
+   trained on
+
+Writes only ever happen through Supabase's **service role** key, which
+bypasses Row Level Security entirely — the `live_predictions` table's only
+policy is public `SELECT`. No client, including this app's own frontend,
+can insert, edit, or fake a row, which is what makes the resulting accuracy
+number mean something. See `/track-record` in the app, or ask the AI
+Assistant "do your predictions actually come true?"
 
 ---
 
@@ -175,9 +255,13 @@ either built for real or explicitly left out — never faked. Concretely:
 
 - Portfolio has no "Win Rate" stat — there's no historical-outcome ground
   truth to back it.
-- The Game page has no multi-user leaderboard — there's no user-account
-  backend, so it shows your own real result history instead of invented
-  players.
+- The Game page's leaderboard is a real cross-user table read from Supabase
+  (RLS opened to public `SELECT`, writes locked to each user's own row) —
+  not invented players, and not fakeable by any client either.
+- The Live Prediction Track Record (above) exists specifically because a
+  claimed "our model works" is worthless without a tamper-proof, ongoing
+  record proving it — predictions are locked in before outcomes are known,
+  writes are server-only.
 - The Sentiment & Emotion tab shows an honest empty state ("No WSB posts
   mentioning X on the latest prediction date") rather than a fake score, on
   any date outside Reddit's real coverage window (WSB data covers up to
@@ -259,8 +343,12 @@ they don't get lost:
 | GET | `/live/{ticker}` | Live signal for one ticker (Yahoo Finance + XGBoost) |
 | GET | `/live-overview` | Live signals for all tickers |
 | GET | `/realtime/{ticker}` | Real-time price for one ticker |
+| GET | `/accuracy-history/{ticker}` | Real backtested per-ticker accuracy track record |
 | GET | `/game/question` | Random game question |
 | POST | `/game/answer` | Submit game answer |
+| POST | `/chat` | AI Assistant — streamed reply, grounded via tool-calling |
+| GET | `/live-track-record` | Live, forward-looking prediction accuracy (public) |
+| POST | `/admin/run-daily-predictions` | Daily job — logs + resolves live predictions (GitHub Actions only, `X-Admin-Key` required) |
 
 Full interactive docs: `http://localhost:8000/docs`
 
@@ -272,15 +360,22 @@ Full interactive docs: `http://localhost:8000/docs`
 |-------|-----------|
 | Frontend | React 18, Vite, TailwindCSS, Recharts |
 | Backend | FastAPI, Uvicorn |
+| Auth + Database | Supabase (Postgres + Auth, Row Level Security) |
+| AI Assistant | Groq (Llama 3.3 70B, free tier), tool-calling |
+| Scheduling | GitHub Actions (daily live-prediction job trigger) |
 | ML Models | XGBoost, PyTorch (LSTM + Attention) |
 | Sentiment / Emotion | VADER, FinBERT, HuggingFace `transformers` (GoEmotions RoBERTa) |
 | Explainability | SHAP, native LSTM attention weights |
 | Data | pandas, numpy, scikit-learn, `datasets` (GoEmotions validation) |
 | News source | GDELT Project |
+| Live prices | yfinance (Yahoo Finance) |
 
 ---
 
 ## Deployment
+
+Everything below runs on free tiers. See **[CHECKLIST.md](CHECKLIST.md)** for
+a literal step-by-step checklist of this same setup.
 
 ### Backend → Render (free tier)
 
@@ -291,13 +386,59 @@ Full interactive docs: `http://localhost:8000/docs`
 4. Upload trained model files and data CSVs via Render's persistent disk, or
    commit them to a private repo — free tier spins down after 15 minutes
    idle, so first request may take 30–60s to wake up.
+5. Environment variables (Service → Environment):
+
+   | Key | Value | Required for |
+   |---|---|---|
+   | `GROQ_API_KEY` | free key from [console.groq.com](https://console.groq.com) | AI Assistant |
+   | `SUPABASE_URL` | your Supabase project URL | AI Assistant's track-record tool, live prediction job |
+   | `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Settings → API → service role secret (**never** the anon key) | live prediction job (bypasses RLS to write) |
+   | `ADMIN_JOB_SECRET` | any random string, e.g. `python -c "import secrets; print(secrets.token_urlsafe(32))"` | authenticates the daily GitHub Actions job |
+
+   Every one of these degrades gracefully if unset (clear error message, not
+   a crash) — the app runs fine without any of them, just without that
+   specific feature.
 
 ### Frontend → Vercel (free tier)
 
 1. Push `frontend/` to GitHub
 2. [vercel.com](https://vercel.com) → New Project → import the repo
 3. Root directory: `frontend` · Framework: Vite
-4. Environment variable: `VITE_API_URL` = your Render backend URL
+4. Environment variables (Project Settings → Environment Variables):
+
+   | Key | Value |
+   |---|---|
+   | `VITE_API_URL` | your Render backend URL |
+   | `VITE_SUPABASE_URL` | your Supabase project URL |
+   | `VITE_SUPABASE_ANON_KEY` | Supabase → Settings → API → anon/publishable key (safe client-side — RLS is what actually protects data) |
+
+### Supabase (free tier)
+
+1. [supabase.com](https://supabase.com) → New Project
+2. SQL Editor → run the schema for `portfolio_holdings`, `game_progress`
+   (+ `display_name` column and public-read policy for the leaderboard), and
+   `live_predictions` — see this repo's setup history / ask the AI Assistant's
+   author for the exact statements, they're straightforward `create table` +
+   `enable row level security` + `create policy` blocks
+3. Authentication → Sign In / Providers → enable **Google** (needs a Google
+   Cloud OAuth Client ID/Secret — Authorized redirect URI is
+   `https://<project-ref>.supabase.co/auth/v1/callback`) and **Email**
+   (on by default)
+4. Authentication → URL Configuration → add your local (`http://localhost:3000`)
+   and production (Vercel) URLs as allowed redirects
+
+### GitHub Actions (free — the live prediction scheduler)
+
+Repo → Settings → Secrets and variables → Actions → add:
+
+| Secret | Value |
+|---|---|
+| `RENDER_BACKEND_URL` | your Render backend URL |
+| `ADMIN_JOB_SECRET` | same value as the Render env var above |
+
+The workflow (`.github/workflows/daily-predictions.yml`) runs automatically
+on weekdays after US market close, and can be triggered manually anytime
+from the Actions tab → "Daily live prediction tracker" → **Run workflow**.
 
 ---
 
