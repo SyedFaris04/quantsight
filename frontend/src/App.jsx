@@ -20,6 +20,7 @@ import Game        from "./pages/Game";
 import Portfolio   from "./pages/Portfolio";
 import Login       from "./pages/Login";
 import Settings    from "./pages/Settings";
+import TrackRecord from "./pages/TrackRecord";
 import ChatWidget  from "./components/ChatWidget";
 
 export default function App() {
@@ -58,6 +59,7 @@ export default function App() {
             <Route path="/game"           element={<Game />}      />
             <Route path="/login"          element={<Login />}     />
             <Route path="/settings"       element={<Settings />}  />
+            <Route path="/track-record"   element={<TrackRecord />} />
             <Route path="*"               element={<Navigate to="/" replace />} />
           </Routes>
         </main>

@@ -24,6 +24,8 @@ ALL ENDPOINTS:
     GET  /game/question             random stock question for prediction game
     POST /game/answer               submit game answer, get result + score
     POST /chat                      AI Assistant — streamed reply, grounded via tool-calling
+    GET  /live-track-record         real, forward-looking prediction accuracy (see prediction_tracker.py)
+    POST /admin/run-daily-predictions  daily job — logs + resolves live predictions (GitHub Actions only)
 
 HOW TO RUN LOCALLY:
     pip install fastapi uvicorn pandas numpy
@@ -38,6 +40,7 @@ Restrict to your Vercel domain before final submission.
 """
 
 import json
+import os
 import random
 import time
 import numpy as np
@@ -69,6 +72,7 @@ except ImportError:
 from copilot_engine import explain, get_all_model_metrics, get_ticker_comparison, calculate_risk_level, get_latest_features, get_prediction_history, get_accuracy_track_record
 from live_signals import get_live_signal, get_live_signals_batch
 import chatbot_engine
+import prediction_tracker
 
 # ── Logging ────────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -1147,6 +1151,11 @@ def _tool_get_track_record(ticker: str):
         return {"error": f"Unknown ticker '{ticker}'. Call list_tickers for what's available."}
     return get_accuracy_track_record(ticker)
 
+def _tool_get_live_track_record():
+    summary = prediction_tracker.get_summary()
+    summary.pop("recent", None)  # keep the tool result compact — the aggregate is what matters here
+    return summary
+
 TOOL_EXECUTORS = {
     "list_tickers"            : _tool_list_tickers,
     "get_market_overview"     : _tool_get_market_overview,
@@ -1155,6 +1164,7 @@ TOOL_EXECUTORS = {
     "get_live_price_signal"   : _tool_get_live_price_signal,
     "get_market_sentiment"    : _tool_get_market_sentiment,
     "get_track_record"        : _tool_get_track_record,
+    "get_live_track_record"   : _tool_get_live_track_record,
 }
 
 # Simple in-memory rate limit — protects the shared free Groq quota from a
@@ -1195,3 +1205,35 @@ def chat(req: ChatRequest, request: Request):
             yield str(e)
 
     return StreamingResponse(generate(), media_type="text/plain")
+
+
+# ── Live prediction track record ────────────────────────────────────────────
+# See prediction_tracker.py for the full design rationale — the short
+# version: this is a forward-looking accuracy log (predict today, verify
+# tomorrow), written only by the daily job via the Supabase service role
+# key, readable by anyone. Nothing client-side can write to it, so the
+# resulting number can't be gamed.
+
+@app.get("/live-track-record")
+def live_track_record():
+    """Aggregate live accuracy + recent predictions. Public, no auth needed."""
+    return prediction_tracker.get_summary()
+
+
+@app.post("/admin/run-daily-predictions")
+def run_daily_predictions(request: Request):
+    """
+    Triggered by the scheduled GitHub Actions workflow once per trading day
+    (see .github/workflows/daily-predictions.yml) — not meant for humans or
+    the frontend to call. Requires the ADMIN_JOB_SECRET shared secret.
+    """
+    admin_secret = os.environ.get("ADMIN_JOB_SECRET")
+    if not admin_secret or request.headers.get("X-Admin-Key") != admin_secret:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    tickers = _cache.get("tickers", [])
+    try:
+        result = prediction_tracker.run_daily_job(tickers)
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+    return result

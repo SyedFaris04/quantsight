@@ -21,6 +21,7 @@ const NAV_LINKS = [
   { to: "/market",    label: "Market",     icon: "📈" },
   { to: "/compare",   label: "AI Compare", icon: "📊" },
   { to: "/leaderboard", label: "Leaderboard", icon: "🏆" },
+  { to: "/track-record", label: "Track Record", icon: "🎯" },
   { to: "/portfolio", label: "Portfolio",  icon: "💼" },
   { to: "/game",       label: "Game",       icon: "🎮" },
   { to: "/settings",   label: "Settings",   icon: "⚙️" },

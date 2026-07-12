@@ -1,0 +1,27 @@
+name: Daily live prediction tracker
+
+# Render's free tier doesn't run background/cron processes on its own —
+# this is the scheduler. It just wakes the backend up and asks it to log
+# today's predictions + resolve yesterday's, once per trading day.
+#
+# Needs two repo secrets (Settings → Secrets and variables → Actions):
+#   RENDER_BACKEND_URL  — e.g. https://your-app-name.onrender.com
+#   ADMIN_JOB_SECRET     — must match backend/.env's ADMIN_JOB_SECRET
+#                          (and Render's env var of the same name)
+
+on:
+  schedule:
+    # 22:00 UTC, Mon–Fri — after US market close (4pm ET) year-round,
+    # including during EDT (UTC-4) with margin to spare.
+    - cron: '0 22 * * 1-5'
+  workflow_dispatch: {}  # manual "Run workflow" button, for testing
+
+jobs:
+  run-daily-predictions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger backend prediction job
+        run: |
+          curl -sf -X POST "${{ secrets.RENDER_BACKEND_URL }}/admin/run-daily-predictions" \
+            -H "X-Admin-Key: ${{ secrets.ADMIN_JOB_SECRET }}" \
+            --max-time 300

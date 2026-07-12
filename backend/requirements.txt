@@ -43,3 +43,6 @@ python-dotenv
 
 # AI Assistant — Groq (free tier, Llama 3.3 70B) chat completions
 groq
+
+# Live prediction track record — writes via the Supabase service role key
+supabase
