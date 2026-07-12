@@ -91,14 +91,21 @@ app = FastAPI(
     version     = "1.0.0",
 )
 
-# CORS — allow React frontend to call this API
-# Update the origins list to your Vercel URL before final submission
+# CORS — allow the deployed frontend (+ local dev) to call this API.
+# allow_origin_regex covers Vercel's per-deployment preview URLs
+# (quantsight-<hash>-syedfaris04s-projects.vercel.app) alongside the stable
+# production domain, so preview deploys keep working without another edit.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins     = ["*"],   # replace with ["https://nuroquant.vercel.app"] for production
-    allow_credentials = True,
-    allow_methods     = ["*"],
-    allow_headers     = ["*"],
+    allow_origins      = [
+        "https://quantsight.vercel.app",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
+    allow_origin_regex = r"https://quantsight-.*\.vercel\.app",
+    allow_credentials  = True,
+    allow_methods      = ["*"],
+    allow_headers      = ["*"],
 )
 
 # ── In-memory cache — loaded once at startup ───────────────────────────────────
