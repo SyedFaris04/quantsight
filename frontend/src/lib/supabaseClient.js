@@ -1,8 +1,8 @@
 /**
  * frontend/src/lib/supabaseClient.js
  * ─────────────────────────────────────────────────────────────────
- * Single shared Supabase client — handles both Auth (Google/GitHub/
- * email login) and direct Postgres reads/writes for portfolio_holdings
+ * Single shared Supabase client — handles both Auth (email login) and
+ * direct Postgres reads/writes for portfolio_holdings
  * and game_progress. Row Level Security on those tables (see the SQL
  * in the plan) means every query here is automatically scoped to
  * whoever is signed in — no manual user_id filtering needed client-side.

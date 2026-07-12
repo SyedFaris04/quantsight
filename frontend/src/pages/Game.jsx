@@ -38,7 +38,7 @@ import { useApi, postApi } from "../hooks/useApi";
 import { companyName } from "../data/companyNames";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabaseClient";
-import { useCountUp, playTone, burstConfetti, isSoundOn, setSoundOn } from "../lib/gameFx";
+import { useCountUp, playTone, burstConfetti, isSoundOn, setSoundOn, getDefaultDifficulty, getDefaultModel } from "../lib/gameFx";
 
 // ── Persistence — mirrors Portfolio.jsx's localStorage pattern, so
 // "Your Progress" is genuinely cumulative across visits instead of
@@ -317,9 +317,10 @@ export default function Game() {
     burstConfetti({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, colors });
   }
 
-  // ── Settings ────────────────────────────────────────────────────
-  const [difficulty, setDifficulty]   = useState("medium");
-  const [modelKey,   setModelKey]     = useState("xgb_sentiment");
+  // ── Settings — initialized from the player's saved defaults
+  // (Settings page), so this doesn't reset to "medium" every visit. ──
+  const [difficulty, setDifficulty]   = useState(getDefaultDifficulty);
+  const [modelKey,   setModelKey]     = useState(getDefaultModel);
   const [gameStarted, setGameStarted] = useState(false);
 
   // ── Game state ──────────────────────────────────────────────────

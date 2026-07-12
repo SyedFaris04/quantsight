@@ -9,9 +9,45 @@
 
 import { useEffect, useRef, useState } from "react";
 
+const REDUCE_MOTION_KEY = "quantsight_reduce_motion";
+
+// OS preference always wins if it says "reduce" — this only ever adds
+// more reduction on top, via an explicit in-app toggle (Settings page),
+// never overrides an OS "reduce" preference back to "allow".
 export function prefersReducedMotion() {
-  return typeof window !== "undefined" &&
+  const osPref = typeof window !== "undefined" &&
     window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  return !!osPref || localStorage.getItem(REDUCE_MOTION_KEY) === "1";
+}
+
+export function isReduceMotionOverride() {
+  return localStorage.getItem(REDUCE_MOTION_KEY) === "1";
+}
+
+export function setReduceMotionOverride(on) {
+  localStorage.setItem(REDUCE_MOTION_KEY, on ? "1" : "0");
+}
+
+// ── Game defaults — difficulty/model the player last chose, so the
+// setup screen remembers their preference instead of resetting to
+// "medium" / "XGBoost +Sentiment" every visit. ──
+const DEFAULT_DIFFICULTY_KEY = "quantsight_game_default_difficulty";
+const DEFAULT_MODEL_KEY = "quantsight_game_default_model";
+
+export function getDefaultDifficulty() {
+  return localStorage.getItem(DEFAULT_DIFFICULTY_KEY) || "medium";
+}
+
+export function setDefaultDifficulty(key) {
+  localStorage.setItem(DEFAULT_DIFFICULTY_KEY, key);
+}
+
+export function getDefaultModel() {
+  return localStorage.getItem(DEFAULT_MODEL_KEY) || "xgb_sentiment";
+}
+
+export function setDefaultModel(key) {
+  localStorage.setItem(DEFAULT_MODEL_KEY, key);
 }
 
 // ── Sound — synthesized tones, no audio files. Muted state persists. ──

@@ -1,10 +1,7 @@
 /**
  * frontend/src/pages/Login.jsx
  * ─────────────────────────────────────────────────────────────────
- * Single page for both sign-in and sign-up. Google/GitHub are the same
- * call either way in Supabase — a new Google/GitHub account is created
- * automatically on first use. Only email/password needs an explicit
- * sign-in-vs-create-account toggle.
+ * Single page for both sign-in and sign-up via email/password.
  *
  * Signing in is entirely optional — every feature works in guest mode
  * (localStorage) without an account. Logging in only upgrades Portfolio
@@ -17,7 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
-  const { user, signInWithGoogle, signInWithGithub, signInWithEmail, signUpWithEmail } = useAuth();
+  const { user, signInWithEmail, signUpWithEmail } = useAuth();
   const navigate = useNavigate();
 
   const [mode, setMode] = useState("signin"); // "signin" | "signup"
@@ -32,14 +29,6 @@ export default function Login() {
   }, [user, navigate]);
 
   if (user) return null;
-
-  async function handleOAuth(fn) {
-    setError("");
-    setBusy(true);
-    const { error } = await fn();
-    if (error) setError(error.message);
-    setBusy(false);
-  }
 
   async function handleEmailSubmit(e) {
     e.preventDefault();
@@ -76,29 +65,6 @@ export default function Login() {
             Optional — sync your Portfolio and Game progress across devices.
             Everything still works without an account.
           </p>
-        </div>
-
-        <div className="space-y-2.5">
-          <button
-            onClick={() => handleOAuth(signInWithGoogle)}
-            disabled={busy}
-            className="w-full btn-secondary flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            Continue with Google
-          </button>
-          <button
-            onClick={() => handleOAuth(signInWithGithub)}
-            disabled={busy}
-            className="w-full btn-secondary flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            Continue with GitHub
-          </button>
-        </div>
-
-        <div className="flex items-center gap-3 my-5">
-          <div className="flex-1 h-px bg-gray-800" />
-          <span className="text-xs text-gray-600">or</span>
-          <div className="flex-1 h-px bg-gray-800" />
         </div>
 
         <form onSubmit={handleEmailSubmit} className="space-y-3">

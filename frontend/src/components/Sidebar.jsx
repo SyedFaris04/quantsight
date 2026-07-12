@@ -1,7 +1,7 @@
 /**
  * frontend/src/components/Sidebar.jsx
- * Left sidebar navigation. No Settings/Help links since neither has any
- * real content behind it.
+ * Left sidebar navigation. No Help link since it has no real content
+ * behind it — Settings does (see pages/Settings.jsx) and is included.
  *
  * Responsive: below the `lg` breakpoint this is a fixed off-canvas drawer,
  * toggled by App.jsx's mobile header hamburger button (isOpen/onClose) and
@@ -23,6 +23,7 @@ const NAV_LINKS = [
   { to: "/leaderboard", label: "Leaderboard", icon: "🏆" },
   { to: "/portfolio", label: "Portfolio",  icon: "💼" },
   { to: "/game",       label: "Game",       icon: "🎮" },
+  { to: "/settings",   label: "Settings",   icon: "⚙️" },
 ];
 
 function AccountSection() {

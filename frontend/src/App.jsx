@@ -19,6 +19,7 @@ import Leaderboard from "./pages/Leaderboard";
 import Game        from "./pages/Game";
 import Portfolio   from "./pages/Portfolio";
 import Login       from "./pages/Login";
+import Settings    from "./pages/Settings";
 
 export default function App() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -55,6 +56,7 @@ export default function App() {
             <Route path="/portfolio"      element={<Portfolio />} />
             <Route path="/game"           element={<Game />}      />
             <Route path="/login"          element={<Login />}     />
+            <Route path="/settings"       element={<Settings />}  />
             <Route path="*"               element={<Navigate to="/" replace />} />
           </Routes>
         </main>
