@@ -45,7 +45,7 @@ import logging
 
 from cv_utils import (
     pick_best_calibration, apply_calibrator,
-    make_purged_folds, summarize_cv_metrics,
+    make_purged_folds, summarize_cv_metrics, purge_train_test_boundary,
 )
 
 # ── Logging ────────────────────────────────────────────────────────────────────
@@ -67,6 +67,35 @@ METRICS_FILE    = PREDICTIONS_DIR / "model_metrics.json"
 
 # Columns that are NOT features — always exclude these
 NON_FEATURE_COLS = {"ticker", "date", "signal", "Date", "Ticker"}
+
+# Raw dollar-value indicators — kept in the CSV because copilot_engine.py
+# formats them directly into explanation text, but excluded from training
+# in favour of their *_norm (ratio-to-Close) counterparts from
+# build_features.py's add_normalized_indicators(), so a $700 stock and a
+# $20 stock don't share one StandardScaler's notion of "far from trend".
+# Open/High/Low/Close/Volume share the exact same cross-ticker scale
+# problem (a $700 stock's Close and a $20 stock's Close aren't comparable
+# through one pooled scaler either) but were never added here — MDA
+# permutation-importance analysis confirmed all 5 have negative MDA-AUC in
+# both trained models, consistent with this same confound.
+RAW_PRICE_LEVEL_COLS = {
+    "sma_5", "sma_10", "sma_20", "sma_50", "ema_12", "ema_26",
+    "bb_upper", "bb_mid", "bb_lower",
+    "macd", "macd_signal", "macd_hist",
+    "Open", "High", "Low", "Close", "Volume",
+}
+
+# spy_return_5 is SPY's own return_5 broadcast identically onto every
+# ticker for a given date (build_features.py's add_cross_sectional_features)
+# — a near-constant, low-cardinality column across the cross-section, and
+# perfectly collinear by construction with two other trained features
+# (return_5 == return5_rel_spy + spy_return_5). MDA analysis found it the
+# single most harmful feature in both models (MDA-AUC -0.797 / -1.007 —
+# shuffling it *improved* held-out AUC). Kept in the CSV since
+# return5_rel_spy is derived from it, just excluded from training.
+NON_TRAINED_DERIVED_COLS = {"spy_return_5"}
+
+NON_FEATURE_COLS = NON_FEATURE_COLS | RAW_PRICE_LEVEL_COLS | NON_TRAINED_DERIVED_COLS
 
 # ── XGBoost Hyperparameters ────────────────────────────────────────────────────
 # Same for both variants — fair comparison
@@ -91,7 +120,10 @@ XGB_PARAMS = {
 def load_and_split(csv_path: Path):
     """
     Load a feature CSV and split into train/test using time-based split.
-    We use the last 20% of dates as the test set — no data leakage.
+    We use the last 20% of dates as the test set, with a trading-day
+    embargo purging any training row whose forward-return label could
+    reach into the test period (see cv_utils.purge_train_test_boundary) —
+    no data leakage.
 
     Returns:
         X_train, X_test, y_train, y_test, feature_cols, full_df
@@ -107,9 +139,10 @@ def load_and_split(csv_path: Path):
     logger.info(f"  Rows    : {len(df):,}")
     logger.info(f"  Tickers : {df['ticker'].nunique()}")
 
-    # Time-based train/test split (80/20)
-    split_date = df["date"].quantile(0.80)
-    train_df = df[df["date"] <= split_date]
+    # Time-based train/test split (80/20), embargoed at the boundary
+    split_date   = df["date"].quantile(0.80)
+    train_cutoff = purge_train_test_boundary(df["date"], split_date)
+    train_df = df[df["date"] <= train_cutoff]
     test_df  = df[df["date"] >  split_date]
 
     logger.info(
@@ -200,7 +233,7 @@ def run_purged_cv(train_df: pd.DataFrame, feature_cols: list, n_folds: int = 5) 
     by training the final model on less data; this reuses the same CV folds
     already being computed for the robustness check instead).
     """
-    folds = make_purged_folds(train_df["date"], n_folds=n_folds, embargo_days=5)
+    folds = make_purged_folds(train_df["date"], n_folds=n_folds)
     fold_metrics = []
     oof_probs, oof_labels = [], []
 

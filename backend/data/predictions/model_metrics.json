@@ -2,347 +2,347 @@
   "XGBoost_Finance Only": {
     "model": "XGBoost",
     "variant": "Finance Only",
-    "accuracy": 51.66,
-    "f1": 61.57,
-    "precision": 54.12,
-    "recall": 71.4,
-    "auc_roc": 50.24,
+    "accuracy": 52.86,
+    "f1": 64.45,
+    "precision": 54.49,
+    "recall": 78.86,
+    "auc_roc": 51.45,
     "calibration_method": "isotonic",
     "cv_robustness": {
       "accuracy": {
-        "mean": 52.13,
-        "std": 1.88
+        "mean": 52.58,
+        "std": 1.77
       },
       "f1": {
-        "mean": 60.66,
-        "std": 7.3
+        "mean": 62.91,
+        "std": 4.02
       },
       "auc_roc": {
-        "mean": 51.12,
-        "std": 1.25
+        "mean": 51.05,
+        "std": 1.2
       }
     },
     "calibration_check": {
-      "raw_confidence_vs_correctness_corr": 0.028,
-      "calibrated_confidence_vs_correctness_corr": 0.079
+      "raw_confidence_vs_correctness_corr": 0.043,
+      "calibrated_confidence_vs_correctness_corr": 0.065
     }
   },
   "XGBoost_Finance + Sentiment": {
     "model": "XGBoost",
     "variant": "Finance + Sentiment",
-    "accuracy": 51.63,
-    "f1": 61.55,
-    "precision": 54.1,
-    "recall": 71.38,
-    "auc_roc": 50.31,
+    "accuracy": 52.76,
+    "f1": 64.39,
+    "precision": 54.43,
+    "recall": 78.83,
+    "auc_roc": 51.45,
     "calibration_method": "isotonic",
     "cv_robustness": {
       "accuracy": {
-        "mean": 52.3,
-        "std": 1.85
+        "mean": 52.87,
+        "std": 1.83
       },
       "f1": {
-        "mean": 60.98,
-        "std": 7.05
+        "mean": 63.37,
+        "std": 3.71
       },
       "auc_roc": {
-        "mean": 51.36,
-        "std": 1.12
+        "mean": 51.03,
+        "std": 1.27
       }
     },
     "calibration_check": {
-      "raw_confidence_vs_correctness_corr": 0.032,
-      "calibrated_confidence_vs_correctness_corr": 0.081
+      "raw_confidence_vs_correctness_corr": 0.047,
+      "calibrated_confidence_vs_correctness_corr": 0.066
     }
   },
   "LSTM+Transformer_Finance Only": {
     "model": "LSTM+Transformer",
     "variant": "Finance Only",
-    "accuracy": 51.56,
-    "f1": 51.25,
-    "precision": 56.36,
-    "recall": 47.0,
-    "auc_roc": 53.09,
+    "accuracy": 53.75,
+    "f1": 54.9,
+    "precision": 58.84,
+    "recall": 51.46,
+    "auc_roc": 55.06,
     "calibration_method": "isotonic",
     "cv_robustness": {
       "accuracy": {
-        "mean": 50.27,
-        "std": 1.09
+        "mean": 51.68,
+        "std": 1.93
       },
       "f1": {
-        "mean": 54.41,
-        "std": 2.13
+        "mean": 58.65,
+        "std": 2.45
       },
       "auc_roc": {
-        "mean": 49.6,
-        "std": 1.1
+        "mean": 50.63,
+        "std": 1.97
       }
     },
     "calibration_check": {
-      "raw_confidence_vs_correctness_corr": 0.038,
-      "calibrated_confidence_vs_correctness_corr": -0.035
+      "raw_confidence_vs_correctness_corr": 0.027,
+      "calibrated_confidence_vs_correctness_corr": -0.071
     }
   },
   "LSTM+Transformer_Finance + Sentiment": {
     "model": "LSTM+Transformer",
     "variant": "Finance + Sentiment",
-    "accuracy": 53.02,
-    "f1": 54.27,
-    "precision": 57.42,
-    "recall": 51.45,
-    "auc_roc": 54.01,
+    "accuracy": 54.25,
+    "f1": 60.17,
+    "precision": 57.45,
+    "recall": 63.15,
+    "auc_roc": 54.91,
     "calibration_method": "isotonic",
     "cv_robustness": {
       "accuracy": {
-        "mean": 50.04,
-        "std": 1.09
+        "mean": 48.55,
+        "std": 1.62
       },
       "f1": {
-        "mean": 51.13,
-        "std": 5.32
+        "mean": 48.26,
+        "std": 6.43
       },
       "auc_roc": {
-        "mean": 50.5,
-        "std": 0.6
+        "mean": 49.27,
+        "std": 0.32
       }
     },
     "calibration_check": {
-      "raw_confidence_vs_correctness_corr": 0.037,
-      "calibrated_confidence_vs_correctness_corr": -0.047
+      "raw_confidence_vs_correctness_corr": 0.069,
+      "calibrated_confidence_vs_correctness_corr": -0.058
     }
   },
   "Ensemble_All4Variants": {
     "model": "Ensemble",
     "variant": "All 4 Variants (avg. calibrated probability)",
-    "accuracy": 54.18,
-    "f1": 67.81,
-    "precision": 54.75,
-    "recall": 89.05,
-    "auc_roc": 53.46,
-    "n_rows": 20768
+    "accuracy": 54.52,
+    "f1": 69.98,
+    "precision": 54.77,
+    "recall": 96.87,
+    "auc_roc": 52.77,
+    "n_rows": 20372
   },
   "RandomForest_Finance Only": {
     "model": "RandomForest",
     "variant": "Finance Only",
-    "accuracy": 50.9,
-    "f1": 54.63,
-    "precision": 54.76,
-    "recall": 54.51,
-    "auc_roc": 50.59,
+    "accuracy": 51.11,
+    "f1": 48.82,
+    "precision": 56.4,
+    "recall": 43.03,
+    "auc_roc": 52.09,
     "calibration_method": "isotonic",
     "cv_robustness": {
       "accuracy": {
-        "mean": 50.56,
-        "std": 1.6
+        "mean": 50.41,
+        "std": 1.37
       },
       "f1": {
-        "mean": 53.35,
-        "std": 8.15
+        "mean": 54.03,
+        "std": 5.56
       },
       "auc_roc": {
-        "mean": 51.09,
-        "std": 1.05
+        "mean": 50.78,
+        "std": 0.58
       }
     },
     "calibration_check": {
-      "raw_confidence_vs_correctness_corr": -0.042,
-      "calibrated_confidence_vs_correctness_corr": 0.083
+      "raw_confidence_vs_correctness_corr": 0.002,
+      "calibrated_confidence_vs_correctness_corr": 0.089
     }
   },
   "RandomForest_Finance + Sentiment": {
     "model": "RandomForest",
     "variant": "Finance + Sentiment",
-    "accuracy": 50.08,
-    "f1": 52.67,
-    "precision": 54.21,
-    "recall": 51.21,
-    "auc_roc": 50.2,
+    "accuracy": 50.71,
+    "f1": 47.28,
+    "precision": 56.24,
+    "recall": 40.78,
+    "auc_roc": 52.16,
     "calibration_method": "isotonic",
     "cv_robustness": {
       "accuracy": {
-        "mean": 50.58,
-        "std": 1.56
+        "mean": 50.43,
+        "std": 1.19
       },
       "f1": {
-        "mean": 53.36,
-        "std": 8.08
+        "mean": 54.15,
+        "std": 5.36
       },
       "auc_roc": {
-        "mean": 51.07,
-        "std": 1.05
+        "mean": 50.71,
+        "std": 0.53
       }
     },
     "calibration_check": {
-      "raw_confidence_vs_correctness_corr": -0.035,
-      "calibrated_confidence_vs_correctness_corr": 0.084
+      "raw_confidence_vs_correctness_corr": 0.007,
+      "calibrated_confidence_vs_correctness_corr": 0.089
     }
   },
   "LogisticRegression_Finance Only": {
     "model": "LogisticRegression",
     "variant": "Finance Only",
-    "accuracy": 51.22,
-    "f1": 50.47,
-    "precision": 56.17,
-    "recall": 45.81,
-    "auc_roc": 52.61,
+    "accuracy": 50.88,
+    "f1": 50.15,
+    "precision": 55.72,
+    "recall": 45.58,
+    "auc_roc": 51.61,
     "calibration_method": "isotonic",
     "cv_robustness": {
       "accuracy": {
-        "mean": 50.93,
-        "std": 1.54
+        "mean": 50.65,
+        "std": 1.33
       },
       "f1": {
-        "mean": 52.33,
-        "std": 9.29
+        "mean": 54.06,
+        "std": 5.19
       },
       "auc_roc": {
-        "mean": 52.22,
-        "std": 1.74
+        "mean": 51.28,
+        "std": 2.07
       }
     },
     "calibration_check": {
-      "raw_confidence_vs_correctness_corr": 0.015,
-      "calibrated_confidence_vs_correctness_corr": 0.091
+      "raw_confidence_vs_correctness_corr": -0.005,
+      "calibrated_confidence_vs_correctness_corr": 0.086
     }
   },
   "LogisticRegression_Finance + Sentiment": {
     "model": "LogisticRegression",
     "variant": "Finance + Sentiment",
-    "accuracy": 51.28,
-    "f1": 50.16,
-    "precision": 56.34,
-    "recall": 45.2,
-    "auc_roc": 52.47,
+    "accuracy": 50.84,
+    "f1": 49.86,
+    "precision": 55.73,
+    "recall": 45.11,
+    "auc_roc": 51.6,
     "calibration_method": "isotonic",
     "cv_robustness": {
       "accuracy": {
-        "mean": 50.93,
-        "std": 1.46
+        "mean": 50.61,
+        "std": 1.31
       },
       "f1": {
-        "mean": 52.53,
-        "std": 8.95
+        "mean": 54.09,
+        "std": 4.96
       },
       "auc_roc": {
-        "mean": 52.19,
-        "std": 1.78
+        "mean": 51.28,
+        "std": 2.06
       }
     },
     "calibration_check": {
-      "raw_confidence_vs_correctness_corr": 0.006,
-      "calibrated_confidence_vs_correctness_corr": 0.091
+      "raw_confidence_vs_correctness_corr": -0.007,
+      "calibrated_confidence_vs_correctness_corr": 0.086
     }
   },
   "GRU_Finance Only": {
     "model": "GRU",
     "variant": "Finance Only",
-    "accuracy": 53.87,
-    "f1": 61.26,
-    "precision": 56.21,
-    "recall": 67.32,
-    "auc_roc": 54.71,
+    "accuracy": 54.56,
+    "f1": 64.41,
+    "precision": 56.35,
+    "recall": 75.17,
+    "auc_roc": 55.78,
     "calibration_method": "isotonic",
     "cv_robustness": {
       "accuracy": {
-        "mean": 50.37,
-        "std": 0.06
+        "mean": 50.77,
+        "std": 0.86
       },
       "f1": {
-        "mean": 54.21,
-        "std": 1.3
+        "mean": 55.42,
+        "std": 0.56
       },
       "auc_roc": {
-        "mean": 50.4,
-        "std": 0.95
+        "mean": 50.71,
+        "std": 1.43
       }
     },
     "calibration_check": {
-      "raw_confidence_vs_correctness_corr": 0.08,
-      "calibrated_confidence_vs_correctness_corr": -0.006
+      "raw_confidence_vs_correctness_corr": 0.093,
+      "calibrated_confidence_vs_correctness_corr": -0.007
     }
   },
   "GRU_Finance + Sentiment": {
     "model": "GRU",
     "variant": "Finance + Sentiment",
-    "accuracy": 52.49,
-    "f1": 56.52,
-    "precision": 56.07,
-    "recall": 56.98,
-    "auc_roc": 52.66,
+    "accuracy": 53.56,
+    "f1": 58.94,
+    "precision": 57.09,
+    "recall": 60.93,
+    "auc_roc": 54.71,
     "calibration_method": "isotonic",
     "cv_robustness": {
       "accuracy": {
-        "mean": 49.96,
-        "std": 0.61
+        "mean": 50.44,
+        "std": 0.58
       },
       "f1": {
-        "mean": 53.23,
-        "std": 1.66
+        "mean": 57.05,
+        "std": 2.44
       },
       "auc_roc": {
-        "mean": 50.08,
-        "std": 1.71
+        "mean": 49.45,
+        "std": 1.48
       }
     },
     "calibration_check": {
-      "raw_confidence_vs_correctness_corr": 0.025,
-      "calibrated_confidence_vs_correctness_corr": -0.005
+      "raw_confidence_vs_correctness_corr": 0.077,
+      "calibrated_confidence_vs_correctness_corr": -0.038
     }
   },
   "TransformerEncoder_Finance Only": {
     "model": "TransformerEncoder",
     "variant": "Finance Only",
-    "accuracy": 53.3,
-    "f1": 57.02,
-    "precision": 56.88,
-    "recall": 57.17,
-    "auc_roc": 54.06,
+    "accuracy": 52.44,
+    "f1": 47.03,
+    "precision": 60.21,
+    "recall": 38.58,
+    "auc_roc": 54.16,
     "calibration_method": "isotonic",
     "cv_robustness": {
       "accuracy": {
-        "mean": 50.23,
-        "std": 1.38
+        "mean": 51.18,
+        "std": 1.42
       },
       "f1": {
-        "mean": 54.92,
-        "std": 3.4
+        "mean": 58.13,
+        "std": 3.52
       },
       "auc_roc": {
-        "mean": 50.31,
-        "std": 1.84
+        "mean": 50.0,
+        "std": 1.55
       }
     },
     "calibration_check": {
-      "raw_confidence_vs_correctness_corr": 0.068,
-      "calibrated_confidence_vs_correctness_corr": -0.021
+      "raw_confidence_vs_correctness_corr": -0.007,
+      "calibrated_confidence_vs_correctness_corr": -0.071
     }
   },
   "TransformerEncoder_Finance + Sentiment": {
     "model": "TransformerEncoder",
     "variant": "Finance + Sentiment",
-    "accuracy": 53.34,
-    "f1": 54.04,
-    "precision": 57.95,
-    "recall": 50.63,
-    "auc_roc": 54.75,
+    "accuracy": 53.38,
+    "f1": 56.76,
+    "precision": 57.61,
+    "recall": 55.94,
+    "auc_roc": 54.38,
     "calibration_method": "isotonic",
     "cv_robustness": {
       "accuracy": {
-        "mean": 52.16,
-        "std": 1.6
+        "mean": 50.57,
+        "std": 1.19
       },
       "f1": {
-        "mean": 56.07,
-        "std": 8.82
+        "mean": 52.29,
+        "std": 6.27
       },
       "auc_roc": {
-        "mean": 51.05,
-        "std": 0.4
+        "mean": 50.26,
+        "std": 1.22
       }
     },
     "calibration_check": {
-      "raw_confidence_vs_correctness_corr": 0.02,
-      "calibrated_confidence_vs_correctness_corr": -0.007
+      "raw_confidence_vs_correctness_corr": 0.026,
+      "calibrated_confidence_vs_correctness_corr": -0.06
     }
   }
 }

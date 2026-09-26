@@ -1,0 +1,41 @@
+{
+  "checked_at": "2026-09-26T23:21:14.558993+00:00",
+  "mode": "read_only",
+  "backend_url": "https://quantsight-rikc.onrender.com",
+  "checks": [
+    {
+      "check": "local_frontend_backend_database_match",
+      "passed": true
+    },
+    {
+      "check": "database_v2_service_role_read",
+      "passed": true,
+      "http_status": 200
+    },
+    {
+      "check": "database_v2_public_anon_read",
+      "passed": true,
+      "http_status": 200
+    },
+    {
+      "check": "backend_health",
+      "http_status": 200,
+      "passed": true
+    },
+    {
+      "check": "published_backtest",
+      "http_status": 404,
+      "error_code": null,
+      "passed": false
+    },
+    {
+      "check": "five_session_tracker",
+      "http_status": 200,
+      "protocol_version": null,
+      "horizon_sessions": null,
+      "passed": false
+    }
+  ],
+  "all_requested_checks_passed": false,
+  "limitations": "Reads do not verify hosted write permissions, triggers, scheduler secrets or future outcome resolution."
+}

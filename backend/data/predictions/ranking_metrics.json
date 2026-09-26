@@ -1,0 +1,22 @@
+{
+  "xgb_finance": {
+    "n_dates": 473,
+    "ic_mean": -0.0079,
+    "rank_ic_mean": -0.0082,
+    "rank_ic_std": 0.1767,
+    "icir": -0.046,
+    "rank_ic_positive_pct": 46.5,
+    "longshort_spread_mean_5d": -0.121,
+    "longshort_spread_sharpe_annae": -0.923
+  },
+  "xgb_sentiment": {
+    "n_dates": 473,
+    "ic_mean": -0.0011,
+    "rank_ic_mean": 0.0006,
+    "rank_ic_std": 0.1824,
+    "icir": 0.003,
+    "rank_ic_positive_pct": 49.5,
+    "longshort_spread_mean_5d": 0.0131,
+    "longshort_spread_sharpe_annae": 0.097
+  }
+}

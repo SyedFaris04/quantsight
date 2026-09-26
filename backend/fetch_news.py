@@ -19,7 +19,9 @@ OUTPUT:
 import time
 import pandas as pd
 from pathlib import Path
+from datetime import datetime, timedelta, timezone
 from gdeltdoc import GdeltDoc, Filters
+from market_calendar import news_session
 import logging
 
 # ── Logging ────────────────────────────────────────────────────────────────────
@@ -37,71 +39,83 @@ OUTPUT_FOLDER = BASE_DIR / "data" / "raw" / "news"
 # GDELT's DOC 2.0 API (this library) only searches a rolling recent window —
 # it is NOT a full historical archive (that requires BigQuery/bulk GKG files,
 # a separate integration). Finnhub's free tier has the same ~1-year cap.
-# This means GDELT/Finnhub news sentiment is only ever available for the
-# LIVE/current-day signal module (main.py's live_signals.py), never for
-# historical model training — the historical 2015-2024 training set's
-# sentiment signal comes from WSB (data/processed/wsb_sentiment.csv), which
-# genuinely has that depth. See build_features.py for how the two are merged;
-# gdelt_* columns are correctly all-zero for historical (pre-2026) rows.
-START_DATE = "2026-01-22"
-END_DATE   = "2026-04-22"
+# The existing news snapshot is from 2026; training prices end in 2024.
+# WSB ends in August 2021, leaving the 2023-2024 test period without text.
+# The current live XGBoost model uses FINANCE features only. News feeds on
+# the dashboard are not evidence of news features entering that model.
+# See docs/DATA_AND_LIVE_EVALUATION.md before designing sentiment experiments.
+#
+# A prior version hardcoded a fixed 2026-01-22..2026-04-22 window instead of
+# computing it relative to "today" — combined with the unconditional
+# skip-if-file-exists caching below, that meant a ticker's news, once
+# fetched, silently never refreshed again, contradicting the "real-time"
+# framing used elsewhere (main.py's /market-sentiment, /market-news).
+ROLLING_WINDOW_DAYS = 90
+END_DATE   = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+START_DATE = (datetime.now(timezone.utc) - timedelta(days=ROLLING_WINDOW_DAYS)).strftime("%Y-%m-%d")
+
+# Re-fetch a ticker once its cached parquet is older than this, instead of
+# caching forever — keeps "live" news actually live without re-fetching all
+# 44 tickers (GDELT rate limits) on every single run.
+CACHE_MAX_AGE_HOURS = 20
 
 MAX_RECORDS = 250  # max articles per ticker per fetch (GDELT cap is 250)
 
 # ── Ticker → Company Name Mapping ─────────────────────────────────────────────
-# Use descriptive company names (not just tickers) for better GDELT search results
-# Longer/more unique names = fewer false positives
+# The production 44-ticker universe (backend/data/processed/features_finance.csv
+# — the same set frontend/src/data/companyNames.js documents). A prior version
+# of this dict was a stale ~49-ticker list from before the universe was
+# expanded/changed (notebooks/14_expand_stocks.py) — only 23 tickers
+# overlapped, so GDELT news was silently never fetched for the other 21
+# production tickers (including SPY, NFLX, TSLA's overlap was fine but e.g.
+# GOOGL/GOOG duplication and 26 non-production tickers like PG/V/GE wasted
+# fetch effort). Use descriptive keywords (not bare tickers) for better GDELT
+# search precision — longer/more unique names = fewer false positives.
 TICKER_TO_NAME = {
     "AAPL":  "Apple",
-    "MSFT":  "Microsoft",
-    "NVDA":  "Nvidia",
-    "AMZN":  "Amazon",
-    "META":  "Meta Platforms Facebook",
-    "GOOGL": "Google Alphabet",
-    "GOOG":  "Google Alphabet",
-    "TSLA":  "Tesla",
-    "BRK-B": "Berkshire Hathaway",
-    "UNH":   "UnitedHealth",
-    "LLY":   "Eli Lilly",
-    "JPM":   "JPMorgan",
-    "V":     "Visa payment card",
-    "XOM":   "ExxonMobil",
-    "MA":    "Mastercard credit card",
-    "AVGO":  "Broadcom",
-    "PG":    "Procter Gamble",
-    "HD":    "Home Depot",
-    "COST":  "Costco",
-    "MRK":   "Merck pharmaceutical",
     "ABBV":  "AbbVie",
-    "CVX":   "Chevron",
     "ADBE":  "Adobe",
-    "CRM":   "Salesforce",
-    "PEP":   "PepsiCo",
-    "KO":    "Coca-Cola",
-    "WMT":   "Walmart",
-    "MCD":   "McDonalds restaurant",
-    "BAC":   "Bank of America",
-    "TMO":   "Thermo Fisher Scientific",
-    "CSCO":  "Cisco",
-    "ACN":   "Accenture",
-    "ABT":   "Abbott Laboratories",
-    "LIN":   "Linde industrial gas",
-    "DHR":   "Danaher",
-    "NEE":   "NextEra Energy",
-    "TXN":   "Texas Instruments",
-    "NKE":   "Nike",
-    "PM":    "Philip Morris tobacco",
-    "ORCL":  "Oracle",
-    "RTX":   "Raytheon",
-    "MS":    "Morgan Stanley bank",
-    "QCOM":  "Qualcomm",
-    "HON":   "Honeywell",
-    "UPS":   "United Parcel Service",
-    "AMGN":  "Amgen",
-    "INTC":  "Intel",
-    "IBM":   "IBM corporation",
     "AMD":   "AMD semiconductor",
-    "GE":    "General Electric",
+    "AMZN":  "Amazon",
+    "BAC":   "Bank of America",
+    "C":     "Citigroup",
+    "COP":   "ConocoPhillips",
+    "COST":  "Costco",
+    "CRM":   "Salesforce",
+    "CVS":   "CVS Health",
+    "CVX":   "Chevron",
+    "DIA":   "Dow Jones Industrial Average",
+    "GLD":   "gold price bullion",
+    "GOOGL": "Google Alphabet",
+    "GS":    "Goldman Sachs",
+    "INTC":  "Intel",
+    "IWM":   "Russell 2000 small cap",
+    "JNJ":   "Johnson Johnson pharmaceutical",
+    "JPM":   "JPMorgan",
+    "MCD":   "McDonalds restaurant",
+    "META":  "Meta Platforms Facebook",
+    "MRNA":  "Moderna",
+    "MS":    "Morgan Stanley bank",
+    "MSFT":  "Microsoft",
+    "NFLX":  "Netflix",
+    "NKE":   "Nike",
+    "NVDA":  "Nvidia",
+    "ORCL":  "Oracle",
+    "OXY":   "Occidental Petroleum",
+    "PFE":   "Pfizer",
+    "PYPL":  "PayPal",
+    "QQQ":   "Nasdaq 100",
+    "SLB":   "Schlumberger",
+    "SNAP":  "Snap Snapchat",
+    "SPY":   "S&P 500",
+    "TGT":   "Target retailer",
+    "TLT":   "Treasury bond yield",
+    "TSLA":  "Tesla",
+    "UBER":  "Uber",
+    "UNH":   "UnitedHealth",
+    "WFC":   "Wells Fargo",
+    "WMT":   "Walmart",
+    "XOM":   "ExxonMobil",
 }
 
 
@@ -126,18 +140,20 @@ def fetch_news(ticker: str, keyword: str, start: str, end: str) -> pd.DataFrame:
                 logger.warning(f"No articles found for {ticker} ({keyword})")
                 return pd.DataFrame()
 
-            # Add ticker and clean up the date column
+            # GDELT seendate is provider discovery time, not publication time.
+            # For prospective evaluation we cannot use an article before our
+            # collector actually received it, even if discovery predates retrieval.
+            retrieved = pd.Timestamp.now(tz="UTC")
             articles["ticker"] = ticker
-            articles["date"] = (
-                pd.to_datetime(articles["seendate"], errors="coerce")
-                .dt.date
-                .astype(str)
-            )
-
-            # Keep only the columns we need
-            return articles[["ticker", "date", "title", "url", "domain"]].rename(
-                columns={"domain": "source"}
-            )
+            articles["source_seen_at"] = pd.to_datetime(articles["seendate"], utc=True, errors="coerce")
+            articles["retrieved_at"] = retrieved.isoformat()
+            articles["availability_basis"] = "collector_retrieval"
+            articles["feature_session"] = news_session(retrieved)
+            articles["date"] = articles["source_seen_at"].dt.strftime("%Y-%m-%d")
+            articles["source_seen_at"] = articles["source_seen_at"].astype(str)
+            return articles[["ticker", "date", "title", "url", "domain", "source_seen_at",
+                             "retrieved_at", "availability_basis", "feature_session"]].rename(
+                columns={"domain": "source"})
 
         except Exception as e:
             logger.warning(f"Attempt {attempt}/3 failed for {ticker}: {e}")
@@ -161,23 +177,36 @@ def main():
     for ticker, keyword in TICKER_TO_NAME.items():
         parquet_path = OUTPUT_FOLDER / f"{ticker}_news.parquet"
 
-        # Skip tickers we already fetched (caching — avoids re-fetching on re-run)
+        # Skip tickers fetched recently — caching to avoid re-fetching every
+        # run (and hitting GDELT rate limits), but not forever: a cache that
+        # never expires means "live" news silently goes stale indefinitely.
         if parquet_path.exists():
-            logger.info(f"Skipping {ticker} — already fetched")
-            df = pd.read_parquet(parquet_path)
-            all_frames.append(df)
-            skipped.append(ticker)
-            continue
+            age_hours = (time.time() - parquet_path.stat().st_mtime) / 3600
+            if age_hours < CACHE_MAX_AGE_HOURS:
+                logger.info(f"Skipping {ticker} — fetched {age_hours:.1f}h ago (< {CACHE_MAX_AGE_HOURS}h cache)")
+                df = pd.read_parquet(parquet_path)
+                all_frames.append(df)
+                skipped.append(ticker)
+                continue
+            logger.info(f"{ticker} cache is {age_hours:.1f}h old — refreshing")
 
         logger.info(f"Fetching {ticker} ({keyword}) ...")
         df = fetch_news(ticker, keyword, START_DATE, END_DATE)
 
         if not df.empty:
+            if parquet_path.exists():
+                previous = pd.read_parquet(parquet_path)
+                # Prefer earliest observed timestamped row. Legacy date-only
+                # rows retain unknown availability until an actual retrieval.
+                df = pd.concat([previous, df], ignore_index=True)
+                df = df.sort_values("retrieved_at", na_position="last").drop_duplicates(["ticker", "url"], keep="first")
             df.to_parquet(parquet_path, engine="pyarrow", index=False)
             logger.info(f"  Saved {len(df)} rows → {parquet_path.name}")
             all_frames.append(df)
         else:
             failed.append(ticker)
+            if parquet_path.exists():
+                all_frames.append(pd.read_parquet(parquet_path))
 
         # Small delay between requests to avoid rate limiting
         time.sleep(1)

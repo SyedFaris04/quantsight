@@ -2,7 +2,7 @@ name: Daily live prediction tracker
 
 # Render's free tier doesn't run background/cron processes on its own —
 # this is the scheduler. It just wakes the backend up and asks it to log
-# today's predictions + resolve yesterday's, once per trading day.
+# new predictions and resolves due five-session outcomes.
 #
 # Needs two repo secrets (Settings → Secrets and variables → Actions):
 #   RENDER_BACKEND_URL  — e.g. https://your-app-name.onrender.com
@@ -16,12 +16,29 @@ on:
     - cron: '0 22 * * 1-5'
   workflow_dispatch: {}  # manual "Run workflow" button, for testing
 
+permissions:
+  contents: read
+
+concurrency:
+  group: daily-live-predictions
+  cancel-in-progress: false
+
 jobs:
   run-daily-predictions:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Trigger backend prediction job
+        env:
+          BACKEND_URL: ${{ secrets.RENDER_BACKEND_URL }}
+          ADMIN_KEY: ${{ secrets.ADMIN_JOB_SECRET }}
         run: |
-          curl -sf -X POST "${{ secrets.RENDER_BACKEND_URL }}/admin/run-daily-predictions" \
-            -H "X-Admin-Key: ${{ secrets.ADMIN_JOB_SECRET }}" \
-            --max-time 300
+          set -euo pipefail
+          test -n "$BACKEND_URL" || { echo "Missing RENDER_BACKEND_URL"; exit 1; }
+          test -n "$ADMIN_KEY" || { echo "Missing ADMIN_JOB_SECRET"; exit 1; }
+          # Inserts and outcome updates are idempotent, so a transient failure
+          # can be retried without replacing an already-recorded forecast.
+          curl --fail-with-body --silent --show-error -X POST "${BACKEND_URL%/}/admin/run-daily-predictions" \
+            -H "X-Admin-Key: $ADMIN_KEY" \
+            --connect-timeout 20 --max-time 300 \
+            --retry 2 --retry-delay 15 --retry-max-time 900

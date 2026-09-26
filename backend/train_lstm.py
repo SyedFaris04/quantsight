@@ -37,7 +37,7 @@ import logging
 
 from cv_utils import (
     make_train_calib_split, pick_best_calibration, apply_calibrator,
-    make_purged_folds, summarize_cv_metrics,
+    make_purged_folds, summarize_cv_metrics, purge_train_test_boundary,
 )
 
 # ── Logging ────────────────────────────────────────────────────────────────────
@@ -82,6 +82,35 @@ SENTIMENT_CSV   = PROCESSED_DIR / "features_sentiment.csv"
 METRICS_FILE    = PREDICTIONS_DIR / "model_metrics.json"
 
 NON_FEATURE_COLS = {"ticker", "date", "signal", "Date", "Ticker"}
+
+# Raw dollar-value indicators — kept in the CSV because copilot_engine.py
+# formats them directly into explanation text, but excluded from training
+# in favour of their *_norm (ratio-to-Close) counterparts from
+# build_features.py's add_normalized_indicators(), so a $700 stock and a
+# $20 stock don't share one StandardScaler's notion of "far from trend".
+# Open/High/Low/Close/Volume share the same cross-ticker scale problem as
+# the raw indicators above and were never added here — MDA permutation-
+# importance analysis confirmed all 5 have negative MDA-AUC in both trained
+# XGBoost models, consistent with the same confound; dropping them plus
+# spy_return_5 (below) and retraining XGBoost improved every headline
+# metric on both variants, so applying the same exclusion here too.
+RAW_PRICE_LEVEL_COLS = {
+    "sma_5", "sma_10", "sma_20", "sma_50", "ema_12", "ema_26",
+    "bb_upper", "bb_mid", "bb_lower",
+    "macd", "macd_signal", "macd_hist",
+    "Open", "High", "Low", "Close", "Volume",
+}
+
+# spy_return_5 is SPY's own return_5 broadcast identically onto every ticker
+# for a given date — a near-constant, low-cardinality column across the
+# cross-section, and perfectly collinear by construction with two other
+# trained features (return_5 == return5_rel_spy + spy_return_5). MDA
+# analysis found it the single most harmful feature in both XGBoost models.
+# Kept in the CSV since return5_rel_spy is derived from it, just excluded
+# from training.
+NON_TRAINED_DERIVED_COLS = {"spy_return_5"}
+
+NON_FEATURE_COLS = NON_FEATURE_COLS | RAW_PRICE_LEVEL_COLS | NON_TRAINED_DERIVED_COLS
 
 # ── Hyperparameters ────────────────────────────────────────────────────────────
 SEQUENCE_LEN  = 10        # 10-day window — enough for short-term patterns
@@ -168,8 +197,14 @@ class LSTMAttention(nn.Module):
             nn.Linear(16, 1),
         )
 
+    def classify(self, context: torch.Tensor) -> torch.Tensor:
+        """Classifier head only — lets the training loop re-run it on a
+        perturbed latent context for adversarial training, without redoing
+        the LSTM/attention pass."""
+        return self.classifier(context).squeeze(1)
+
     def forward(self, x: torch.Tensor, return_logits: bool = False,
-                return_attention: bool = False):
+                return_attention: bool = False, return_context: bool = False):
         # x: (batch, seq_len, features)
         lstm_out, _ = self.lstm(x)              # (B, T, H)
 
@@ -178,10 +213,15 @@ class LSTMAttention(nn.Module):
         weights = torch.softmax(scores, dim=1)   # (B, T, 1)
         context = (weights * lstm_out).sum(dim=1) # (B, H)
 
-        logits = self.classifier(context).squeeze(1)  # (B,)
+        logits = self.classify(context)  # (B,)
 
         output = logits if return_logits else torch.sigmoid(logits)
 
+        if return_context:
+            # The latent representation BEFORE the classifier head — the
+            # training loop perturbs this (not the raw input, to respect
+            # temporal structure) for adversarial training.
+            return output, context
         if return_attention:
             # The same weights the model itself used to pool lstm_out above —
             # an exact, native explanation of "which of the last N days did
@@ -219,15 +259,60 @@ class WeightedFocalLoss(nn.Module):
 
 # ── Training & Evaluation ──────────────────────────────────────────────────────
 
+ADV_EPSILON = 0.02   # perturbation size, relative to the context vector's own norm
+# TRIED AND REVERTED (ADV_WEIGHT=0): validated against the held-out test
+# split and it made the two LSTM variants respond very inconsistently —
+# Finance-only's F1 dropped 59%→47% while Finance+Sentiment rose 55%→58%,
+# a bigger swing between the two than the technique's own benefit. Since
+# the Compare page's whole point is a FAIR architecture×sentiment ablation,
+# a technique that destabilizes that comparison isn't worth its occasional
+# gain, at least not at this model's small scale (~11K parameters — the
+# IJCAI 2019 paper this is based on used a materially larger model).
+# Mechanism kept in train_epoch() below in case it's worth revisiting with
+# a smaller ADV_WEIGHT/EPSILON rather than repeating this exact attempt.
+ADV_WEIGHT  = 0.0
+
+
 def train_epoch(model, loader, optimizer, criterion):
+    """
+    Adversarial training (Feng, Chen, He, Ding, Sun & Chua, "Enhancing Stock
+    Movement Prediction with Adversarial Training," IJCAI 2019): after the
+    clean forward pass, take one small gradient-ascent step on the LSTM's
+    latent context vector — the direction that would make the model MOST
+    wrong — and train on that perturbed context too. Forces the model to be
+    robust to the kind of small, noise-driven wobbles this task is full of,
+    rather than fitting exactly to the clean training trajectory.
+    """
     model.train()
     total_loss = 0
     for X_batch, y_batch in loader:
         X_batch = X_batch.to(DEVICE)
         y_batch = y_batch.to(DEVICE)
         optimizer.zero_grad()
-        logits = model(X_batch, return_logits=True)
-        loss   = criterion(logits, y_batch)
+
+        if ADV_WEIGHT > 0:
+            logits, context = model(X_batch, return_logits=True, return_context=True)
+            clean_loss = criterion(logits, y_batch)
+
+            context_grad = torch.autograd.grad(clean_loss, context, retain_graph=True)[0]
+            perturbation = ADV_EPSILON * context_grad / (context_grad.norm(dim=1, keepdim=True) + 1e-8)
+            adv_context = context + perturbation.detach()
+            adv_logits  = model.classify(adv_context)
+            adv_loss    = criterion(adv_logits, y_batch)
+
+            loss = clean_loss + ADV_WEIGHT * adv_loss
+        else:
+            # Disabled (default) — the exact original computation path, no
+            # extra forward/backward pass, so this is a true no-op rather
+            # than "adversarial loss weighted by zero." An extra pass still
+            # draws from the classifier's Dropout layer's random state even
+            # when its result is discarded, which shifts every subsequent
+            # batch's dropout mask for the rest of training — silently
+            # different from the pre-adversarial-training baseline despite
+            # ADV_WEIGHT being 0.
+            logits = model(X_batch, return_logits=True)
+            loss = criterion(logits, y_batch)
+
         loss.backward()
         nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
         optimizer.step()
@@ -334,7 +419,7 @@ def run_purged_cv_lstm(trainval_df: pd.DataFrame, feature_cols: list, n_folds: i
     reasonable — 3 folds x 2 variants adds a few minutes, not tens.
     """
     CV_EPOCHS, CV_PATIENCE = 15, 4
-    folds = make_purged_folds(trainval_df["date"], n_folds=n_folds, embargo_days=5)
+    folds = make_purged_folds(trainval_df["date"], n_folds=n_folds)
     fold_metrics = []
 
     for i, (train_mask, val_mask) in enumerate(folds, start=1):
@@ -419,8 +504,9 @@ def train_variant(csv_path: Path, variant_name: str,
     # — so the last ~15% (by date) becomes a validation set used ONLY for
     # early stopping, threshold search, and confidence calibration. The test
     # set is never touched until the final, one-time evaluation.
-    split_test    = df["date"].quantile(0.80)
-    trainval_df   = df[df["date"] <= split_test].copy()
+    split_test        = df["date"].quantile(0.80)
+    trainval_cutoff    = purge_train_test_boundary(df["date"], split_test)
+    trainval_df   = df[df["date"] <= trainval_cutoff].copy()
     test_df       = df[df["date"] >  split_test].copy()
 
     # ── Purged walk-forward CV — robustness check within the training period only ──
@@ -432,7 +518,7 @@ def train_variant(csv_path: Path, variant_name: str,
             f"CV AUC: {cv_summary['auc_roc']['mean']}% ± {cv_summary['auc_roc']['std']}%"
         )
 
-    train_mask, val_mask = make_train_calib_split(trainval_df["date"], calib_frac=0.15, embargo_days=5)
+    train_mask, val_mask = make_train_calib_split(trainval_df["date"], calib_frac=0.15)
     train_df = trainval_df.loc[train_mask].copy()
     val_df   = trainval_df.loc[val_mask].copy()
 
@@ -665,6 +751,10 @@ def main():
         print(f"  {'Model':<45} {'Acc':>7} {'F1':>7} {'AUC':>7}")
         print(f"  {'-'*70}")
         for key, m in all_metrics.items():
+            # Skip non-model entries (e.g. a "_ranking_metrics" block) — only
+            # per-model dicts have the model/variant/accuracy schema.
+            if key.startswith("_") or "model" not in m:
+                continue
             name = f"{m['model']} ({m['variant']})"
             print(f"  {name:<45} {m['accuracy']:>6.2f}% {m['f1']:>6.2f}% {m['auc_roc']:>6.2f}%")
         print("----------------------------------------------------------------------\n")

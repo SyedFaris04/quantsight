@@ -1,8 +1,26 @@
 # QuantSight — How to Run
 
+For the current existing-project setup, start with [the detailed setup guide](docs/SETUP_CURRENT_PROGRESS.md).
+It separates completed local work from the remaining cloud rollout.
+
+## Corrected backtesting
+
+From the repository root in PowerShell:
+
+```powershell
+backend/.venv/Scripts/python.exe notebooks/15_backtesting.py --random-runs 1000
+```
+
+Then start the backend/frontend and open **Backtesting** (`/backtesting`). The report
+includes benchmark curves, metrics, costs, uncertainty and downloadable execution
+records. See [docs/BACKTESTING.md](docs/BACKTESTING.md) for the full protocol.
+The local frontend currently uses port **8001** in `VITE_API_URL`; use that port
+for Uvicorn, or deliberately configure both sides to the same port.
+The legacy `data/predictions/backtest_results.csv` is not the corrected report.
+
 This project lives in `quantsightv2/`. Two servers must run **at the same time**:
-a Python backend (FastAPI) and a React frontend (Vite). All the data, trained
-models, and predictions are already built and committed to `backend/data/` —
+a Python backend (FastAPI) and a React frontend (Vite). The serving data, trained
+models, and predictions are already present locally in `backend/data/` —
 so on a normal day you only need **Quick Start** below. The full pipeline
 further down is only for when you need to regenerate data/models from scratch
 (new data, retraining, etc.).
@@ -50,22 +68,18 @@ Data and models already exist on disk, so this is all you need. Two terminals.
 
 ### Terminal 1 — backend
 
-```bash
-cd backend
-source .venv/Scripts/activate      # Windows Git Bash
-# .venv\Scripts\activate           # Windows cmd/PowerShell — use this line instead
-# source .venv/bin/activate        # Mac/Linux
-
-uvicorn main:app --reload --port 8000
+```powershell
+Set-Location 'C:\Users\syeda\OneDrive\Desktop\quantsightv2\backend'
+.\.venv\Scripts\python.exe -m uvicorn main:app --reload --port 8001
 ```
 
 Expected tail of the output:
 ```
 INFO | Ready — 44 tickers available
-INFO:     Uvicorn running on http://127.0.0.1:8000
+INFO:     Uvicorn running on http://127.0.0.1:8001
 ```
 
-Check it's alive: open **http://127.0.0.1:8000/docs** — you should see the
+Check it's alive: open **http://127.0.0.1:8001/docs** — you should see the
 Swagger UI listing every endpoint (`/explain/{ticker}`, `/overview`,
 `/dashboard`, `/compare/{ticker}`, `/history/{ticker}`, `/stock/{ticker}`,
 `/news/{ticker}`, `/metrics`, `/confidence-boost`, `/market-sentiment`,
@@ -107,9 +121,9 @@ a floating AI Assistant button (bottom-right) on every page.
 
 ### Optional — sign-in, AI Assistant, live tracker
 
-Everything above works with zero extra setup. Three features are additive
-and need their own `.env` values, each degrading gracefully (clear message,
-never a crash) if skipped:
+The local historical demo can run with the prepared artifacts. The following
+features need service configuration; live tracker v2 also needs migration 002
+and deployment. Local `.env` values are already populated on this computer:
 
 | Feature | Needs | Where |
 |---|---|---|
@@ -220,11 +234,12 @@ the first training run of this session):
 | Random Forest — Finance only | 50.90% | 54.63% | 50.59% |
 | Random Forest — Finance+Sentiment | 50.08% | 52.67% | 50.20% |
 
-Notably: sentiment features helped LSTM and the Transformer, but *hurt*
-Random Forest and GRU — a genuinely mixed, honest result rather than a
-uniform "sentiment always helps" story, and itself worth a sentence in the
-thesis discussion. All 13 results sit in the credible 50-55% band with no
-sign of leakage.
+These historical scores do not establish a sentiment benefit or absence of
+leakage. The data audit found that text inputs are zero throughout the shared
+2023-2024 evaluation sample, and that period was reused during development.
+Compare against simple baselines and use an untouched final period before
+making confirmatory claims. See the [research findings](docs/research/RESEARCH_RECOMMENDATIONS.md)
+for the separate timestamped-news pilot and its limitations.
 
 Then start the servers as in **Quick Start** above.
 
@@ -237,10 +252,10 @@ Then start the servers as in **Quick Start** above.
 cd backend && source .venv/Scripts/activate && pip install -r requirements.txt
 ```
 
-**`port 8000 already in use` (backend)**
+**`port 8001 already in use` (backend)**
 ```bash
 # find and stop whatever's holding it, then re-run uvicorn
-netstat -ano | findstr :8000
+netstat -ano | findstr :8001
 taskkill /PID <pid> /F
 ```
 
@@ -249,8 +264,8 @@ let Vite pick the next free port (it will tell you in its own output).
 
 **Frontend shows "Could not load..." / red error banner**
 Backend isn't running or crashed. Check Terminal 1's output for a traceback.
-Confirm `frontend/.env` has `VITE_API_URL=http://127.0.0.1:8000` and that
-`curl http://127.0.0.1:8000/` returns a JSON status.
+Confirm `frontend/.env` has `VITE_API_URL=http://127.0.0.1:8001` and that
+`curl http://127.0.0.1:8001/` returns a JSON status.
 
 **`No prediction file found for xgb_finance` / similar**
 Means `train_xgboost.py` or `train_lstm.py` was never run, or the file was
@@ -277,7 +292,14 @@ training/output files.
 
 | Terminal | Location | Command |
 |---|---|---|
-| 1 — backend | `quantsightv2/backend/` | `source .venv/Scripts/activate && uvicorn main:app --reload --port 8000` |
+| 1 — backend | `quantsightv2/backend/` | `.\.venv\Scripts\python.exe -m uvicorn main:app --reload --port 8001` |
 | 2 — frontend | `quantsightv2/frontend/` | `npm run dev` |
 
 Both must stay running. Then open **http://localhost:3000**.
+
+## Live evaluation v2 rollout
+
+Before deploying the updated live tracker, apply `backend/supabase/002_live_predictions_v2.sql` in Supabase SQL Editor. It creates a separate five-session table and preserves legacy rows. Install the updated backend requirements, then deploy backend and frontend together. See [the validation and rollout notes](docs/DATA_AND_LIVE_EVALUATION.md). The migration has not been applied by the local implementation.
+
+Use the [current rollout guide](docs/LIVE_ROLLOUT.md) for verified service URLs,
+the 11 PostgreSQL migration checks and the read-only hosted diagnostic command.

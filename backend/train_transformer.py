@@ -55,7 +55,7 @@ import logging
 
 from cv_utils import (
     make_train_calib_split, pick_best_calibration, apply_calibrator,
-    make_purged_folds, summarize_cv_metrics,
+    make_purged_folds, summarize_cv_metrics, purge_train_test_boundary,
 )
 
 # ── Logging ────────────────────────────────────────────────────────────────────
@@ -89,6 +89,26 @@ SENTIMENT_CSV   = PROCESSED_DIR / "features_sentiment.csv"
 METRICS_FILE    = PREDICTIONS_DIR / "model_metrics.json"
 
 NON_FEATURE_COLS = {"ticker", "date", "signal", "Date", "Ticker"}
+
+# Raw dollar-value indicators — kept in the CSV because copilot_engine.py
+# formats them directly into explanation text, but excluded from training
+# in favour of their *_norm (ratio-to-Close) counterparts from
+# build_features.py's add_normalized_indicators(), so a $700 stock and a
+# $20 stock don't share one scaler's notion of "far from trend".
+RAW_PRICE_LEVEL_COLS = {
+    "sma_5", "sma_10", "sma_20", "sma_50", "ema_12", "ema_26",
+    "bb_upper", "bb_mid", "bb_lower",
+    "macd", "macd_signal", "macd_hist",
+    "Open", "High", "Low", "Close", "Volume",
+}
+
+# spy_return_5 is SPY's own return_5 broadcast identically onto every ticker
+# for a given date — collinear by construction with return5_rel_spy +
+# spy_return_5 == return_5. MDA analysis found it the single most harmful
+# feature in both XGBoost models; excluded here too for consistency.
+NON_TRAINED_DERIVED_COLS = {"spy_return_5"}
+
+NON_FEATURE_COLS = NON_FEATURE_COLS | RAW_PRICE_LEVEL_COLS | NON_TRAINED_DERIVED_COLS
 
 # ── Hyperparameters ────────────────────────────────────────────────────────────
 SEQUENCE_LEN     = 10
@@ -333,7 +353,7 @@ def run_purged_cv_transformer(trainval_df: pd.DataFrame, feature_cols: list, n_f
     """Purged expanding-window walk-forward CV, training-period only —
     identical structure to train_lstm.py's / train_gru.py's."""
     CV_EPOCHS, CV_PATIENCE = 15, 4
-    folds = make_purged_folds(trainval_df["date"], n_folds=n_folds, embargo_days=5)
+    folds = make_purged_folds(trainval_df["date"], n_folds=n_folds)
     fold_metrics = []
 
     for i, (train_mask, val_mask) in enumerate(folds, start=1):
@@ -410,8 +430,9 @@ def train_variant(csv_path: Path, variant_name: str,
     logger.info(f"  Rows     : {len(df):,}")
     logger.info(f"  Tickers  : {df['ticker'].nunique()}")
 
-    split_test    = df["date"].quantile(0.80)
-    trainval_df   = df[df["date"] <= split_test].copy()
+    split_test      = df["date"].quantile(0.80)
+    trainval_cutoff = purge_train_test_boundary(df["date"], split_test)
+    trainval_df   = df[df["date"] <= trainval_cutoff].copy()
     test_df       = df[df["date"] >  split_test].copy()
 
     logger.info("Running purged walk-forward CV (robustness check, training period only) ...")
@@ -422,7 +443,7 @@ def train_variant(csv_path: Path, variant_name: str,
             f"CV AUC: {cv_summary['auc_roc']['mean']}% ± {cv_summary['auc_roc']['std']}%"
         )
 
-    train_mask, val_mask = make_train_calib_split(trainval_df["date"], calib_frac=0.15, embargo_days=5)
+    train_mask, val_mask = make_train_calib_split(trainval_df["date"], calib_frac=0.15)
     train_df = trainval_df.loc[train_mask].copy()
     val_df   = trainval_df.loc[val_mask].copy()
 

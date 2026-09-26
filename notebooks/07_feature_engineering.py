@@ -2,6 +2,10 @@ import pandas as pd
 import pandas_ta as ta
 import numpy as np
 import os
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
+from prediction_contract import forward_direction
 
 # ── Settings ──────────────────────────────────────────────
 TICKERS = ["AAPL", "MSFT", "GOOGL", "AMZN", "META",
@@ -54,8 +58,7 @@ for ticker in TICKERS:
     df["Volume_MA_10"]  = df["Volume"].rolling(10).mean()
 
     # ── TARGET VARIABLE ───────────────────────────────────
-    df["Forward_return"] = df["Close"].pct_change(5).shift(-5)
-    df["Target"]         = (df["Forward_return"] > 0).astype(int)
+    df["Forward_return"], df["Target"] = forward_direction(df["Close"])
 
     all_stocks.append(df)
     print(f"  ✅ {len(df)} rows, {len(df.columns)} features")

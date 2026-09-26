@@ -172,6 +172,91 @@ function ModelSignalCard({ model }) {
   );
 }
 
+// Bull-case-vs-bear-case + counterfactuals. Presents evidence FOR and AGAINST
+// side-by-side (the "evaluative AI" pattern that reduces a novice's tendency
+// to over-trust a one-sided justification), plus "what would flip this".
+function EvaluativePanel({ explanation }) {
+  const bull = explanation?.bull_case || [];
+  const bear = explanation?.bear_case || [];
+  const cfs  = explanation?.counterfactuals || [];
+  if (!bull.length && !bear.length && !explanation?.reliability) return null;
+
+  const Case = ({ title, points, tone }) => (
+    <div className={`rounded-xl border p-4 flex flex-col gap-3 ${
+      tone === "bull" ? "border-green-800/60 bg-green-900/10" : "border-red-800/60 bg-red-900/10"}`}>
+      <div className="flex items-center gap-2">
+        <span className={`text-sm font-bold ${tone === "bull" ? "text-green-400" : "text-red-400"}`}>
+          {tone === "bull" ? "▲ Bull case" : "▼ Bear case"}
+        </span>
+        <span className="text-xs text-gray-500">— reasons it could go {tone === "bull" ? "up" : "down"}</span>
+      </div>
+      {points.length ? (
+        <ul className="flex flex-col gap-2.5">
+          {points.map((p, i) => (
+            <li key={i} className="text-xs">
+              <span className={`font-semibold ${tone === "bull" ? "text-green-300" : "text-red-300"}`}>{p.label}</span>
+              <span className="text-gray-400"> — {p.detail}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-xs text-gray-600 italic">No clear points on this side right now.</p>
+      )}
+    </div>
+  );
+
+  const rel = explanation?.reliability;
+  const relTone = rel?.level === "Strong" ? "text-green-300 border-green-800/60 bg-green-900/15"
+                : rel?.level === "Moderate" ? "text-amber-300 border-amber-800/60 bg-amber-900/15"
+                : "text-gray-300 border-gray-700 bg-gray-800/40";
+
+  return (
+    <div className="card flex flex-col gap-4">
+      <SectionTitle sub="The honest case for and against — not just why the model is 'right'">
+        Bull Case vs Bear Case
+      </SectionTitle>
+
+      {rel && (
+        <div className={`rounded-xl border px-4 py-3 ${relTone}`}>
+          <div className="flex items-center justify-between gap-3 mb-1">
+            <p className="text-xs font-semibold uppercase tracking-wide">How much to trust this signal</p>
+            <span className="text-sm font-bold tabular-nums">{rel.historical_accuracy}%</span>
+          </div>
+          <p className="text-xs leading-relaxed opacity-90">{rel.statement}</p>
+        </div>
+      )}
+
+      {explanation.verdict && (
+        <div className="rounded-xl border border-indigo-800/50 bg-indigo-900/15 px-4 py-3">
+          <p className="text-xs font-semibold text-indigo-300 mb-1">The honest read</p>
+          <p className="text-sm text-gray-200 leading-relaxed">{explanation.verdict}</p>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <Case title="Bull" points={bull} tone="bull" />
+        <Case title="Bear" points={bear} tone="bear" />
+      </div>
+
+      {cfs.length > 0 && (
+        <div className="border-t border-gray-800 pt-4">
+          <p className="section-title mb-2">What would change this signal?</p>
+          <ul className="flex flex-col gap-2">
+            {cfs.map((cf, i) => (
+              <li key={i} className="text-xs flex gap-2">
+                <span className="flex-shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-gray-800 border border-gray-700 text-gray-400 font-mono text-[10px]">
+                  {cf.factor}
+                </span>
+                <span className="text-gray-400">{cf.effect}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function DecisionTimeline({ history, loading }) {
   if (loading) {
     return (
@@ -587,8 +672,8 @@ export default function Detail() {
   const [overlayModel, setOverlayModel] = useState("xgb_sentiment");
   const [activeTab,    setActiveTab]    = useState("overview");
 
-  const { data: stockData,   loading: stockLoading  } = useApi(`/stock/${ticker}?days=${period}`, [ticker, period]);
-  const { data: explanation, loading: explLoading   } = useApi(`/explain/${ticker}`, [ticker]);
+  const { data: stockData,   loading: stockLoading, error: stockError } = useApi(`/stock/${ticker}?days=${period}`, [ticker, period]);
+  const { data: explanation, loading: explLoading,  error: explError  } = useApi(`/explain/${ticker}`, [ticker]);
   const { data: newsData,    loading: newsLoading   } = useApi(`/news/${ticker}?limit=8`, [ticker]);
   const { data: timelineData, loading: timelineLoading } = useApi(`/history/${ticker}?days=7`, [ticker]);
   const { data: trackRecordData, loading: trackRecordLoading } = useApi(`/accuracy-history/${ticker}`, [ticker]);
@@ -630,18 +715,6 @@ export default function Detail() {
       sell_marker  : signalMap[row.date] === "SELL" ? row[activeChart.key] : null,
     }));
   }, [priceData, explanation, overlayModel, activeChart.key]);
-
-  // ── Backtest-style: mark all prediction rows in the chart window ───────
-  // Fetch predictions from the overview endpoint via explanation models
-  const signalOverlayData = useMemo(() => {
-    if (!showSignals || !priceData.length || !explanation?.models) return chartData;
-
-    // Use the XGB sentiment predictions (most complete) to mark chart
-    // The explanation gives us the latest signal — for historical we use
-    // a simple rule: mark every 5th day alternating for visual demo
-    // Real implementation would call /stock endpoint with signals merged
-    return chartData;
-  }, [chartData, showSignals, explanation, priceData]);
 
   const yDomain = useMemo(() => {
     if (!priceData.length) return ["auto", "auto"];
@@ -799,6 +872,10 @@ export default function Detail() {
 
           {stockLoading ? (
             <div className="h-52 bg-gray-800 rounded-lg animate-pulse" />
+          ) : stockError ? (
+            <div className="h-52 flex items-center justify-center text-red-600 text-sm">
+              Could not load price data — {stockError}
+            </div>
           ) : priceData.length === 0 ? (
             <div className="h-52 flex items-center justify-center text-gray-600 text-sm">
               No price data available for {ticker}
@@ -807,14 +884,14 @@ export default function Detail() {
             <CandlestickChart data={priceData} yDomain={yDomain} />
           ) : (
             <ResponsiveContainer width="100%" height={240}>
-              <ComposedChart data={signalOverlayData} margin={{ top: 10, right: 10, left: 0, bottom: 5 }}>
+              <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
                 <XAxis
                   dataKey="date"
                   tick={{ fill: "#6b7280", fontSize: 10 }}
                   tickLine={false}
                   axisLine={{ stroke: "#374151" }}
-                  interval={Math.floor(signalOverlayData.length / 6)}
+                  interval={Math.floor(chartData.length / 6)}
                   tickFormatter={d => d?.slice(5)}
                 />
                 <YAxis
@@ -872,6 +949,8 @@ export default function Detail() {
             <div className="space-y-4">
               {[1,2,3].map(i => <div key={i} className="h-8 bg-gray-800 rounded animate-pulse" />)}
             </div>
+          ) : explError ? (
+            <p className="text-red-600 text-sm text-center py-8">Could not load explanation — {explError}</p>
           ) : explanation ? (
             <>
               <ScoreBar label="Technical Indicators" score={explanation.technical_score}  color="#6366f1" />
@@ -893,6 +972,9 @@ export default function Detail() {
           )}
         </div>
       </div>
+
+      {/* ── Bull Case vs Bear Case (evaluative XAI) ── */}
+      {!explLoading && explanation && <EvaluativePanel explanation={explanation} />}
 
       {/* ── Risk Assessment ── */}
       <div className="card">

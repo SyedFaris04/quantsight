@@ -46,7 +46,7 @@ import logging
 
 from cv_utils import (
     pick_best_calibration, apply_calibrator,
-    make_purged_folds, summarize_cv_metrics,
+    make_purged_folds, summarize_cv_metrics, purge_train_test_boundary,
 )
 
 # ── Logging ────────────────────────────────────────────────────────────────────
@@ -67,6 +67,30 @@ SENTIMENT_CSV   = PROCESSED_DIR / "features_sentiment.csv"
 METRICS_FILE    = PREDICTIONS_DIR / "model_metrics.json"
 
 NON_FEATURE_COLS = {"ticker", "date", "signal", "Date", "Ticker"}
+
+# Raw dollar-value indicators — kept in the CSV because copilot_engine.py
+# formats them directly into explanation text, but excluded from training
+# in favour of their *_norm (ratio-to-Close) counterparts from
+# build_features.py's add_normalized_indicators(), so a $700 stock and a
+# $20 stock don't share one scaler's notion of "far from trend". Matters
+# even more here than for tree models — a linear model weighs each scaled
+# feature directly, with no way to split around the scale difference.
+#
+# NOTE: unlike the tree-based models (XGBoost, RandomForest) and the LSTM,
+# also excluding raw OHLCV + spy_return_5 here was tried and reverted —
+# measured on this same held-out split it made every headline metric worse
+# (F1 -4.7pp, AUC -0.8pp on both variants). Whatever those columns encode
+# that a permutation-importance test flags as noise for a tree ensemble,
+# this linear model is evidently still extracting usable signal from it.
+# Keep this scoped to what's actually evidenced per-model rather than
+# applying the same exclusion list to every architecture on the assumption
+# that it must generalize.
+RAW_PRICE_LEVEL_COLS = {
+    "sma_5", "sma_10", "sma_20", "sma_50", "ema_12", "ema_26",
+    "bb_upper", "bb_mid", "bb_lower",
+    "macd", "macd_signal", "macd_hist",
+}
+NON_FEATURE_COLS = NON_FEATURE_COLS | RAW_PRICE_LEVEL_COLS
 
 # ── Logistic Regression Hyperparameters ────────────────────────────────────────
 LOGREG_PARAMS = {
@@ -89,8 +113,9 @@ def load_and_split(csv_path: Path):
     logger.info(f"  Rows    : {len(df):,}")
     logger.info(f"  Tickers : {df['ticker'].nunique()}")
 
-    split_date = df["date"].quantile(0.80)
-    train_df = df[df["date"] <= split_date]
+    split_date   = df["date"].quantile(0.80)
+    train_cutoff = purge_train_test_boundary(df["date"], split_date)
+    train_df = df[df["date"] <= train_cutoff]
     test_df  = df[df["date"] >  split_date]
 
     logger.info(
@@ -156,7 +181,7 @@ def run_purged_cv(train_df: pd.DataFrame, feature_cols: list, n_folds: int = 5) 
     scripts (same shared cv_utils folds), even though LR trains fast enough
     that this isn't strictly necessary for runtime reasons.
     """
-    folds = make_purged_folds(train_df["date"], n_folds=n_folds, embargo_days=5)
+    folds = make_purged_folds(train_df["date"], n_folds=n_folds)
     fold_metrics = []
     oof_probs, oof_labels = [], []
 

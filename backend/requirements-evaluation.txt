@@ -1,0 +1,9 @@
+# Tested evaluation/CI environment; serving/training dependencies are separate.
+numpy==2.4.6
+pandas==3.0.3
+scikit-learn==1.9.0
+fastapi==0.139.0
+httpx==0.28.1
+
+# NYSE holidays, early closes and DST for live evaluation
+pandas-market-calendars==5.4.0

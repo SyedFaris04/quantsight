@@ -190,7 +190,8 @@ export default function Dashboard() {
 
       {error && (
         <div className="bg-red-900/20 border border-red-800 rounded-lg px-4 py-3 text-sm text-red-400">
-          Could not load dashboard data. Is the backend running on port 8000?
+          Could not load dashboard data — {error}. Is the backend running at{" "}
+          {import.meta.env.VITE_API_URL || "/api"}?
         </div>
       )}
 

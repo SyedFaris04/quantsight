@@ -41,14 +41,21 @@ export function useApi(endpoint, deps = []) {
   const [loading, setLoading] = useState(!!endpoint);
   const [error,   setError]   = useState(null);
 
-  const fetchData = useCallback(async () => {
+  // No cancellation previously meant an out-of-order response could still
+  // win: navigate AAPL -> TSLA fast enough and if AAPL's request resolves
+  // after TSLA's, its (stale) data overwrites what's on screen. `signal` is
+  // supplied by the useEffect below (tied to endpoint/deps changing or
+  // unmount); refetch() (e.g. a manual "retry"/"next" button) calls this
+  // without one, which is fine — axios treats signal: undefined as no-op.
+  const fetchData = useCallback(async (signal) => {
     if (!endpoint) return;
     setLoading(true);
     setError(null);
     try {
-      const res = await api.get(endpoint);
+      const res = await api.get(endpoint, { signal });
       setData(res.data);
     } catch (err) {
+      if (axios.isCancel(err) || err.code === "ERR_CANCELED") return;
       const msg =
         err.response?.data?.detail ||
         err.message ||
@@ -61,10 +68,14 @@ export function useApi(endpoint, deps = []) {
   }, [endpoint, ...deps]);
 
   useEffect(() => {
-    fetchData();
+    const controller = new AbortController();
+    fetchData(controller.signal);
+    return () => controller.abort();
   }, [fetchData]);
 
-  return { data, loading, error, refetch: fetchData };
+  const refetch = useCallback(() => fetchData(), [fetchData]);
+
+  return { data, loading, error, refetch };
 }
 
 /**

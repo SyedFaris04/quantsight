@@ -15,7 +15,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApi } from "../hooks/useApi";
-import api from "../hooks/useApi";
 import { companyName } from "../data/companyNames";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabaseClient";
@@ -73,8 +72,8 @@ function HoldingRow({ holding, onRemove, onStats }) {
   const { ticker, shares, buyPrice } = holding;
   const navigate = useNavigate();
 
-  const { data: priceData }  = useApi(`/realtime/${ticker}`,  [ticker]);
-  const { data: explanation } = useApi(`/explain/${ticker}`,  [ticker]);
+  const { data: priceData,  error: priceError } = useApi(`/realtime/${ticker}`, [ticker]);
+  const { data: explanation, error: explError } = useApi(`/explain/${ticker}`,  [ticker]);
 
   const currentPrice = priceData?.price ?? null;
   const isLive       = priceData?.source === "live";
@@ -139,6 +138,8 @@ function HoldingRow({ holding, onRemove, onStats }) {
               </span>
             )}
           </div>
+        ) : priceError ? (
+          <span className="text-red-500 text-xs" title={priceError}>Price unavailable</span>
         ) : (
           <span className="text-gray-600">Loading…</span>
         )}
@@ -175,6 +176,8 @@ function HoldingRow({ holding, onRemove, onStats }) {
             {signal === "BUY" ? "▲" : signal === "SELL" ? "▼" : "◆"} {signal}
             <span className="text-gray-500 font-normal ml-1">({confidence}%)</span>
           </span>
+        ) : explError ? (
+          <span className="text-red-500 text-xs" title={explError}>Signal unavailable</span>
         ) : <span className="text-gray-600 text-xs">Loading…</span>}
       </td>
 
@@ -200,7 +203,7 @@ function HoldingRow({ holding, onRemove, onStats }) {
 
 // What to buy next — top BUY signals not in portfolio
 function WhatToBuyNext({ portfolioTickers }) {
-  const { data: overviewData, loading } = useApi("/overview");
+  const { data: overviewData, loading, error } = useApi("/overview");
 
   const suggestions = useMemo(() => {
     if (!overviewData?.data) return [];
@@ -230,6 +233,10 @@ function WhatToBuyNext({ portfolioTickers }) {
         <div className="space-y-2">
           {[1,2,3].map(i => <div key={i} className="h-12 bg-gray-800 rounded-lg animate-pulse" />)}
         </div>
+      ) : error ? (
+        <p className="text-red-600 text-sm">
+          Could not load suggestions — {error}
+        </p>
       ) : suggestions.length === 0 ? (
         <p className="text-gray-600 text-sm">
           No strong BUY signals found for tickers outside your portfolio right now.

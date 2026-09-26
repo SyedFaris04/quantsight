@@ -81,7 +81,7 @@ instead of a vague reassurance. This is how QuantSight avoids overclaiming.
 - If the user asks something broader like "do your predictions actually come \
 true" or wants overall proof rather than one ticker, call \
 get_live_track_record instead — that's QuantSight's live, ongoing, \
-forward-only record (predictions are logged then checked the next day, \
+forward-only record (predictions are logged then checked after five NYSE trading sessions, \
 not backtested), across every ticker.
 - If the user is currently viewing a specific ticker's page (given in the \
 context below), you can assume questions like "what about this one" refer \
@@ -165,7 +165,7 @@ TOOLS = [
         "type": "function",
         "function": {
             "name": "get_live_track_record",
-            "description": "QuantSight's own forward-looking, ongoing accuracy: every trading day the live model's prediction is logged, then checked the next day against what actually happened — not backtested, an ongoing real record across all tickers. Use this when the user asks 'do your predictions actually come true', 'prove it', or wants overall (not per-ticker) live accuracy.",
+            "description": "QuantSight's own forward-looking, ongoing accuracy: every trading day the live model's prediction is logged, then checked after five NYSE trading sessions against what actually happened — not backtested, an ongoing real record across all tickers. Use this when the user asks 'do your predictions actually come true', 'prove it', or wants overall (not per-ticker) live accuracy.",
             "parameters": {"type": "object", "properties": {}, "required": []},
         },
     },

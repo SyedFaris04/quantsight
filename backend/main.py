@@ -40,6 +40,7 @@ Restrict to your Vercel domain before final submission.
 """
 
 import json
+from fastapi.responses import JSONResponse
 import os
 import random
 import time
@@ -69,10 +70,11 @@ except ImportError:
     logger_temp = logging.getLogger("nuroquant-api")
     logger_temp.warning("yfinance not installed — real-time prices unavailable. Run: pip install yfinance")
 
-from copilot_engine import explain, get_all_model_metrics, get_ticker_comparison, calculate_risk_level, get_latest_features, get_prediction_history, get_accuracy_track_record
+from copilot_engine import explain, get_all_model_metrics, get_ticker_comparison, calculate_risk_level, get_latest_features, get_prediction_history, get_accuracy_track_record, game_reasons
 from live_signals import get_live_signal, get_live_signals_batch
 import chatbot_engine
 import prediction_tracker
+from backtesting.routes import router as backtesting_router
 
 # ── Logging ────────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -104,6 +106,7 @@ app = FastAPI(
     description = "Sentiment-enhanced stock signal prediction — FYP backend",
     version     = "1.0.0",
 )
+app.include_router(backtesting_router)
 
 # CORS — allow the deployed frontend (+ local dev) to call this API.
 # allow_origin_regex covers Vercel's per-deployment preview URLs
@@ -274,6 +277,7 @@ class GameResult(BaseModel):
     confidence      : float
     explanation     : str
     points_earned   : int
+    reasons         : list[str] = []   # why the indicators supported the call
 
 
 # ── Helper Functions ───────────────────────────────────────────────────────────
@@ -872,7 +876,7 @@ def get_live_overview():
     return {
         "data"      : results,
         "count"     : len(results),
-        "generated" : pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "generated" : pd.Timestamp.now(tz="UTC").isoformat(),
         "disclaimer": (
             "Signals generated from live market data using a model trained on "
             "2015–2023 patterns. For educational purposes — not financial advice."
@@ -1090,12 +1094,30 @@ def submit_game_answer(answer: GameAnswer) -> GameResult:
             f"{'High confidence suggests a strong signal.' if confidence > 70 else 'Low confidence means this was a tough one.'}"
         )
 
+    # "Here's WHY" — the historical indicator reasons behind the model's call,
+    # so the game teaches intuition instead of just scoring a guess. Uses the
+    # feature row for the GAME's historical date (not today's), via the same
+    # analysis copilot_engine uses on the Detail page.
+    reasons = []
+    features = _cache.get("features", pd.DataFrame())
+    if not features.empty:
+        frow = features[
+            (features["ticker"] == ticker) &
+            (features["date"].dt.strftime("%Y-%m-%d") == answer.date)
+        ]
+        if not frow.empty:
+            try:
+                reasons = game_reasons(frow.iloc[0], actual_signal)
+            except Exception as e:
+                logger.warning(f"Game reasons failed for {ticker} {answer.date}: {e}")
+
     return GameResult(
         correct       = correct,
         actual_signal = actual_signal,
         confidence    = confidence,
         explanation   = explanation,
         points_earned = points_earned,
+        reasons       = reasons,
     )
 
 
@@ -1208,11 +1230,7 @@ def chat(req: ChatRequest, request: Request):
 
 
 # ── Live prediction track record ────────────────────────────────────────────
-# See prediction_tracker.py for the full design rationale — the short
-# version: this is a forward-looking accuracy log (predict today, verify
-# tomorrow), written only by the daily job via the Supabase service role
-# key, readable by anyone. Nothing client-side can write to it, so the
-# resulting number can't be gamed.
+# Forward evaluation uses five NYSE sessions and excludes legacy horizon-unknown records.
 
 @app.get("/live-track-record")
 def live_track_record():
@@ -1236,4 +1254,6 @@ def run_daily_predictions(request: Request):
         result = prediction_tracker.run_daily_job(tickers)
     except RuntimeError as e:
         raise HTTPException(status_code=503, detail=str(e))
+    if result.get("errors"):
+        return JSONResponse(status_code=503, content=result)
     return result

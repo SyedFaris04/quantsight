@@ -1,0 +1,484 @@
+{
+  "run_id": "4e1d6bff50369ed5",
+  "protocol": {
+    "experiment_id": "news_archive_pilot_v1",
+    "status": "exploratory_historical",
+    "purpose": "Supervisor progress demonstration; test whether timestamped news adds information beyond finance and news coverage.",
+    "registered_before_run": "2026-09-26",
+    "seed": 42,
+    "horizon_sessions": 5,
+    "fit_start": "2017-01-01",
+    "fit_end_exclusive": "2022-01-01",
+    "calibration_end_exclusive": "2023-01-01",
+    "evaluation_end_exclusive": "2024-01-01",
+    "purge_rule": "All target outcomes must occur strictly before the next segment starts.",
+    "scorer": "vaderSentiment==3.3.2",
+    "text_input": "headline_only",
+    "news_timing": "First NYSE close at or after max(source publication, archive download, modification). Date-only publications delayed by one UTC day.",
+    "arms": [
+      "finance",
+      "finance_coverage",
+      "finance_coverage_sentiment"
+    ],
+    "coverage_features": [
+      "news_observed",
+      "news_log_count"
+    ],
+    "sentiment_features": [
+      "news_polarity_mean",
+      "news_polarity_std",
+      "news_positive_share",
+      "news_negative_share"
+    ],
+    "model_families": [
+      "logistic",
+      "hist_gradient_boosting"
+    ],
+    "logistic": {
+      "C": 1.0,
+      "max_iter": 1000
+    },
+    "hist_gradient_boosting": {
+      "learning_rate": 0.05,
+      "max_iter": 150,
+      "max_leaf_nodes": 7,
+      "min_samples_leaf": 100,
+      "l2_regularization": 10.0,
+      "early_stopping": false
+    },
+    "calibration": "One fixed sigmoid fit on the separate 2022 segment; no method search.",
+    "direction_rule": "calibrated_probability_up >= 0.5",
+    "primary_metric": "brier_score",
+    "secondary_metrics": [
+      "balanced_accuracy",
+      "MCC",
+      "ROC_AUC",
+      "log_loss",
+      "accuracy",
+      "BUY_fraction"
+    ],
+    "paired_comparison": "Full sentiment arm versus coverage-only arm on identical 2023 ticker/session rows.",
+    "bootstrap_block_sessions": 20,
+    "bootstrap_repetitions": 1000,
+    "max_model_fits": 6,
+    "selection_rule": "Do not replace the live model using this exploratory pilot.",
+    "limitations": [
+      "2023 has already been examined elsewhere in QuantSight; this is not an untouched final test.",
+      "Existing finance feature selection was influenced by historical results.",
+      "The fixed ticker universe is not point-in-time index membership.",
+      "Archive timestamps are conservative proxies and article versions require further validation.",
+      "VADER is a transparent first baseline, not evidence about FinBERT or all sentiment methods.",
+      "Classification results are not trading returns or Sharpe ratios."
+    ]
+  },
+  "input_sha256": {
+    "finance": "f2cbf71f5cd1b292bcab0f83fe0be3c7d2b1a0bbcf5fd36e9c67b3991d66e6e0",
+    "news": "132c535ca0688d097077119be84250ad4215449c76288be45b12e58a3c1e386c",
+    "feature_list_model": "9a2c4cff2602a31457bed70140b2236ced5c2552b895d7f205cbc3f7573050d8"
+  },
+  "protocol_sha256": "cd08c2db1f2bb875a815f43cc52bbbb2dc333afa73d47af1833fc2a16218cc44",
+  "software": {
+    "numpy": "2.4.6",
+    "pandas": "3.0.3",
+    "scikit-learn": "1.9.0",
+    "vaderSentiment": "3.3.2"
+  },
+  "segments": {
+    "fit": {
+      "rows": 53813,
+      "date_start": "2017-01-03",
+      "date_end": "2021-12-23",
+      "last_label_end": "2021-12-31",
+      "news_observed_rows": 5047
+    },
+    "calibration": {
+      "rows": 10824,
+      "date_start": "2022-01-03",
+      "date_end": "2022-12-22",
+      "last_label_end": "2022-12-30",
+      "news_observed_rows": 3146
+    },
+    "evaluation": {
+      "rows": 10780,
+      "date_start": "2023-01-03",
+      "date_end": "2023-12-21",
+      "last_label_end": "2023-12-29",
+      "news_observed_rows": 3658
+    }
+  },
+  "models": {
+    "logistic_finance": {
+      "all_rows": {
+        "n": 10780,
+        "accuracy": 0.47430426716141,
+        "balanced_accuracy": 0.5141302618319397,
+        "mcc": 0.04310926623626317,
+        "roc_auc": 0.5295622566211099,
+        "brier_score": 0.2555799449664857,
+        "log_loss": 0.7044245785441665,
+        "buy_fraction": 0.12087198515769944
+      },
+      "news_observed_rows": {
+        "n": 3658,
+        "accuracy": 0.46391470749043195,
+        "balanced_accuracy": 0.512341672438332,
+        "mcc": 0.03507711085617834,
+        "roc_auc": 0.5337232188387155,
+        "brier_score": 0.25590565087704453,
+        "log_loss": 0.7050359367730414,
+        "buy_fraction": 0.14160743575724438
+      },
+      "features": [
+        "rsi",
+        "return_5",
+        "return_10",
+        "bb_width",
+        "volatility_20",
+        "atr",
+        "volume_change",
+        "volume_sma_10",
+        "clv",
+        "cmf_20",
+        "svi_10",
+        "mfi_14",
+        "sma_5_norm",
+        "sma_10_norm",
+        "sma_20_norm",
+        "sma_50_norm",
+        "ema_12_norm",
+        "ema_26_norm",
+        "bb_upper_norm",
+        "bb_mid_norm",
+        "bb_lower_norm",
+        "macd_norm",
+        "macd_signal_norm",
+        "macd_hist_norm",
+        "rsi_rel_market",
+        "return5_rel_market",
+        "return5_rel_spy",
+        "volchg_rel_market",
+        "market_volatility",
+        "ret5_rel_sector"
+      ]
+    },
+    "logistic_finance_coverage": {
+      "all_rows": {
+        "n": 10780,
+        "accuracy": 0.47430426716141,
+        "balanced_accuracy": 0.5136788106523547,
+        "mcc": 0.04111417312148904,
+        "roc_auc": 0.5274411460372874,
+        "brier_score": 0.25592833482819105,
+        "log_loss": 0.7051378417421708,
+        "buy_fraction": 0.125139146567718
+      },
+      "news_observed_rows": {
+        "n": 3658,
+        "accuracy": 0.46200109349371243,
+        "balanced_accuracy": 0.5132012573350889,
+        "mcc": 0.040096129208569656,
+        "roc_auc": 0.5304979868938801,
+        "brier_score": 0.2571725581692377,
+        "log_loss": 0.7076051985738102,
+        "buy_fraction": 0.12110442864953526
+      },
+      "features": [
+        "rsi",
+        "return_5",
+        "return_10",
+        "bb_width",
+        "volatility_20",
+        "atr",
+        "volume_change",
+        "volume_sma_10",
+        "clv",
+        "cmf_20",
+        "svi_10",
+        "mfi_14",
+        "sma_5_norm",
+        "sma_10_norm",
+        "sma_20_norm",
+        "sma_50_norm",
+        "ema_12_norm",
+        "ema_26_norm",
+        "bb_upper_norm",
+        "bb_mid_norm",
+        "bb_lower_norm",
+        "macd_norm",
+        "macd_signal_norm",
+        "macd_hist_norm",
+        "rsi_rel_market",
+        "return5_rel_market",
+        "return5_rel_spy",
+        "volchg_rel_market",
+        "market_volatility",
+        "ret5_rel_sector",
+        "news_observed",
+        "news_log_count"
+      ]
+    },
+    "logistic_finance_coverage_sentiment": {
+      "all_rows": {
+        "n": 10780,
+        "accuracy": 0.474860853432282,
+        "balanced_accuracy": 0.514104160353009,
+        "mcc": 0.04220569861504884,
+        "roc_auc": 0.5271082651759915,
+        "brier_score": 0.2558903389249504,
+        "log_loss": 0.7050607449598745,
+        "buy_fraction": 0.1264378478664193
+      },
+      "news_observed_rows": {
+        "n": 3658,
+        "accuracy": 0.46364133406232916,
+        "balanced_accuracy": 0.5136734429822892,
+        "mcc": 0.040308094074259164,
+        "roc_auc": 0.5287812526162768,
+        "brier_score": 0.2571131239774916,
+        "log_loss": 0.707490378637052,
+        "buy_fraction": 0.1298523783488245
+      },
+      "features": [
+        "rsi",
+        "return_5",
+        "return_10",
+        "bb_width",
+        "volatility_20",
+        "atr",
+        "volume_change",
+        "volume_sma_10",
+        "clv",
+        "cmf_20",
+        "svi_10",
+        "mfi_14",
+        "sma_5_norm",
+        "sma_10_norm",
+        "sma_20_norm",
+        "sma_50_norm",
+        "ema_12_norm",
+        "ema_26_norm",
+        "bb_upper_norm",
+        "bb_mid_norm",
+        "bb_lower_norm",
+        "macd_norm",
+        "macd_signal_norm",
+        "macd_hist_norm",
+        "rsi_rel_market",
+        "return5_rel_market",
+        "return5_rel_spy",
+        "volchg_rel_market",
+        "market_volatility",
+        "ret5_rel_sector",
+        "news_observed",
+        "news_log_count",
+        "news_polarity_mean",
+        "news_polarity_std",
+        "news_positive_share",
+        "news_negative_share"
+      ]
+    },
+    "hist_gradient_boosting_finance": {
+      "all_rows": {
+        "n": 10780,
+        "accuracy": 0.4489795918367347,
+        "balanced_accuracy": 0.49448242576983004,
+        "mcc": -0.022328277238027102,
+        "roc_auc": 0.4881039029576247,
+        "brier_score": 0.2584120510305812,
+        "log_loss": 0.7101063829361133,
+        "buy_fraction": 0.06456400742115027
+      },
+      "news_observed_rows": {
+        "n": 3658,
+        "accuracy": 0.43739748496446146,
+        "balanced_accuracy": 0.4976556637161406,
+        "mcc": -0.010494611375040826,
+        "roc_auc": 0.470919331146443,
+        "brier_score": 0.26077575865559083,
+        "log_loss": 0.7148800285049675,
+        "buy_fraction": 0.05166757791142701
+      },
+      "features": [
+        "rsi",
+        "return_5",
+        "return_10",
+        "bb_width",
+        "volatility_20",
+        "atr",
+        "volume_change",
+        "volume_sma_10",
+        "clv",
+        "cmf_20",
+        "svi_10",
+        "mfi_14",
+        "sma_5_norm",
+        "sma_10_norm",
+        "sma_20_norm",
+        "sma_50_norm",
+        "ema_12_norm",
+        "ema_26_norm",
+        "bb_upper_norm",
+        "bb_mid_norm",
+        "bb_lower_norm",
+        "macd_norm",
+        "macd_signal_norm",
+        "macd_hist_norm",
+        "rsi_rel_market",
+        "return5_rel_market",
+        "return5_rel_spy",
+        "volchg_rel_market",
+        "market_volatility",
+        "ret5_rel_sector"
+      ]
+    },
+    "hist_gradient_boosting_finance_coverage": {
+      "all_rows": {
+        "n": 10780,
+        "accuracy": 0.4489795918367347,
+        "balanced_accuracy": 0.49448242576983004,
+        "mcc": -0.022328277238027102,
+        "roc_auc": 0.4881039029576247,
+        "brier_score": 0.2584120510305812,
+        "log_loss": 0.7101063829361133,
+        "buy_fraction": 0.06456400742115027
+      },
+      "news_observed_rows": {
+        "n": 3658,
+        "accuracy": 0.43739748496446146,
+        "balanced_accuracy": 0.4976556637161406,
+        "mcc": -0.010494611375040826,
+        "roc_auc": 0.470919331146443,
+        "brier_score": 0.26077575865559083,
+        "log_loss": 0.7148800285049675,
+        "buy_fraction": 0.05166757791142701
+      },
+      "features": [
+        "rsi",
+        "return_5",
+        "return_10",
+        "bb_width",
+        "volatility_20",
+        "atr",
+        "volume_change",
+        "volume_sma_10",
+        "clv",
+        "cmf_20",
+        "svi_10",
+        "mfi_14",
+        "sma_5_norm",
+        "sma_10_norm",
+        "sma_20_norm",
+        "sma_50_norm",
+        "ema_12_norm",
+        "ema_26_norm",
+        "bb_upper_norm",
+        "bb_mid_norm",
+        "bb_lower_norm",
+        "macd_norm",
+        "macd_signal_norm",
+        "macd_hist_norm",
+        "rsi_rel_market",
+        "return5_rel_market",
+        "return5_rel_spy",
+        "volchg_rel_market",
+        "market_volatility",
+        "ret5_rel_sector",
+        "news_observed",
+        "news_log_count"
+      ]
+    },
+    "hist_gradient_boosting_finance_coverage_sentiment": {
+      "all_rows": {
+        "n": 10780,
+        "accuracy": 0.4489795918367347,
+        "balanced_accuracy": 0.49448242576983004,
+        "mcc": -0.022328277238027102,
+        "roc_auc": 0.4881039029576247,
+        "brier_score": 0.2584120510305812,
+        "log_loss": 0.7101063829361133,
+        "buy_fraction": 0.06456400742115027
+      },
+      "news_observed_rows": {
+        "n": 3658,
+        "accuracy": 0.43739748496446146,
+        "balanced_accuracy": 0.4976556637161406,
+        "mcc": -0.010494611375040826,
+        "roc_auc": 0.470919331146443,
+        "brier_score": 0.26077575865559083,
+        "log_loss": 0.7148800285049675,
+        "buy_fraction": 0.05166757791142701
+      },
+      "features": [
+        "rsi",
+        "return_5",
+        "return_10",
+        "bb_width",
+        "volatility_20",
+        "atr",
+        "volume_change",
+        "volume_sma_10",
+        "clv",
+        "cmf_20",
+        "svi_10",
+        "mfi_14",
+        "sma_5_norm",
+        "sma_10_norm",
+        "sma_20_norm",
+        "sma_50_norm",
+        "ema_12_norm",
+        "ema_26_norm",
+        "bb_upper_norm",
+        "bb_mid_norm",
+        "bb_lower_norm",
+        "macd_norm",
+        "macd_signal_norm",
+        "macd_hist_norm",
+        "rsi_rel_market",
+        "return5_rel_market",
+        "return5_rel_spy",
+        "volchg_rel_market",
+        "market_volatility",
+        "ret5_rel_sector",
+        "news_observed",
+        "news_log_count",
+        "news_polarity_mean",
+        "news_polarity_std",
+        "news_positive_share",
+        "news_negative_share"
+      ]
+    }
+  },
+  "paired_sentiment_effect": {
+    "logistic": {
+      "brier_improvement": 3.799590324069124e-05,
+      "interval_95": [
+        -6.270854050116272e-05,
+        0.0001380846065933627
+      ],
+      "interpretation": "Positive means lower Brier loss for sentiment; exploratory interval, not adjusted for multiple comparisons."
+    },
+    "hist_gradient_boosting": {
+      "brier_improvement": 0.0,
+      "interval_95": [
+        0.0,
+        0.0
+      ],
+      "interpretation": "Positive means lower Brier loss for sentiment; exploratory interval, not adjusted for multiple comparisons."
+    }
+  },
+  "baseline_always_up": {
+    "accuracy": 0.5523191094619666,
+    "buy_fraction": 1.0
+  },
+  "baseline_training_prior": {
+    "n": 10780,
+    "accuracy": 0.5523191094619666,
+    "balanced_accuracy": 0.5,
+    "mcc": 0.0,
+    "roc_auc": 0.5,
+    "brier_score": 0.24762272621169376,
+    "log_loss": 0.6883950276793334,
+    "buy_fraction": 1.0
+  },
+  "completed_at": "2026-09-26T15:47:24.146837+00:00"
+}

@@ -46,3 +46,6 @@ groq
 
 # Live prediction track record — writes via the Supabase service role key
 supabase
+
+# NYSE holidays, early closes and DST for live evaluation
+pandas-market-calendars==5.4.0

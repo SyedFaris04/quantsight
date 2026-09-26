@@ -30,7 +30,7 @@ import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, Legend, ResponsiveContainer, Cell,
+  Tooltip, Legend, ResponsiveContainer,
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
 } from "recharts";
 import { useApi } from "../hooks/useApi";
@@ -126,7 +126,7 @@ function CustomBarTooltip({ active, payload, label }) {
 // Ticker signal comparison panel
 function TickerCompare({ tickers }) {
   const [selected, setSelected] = useState("");
-  const { data, loading } = useApi(
+  const { data, loading, error } = useApi(
     selected ? `/compare/${selected}` : null,
     [selected]
   );
@@ -178,6 +178,12 @@ function TickerCompare({ tickers }) {
         <div className="flex justify-center py-8">
           <div className="spinner" />
         </div>
+      )}
+
+      {selected && !loading && error && (
+        <p className="text-red-600 text-sm text-center py-8">
+          Could not load comparison — {error}
+        </p>
       )}
 
       {selected && !loading && data && (

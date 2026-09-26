@@ -1,0 +1,531 @@
+{
+  "training_rows": 104076,
+  "tickers": 44,
+  "date_start": "2015-05-01",
+  "date_end": "2024-12-20",
+  "duplicate_ticker_dates": 0,
+  "invalid_close_rows": 0,
+  "sources": {
+    "gdelt_sentiment": {
+      "rows": 2127,
+      "start": "2026-01-22",
+      "end": "2026-04-23",
+      "matching_training_ticker_dates": 0,
+      "sha256": "4737610838a286ef1cd0051e40151b49e020f088912e742bfe9bf306daed64ff"
+    },
+    "wsb_sentiment": {
+      "rows": 11213,
+      "start": "2015-01-14",
+      "end": "2021-08-31",
+      "matching_training_ticker_dates": 3736,
+      "sha256": "a75f09ef1d8b12d5c673bab389afc74a6942ba33df06e1112c88197116c71dd0"
+    },
+    "wsb_emotion": {
+      "rows": 11213,
+      "start": "2015-01-14",
+      "end": "2021-08-31",
+      "matching_training_ticker_dates": 3736,
+      "sha256": "395ef9e51c41732c69e25fcb09a44dc5d721ca94e73eb968dbd5f2758f037a62"
+    },
+    "yahoo_news_sentiment": {
+      "rows": 89,
+      "start": "2026-03-13",
+      "end": "2026-03-17",
+      "matching_training_ticker_dates": 0,
+      "sha256": "8740474ba62e2261f2a18a36cae0228b764e95b3e7d5ea53e678c53c9213ca53"
+    }
+  },
+  "coverage": {
+    "all": {
+      "rows": 104076,
+      "nonzero_rows": {
+        "wsb_sentiment": 3734,
+        "wsb_count": 3736,
+        "gdelt_compound": 0,
+        "gdelt_pos": 0,
+        "gdelt_neg": 0,
+        "gdelt_article_count": 0,
+        "emo_fear": 3736,
+        "emo_optimism": 3736,
+        "emo_anger": 3736,
+        "emo_excitement": 3736,
+        "emo_confusion": 3736,
+        "emo_disappointment": 3736
+      }
+    },
+    "2023_2024": {
+      "rows": 21824,
+      "nonzero_rows": {
+        "wsb_sentiment": 0,
+        "wsb_count": 0,
+        "gdelt_compound": 0,
+        "gdelt_pos": 0,
+        "gdelt_neg": 0,
+        "gdelt_article_count": 0,
+        "emo_fear": 0,
+        "emo_optimism": 0,
+        "emo_anger": 0,
+        "emo_excitement": 0,
+        "emo_confusion": 0,
+        "emo_disappointment": 0
+      }
+    }
+  },
+  "feature_parity": {
+    "rsi": {
+      "rows": 93032,
+      "max_abs_error": 3.363420830737596e-08,
+      "mean_abs_error": 6.595334771244742e-11,
+      "within_1e_minus_5": true
+    },
+    "atr": {
+      "rows": 93032,
+      "max_abs_error": 2.3926016723407884e-10,
+      "mean_abs_error": 4.061988629552877e-13,
+      "within_1e_minus_5": true
+    },
+    "macd": {
+      "rows": 93032,
+      "max_abs_error": 5.017568582843523e-10,
+      "mean_abs_error": 9.834892596984938e-13,
+      "within_1e_minus_5": true
+    },
+    "macd_signal": {
+      "rows": 93032,
+      "max_abs_error": 7.37898631086864e-10,
+      "mean_abs_error": 1.4442696286478615e-12,
+      "within_1e_minus_5": true
+    },
+    "macd_hist": {
+      "rows": 93032,
+      "max_abs_error": 2.3614182831366293e-10,
+      "mean_abs_error": 4.634137078780445e-13,
+      "within_1e_minus_5": true
+    },
+    "bb_upper": {
+      "rows": 93032,
+      "max_abs_error": 1.184616849059239e-10,
+      "mean_abs_error": 4.4538395864338895e-12,
+      "within_1e_minus_5": true
+    },
+    "bb_lower": {
+      "rows": 93032,
+      "max_abs_error": 1.184616849059239e-10,
+      "mean_abs_error": 4.452836143701968e-12,
+      "within_1e_minus_5": true
+    },
+    "bb_width": {
+      "rows": 93032,
+      "max_abs_error": 2.7954305537036817e-12,
+      "mean_abs_error": 5.818701766636271e-14,
+      "within_1e_minus_5": true
+    },
+    "ema_12": {
+      "rows": 93032,
+      "max_abs_error": 2.2737367544323206e-13,
+      "mean_abs_error": 4.6603411072022505e-15,
+      "within_1e_minus_5": true
+    },
+    "ema_26": {
+      "rows": 93032,
+      "max_abs_error": 5.017568582843523e-10,
+      "mean_abs_error": 9.842547194141829e-13,
+      "within_1e_minus_5": true
+    },
+    "return_5": {
+      "rows": 93032,
+      "max_abs_error": 5.429684479807406e-16,
+      "mean_abs_error": 7.598997141058343e-17,
+      "within_1e_minus_5": true
+    },
+    "return_10": {
+      "rows": 93032,
+      "max_abs_error": 7.042977312465837e-16,
+      "mean_abs_error": 7.54406772271743e-17,
+      "within_1e_minus_5": true
+    },
+    "volatility_20": {
+      "rows": 93032,
+      "max_abs_error": 5.922573542704868e-11,
+      "mean_abs_error": 2.226613834198141e-12,
+      "within_1e_minus_5": true
+    }
+  },
+  "limitations": [
+    "Historical price adjustment metadata is absent; corporate-action consistency is not proven.",
+    "The fixed surviving ticker universe is not point-in-time membership.",
+    "Legacy date-only news cannot establish availability before a session close.",
+    "Existing holdout has been reused for model decisions and is exploratory."
+  ],
+  "missing_sessions_by_ticker": {
+    "AAPL": {
+      "count": 0,
+      "first_ten": []
+    },
+    "ABBV": {
+      "count": 0,
+      "first_ten": []
+    },
+    "ADBE": {
+      "count": 0,
+      "first_ten": []
+    },
+    "AMD": {
+      "count": 0,
+      "first_ten": []
+    },
+    "AMZN": {
+      "count": 0,
+      "first_ten": []
+    },
+    "BAC": {
+      "count": 0,
+      "first_ten": []
+    },
+    "C": {
+      "count": 0,
+      "first_ten": []
+    },
+    "COP": {
+      "count": 0,
+      "first_ten": []
+    },
+    "COST": {
+      "count": 0,
+      "first_ten": []
+    },
+    "CRM": {
+      "count": 0,
+      "first_ten": []
+    },
+    "CVS": {
+      "count": 0,
+      "first_ten": []
+    },
+    "CVX": {
+      "count": 0,
+      "first_ten": []
+    },
+    "DIA": {
+      "count": 0,
+      "first_ten": []
+    },
+    "GLD": {
+      "count": 0,
+      "first_ten": []
+    },
+    "GOOGL": {
+      "count": 0,
+      "first_ten": []
+    },
+    "GS": {
+      "count": 0,
+      "first_ten": []
+    },
+    "INTC": {
+      "count": 0,
+      "first_ten": []
+    },
+    "IWM": {
+      "count": 0,
+      "first_ten": []
+    },
+    "JNJ": {
+      "count": 0,
+      "first_ten": []
+    },
+    "JPM": {
+      "count": 0,
+      "first_ten": []
+    },
+    "MCD": {
+      "count": 0,
+      "first_ten": []
+    },
+    "META": {
+      "count": 0,
+      "first_ten": []
+    },
+    "MRNA": {
+      "count": 0,
+      "first_ten": []
+    },
+    "MS": {
+      "count": 0,
+      "first_ten": []
+    },
+    "MSFT": {
+      "count": 0,
+      "first_ten": []
+    },
+    "NFLX": {
+      "count": 0,
+      "first_ten": []
+    },
+    "NKE": {
+      "count": 0,
+      "first_ten": []
+    },
+    "NVDA": {
+      "count": 0,
+      "first_ten": []
+    },
+    "ORCL": {
+      "count": 0,
+      "first_ten": []
+    },
+    "OXY": {
+      "count": 0,
+      "first_ten": []
+    },
+    "PFE": {
+      "count": 0,
+      "first_ten": []
+    },
+    "PYPL": {
+      "count": 0,
+      "first_ten": []
+    },
+    "QQQ": {
+      "count": 0,
+      "first_ten": []
+    },
+    "SLB": {
+      "count": 0,
+      "first_ten": []
+    },
+    "SNAP": {
+      "count": 0,
+      "first_ten": []
+    },
+    "SPY": {
+      "count": 0,
+      "first_ten": []
+    },
+    "TGT": {
+      "count": 0,
+      "first_ten": []
+    },
+    "TLT": {
+      "count": 0,
+      "first_ten": []
+    },
+    "TSLA": {
+      "count": 0,
+      "first_ten": []
+    },
+    "UBER": {
+      "count": 0,
+      "first_ten": []
+    },
+    "UNH": {
+      "count": 0,
+      "first_ten": []
+    },
+    "WFC": {
+      "count": 0,
+      "first_ten": []
+    },
+    "WMT": {
+      "count": 0,
+      "first_ten": []
+    },
+    "XOM": {
+      "count": 0,
+      "first_ten": []
+    }
+  },
+  "parity_warmup_rows": 300,
+  "model_parity_start": "2020-09-03",
+  "model_parity_end": "2024-12-20",
+  "parity_warmup_policy": "Require 300 prior observations for every constituent, including newly listed stocks, before checking market-relative features.",
+  "model_feature_parity": {
+    "rsi": {
+      "rows": 47608,
+      "max_abs_error": 2.4022448030791566e-08,
+      "mean_abs_error": 6.77048346250538e-12,
+      "within_1e_minus_5": true
+    },
+    "return_5": {
+      "rows": 47608,
+      "max_abs_error": 5.429684479807406e-16,
+      "mean_abs_error": 7.348349100413734e-17,
+      "within_1e_minus_5": true
+    },
+    "return_10": {
+      "rows": 47608,
+      "max_abs_error": 5.410168840702667e-16,
+      "mean_abs_error": 7.277516945191307e-17,
+      "within_1e_minus_5": true
+    },
+    "bb_width": {
+      "rows": 47608,
+      "max_abs_error": 2.7954305537036817e-12,
+      "mean_abs_error": 6.779929256287976e-14,
+      "within_1e_minus_5": true
+    },
+    "volatility_20": {
+      "rows": 47608,
+      "max_abs_error": 5.922573542704868e-11,
+      "mean_abs_error": 3.0181429971423434e-12,
+      "within_1e_minus_5": true
+    },
+    "atr": {
+      "rows": 47608,
+      "max_abs_error": 7.677525282190345e-11,
+      "mean_abs_error": 2.4401284452760123e-14,
+      "within_1e_minus_5": true
+    },
+    "volume_change": {
+      "rows": 47608,
+      "max_abs_error": 8.881784197001252e-16,
+      "mean_abs_error": 3.407975446648058e-17,
+      "within_1e_minus_5": true
+    },
+    "volume_sma_10": {
+      "rows": 47608,
+      "max_abs_error": 0.0,
+      "mean_abs_error": 0.0,
+      "within_1e_minus_5": true
+    },
+    "clv": {
+      "rows": 47608,
+      "max_abs_error": 1.1102230246251565e-16,
+      "mean_abs_error": 2.033555001538944e-17,
+      "within_1e_minus_5": true
+    },
+    "cmf_20": {
+      "rows": 47608,
+      "max_abs_error": 9.974659986866641e-17,
+      "mean_abs_error": 4.082264599966888e-17,
+      "within_1e_minus_5": true
+    },
+    "svi_10": {
+      "rows": 47608,
+      "max_abs_error": 1.1102230246251565e-16,
+      "mean_abs_error": 2.9907893949500876e-17,
+      "within_1e_minus_5": true
+    },
+    "mfi_14": {
+      "rows": 47608,
+      "max_abs_error": 1.4210854715202004e-14,
+      "mean_abs_error": 6.687829774283752e-16,
+      "within_1e_minus_5": true
+    },
+    "sma_5_norm": {
+      "rows": 47608,
+      "max_abs_error": 6.539907504432563e-16,
+      "mean_abs_error": 1.0816352990072112e-16,
+      "within_1e_minus_5": true
+    },
+    "sma_10_norm": {
+      "rows": 47608,
+      "max_abs_error": 7.563394355258879e-16,
+      "mean_abs_error": 1.2273640212800823e-16,
+      "within_1e_minus_5": true
+    },
+    "sma_20_norm": {
+      "rows": 47608,
+      "max_abs_error": 7.129713486264677e-16,
+      "mean_abs_error": 1.2201052540469542e-16,
+      "within_1e_minus_5": true
+    },
+    "sma_50_norm": {
+      "rows": 47608,
+      "max_abs_error": 2.220446049250313e-16,
+      "mean_abs_error": 4.49464256020275e-17,
+      "within_1e_minus_5": true
+    },
+    "ema_12_norm": {
+      "rows": 47608,
+      "max_abs_error": 7.494005416219807e-16,
+      "mean_abs_error": 7.457556901023546e-17,
+      "within_1e_minus_5": true
+    },
+    "ema_26_norm": {
+      "rows": 47608,
+      "max_abs_error": 6.688455345127409e-12,
+      "mean_abs_error": 1.8414905740293857e-15,
+      "within_1e_minus_5": true
+    },
+    "bb_upper_norm": {
+      "rows": 47608,
+      "max_abs_error": 1.3725270919806576e-12,
+      "mean_abs_error": 3.384511793159713e-14,
+      "within_1e_minus_5": true
+    },
+    "bb_mid_norm": {
+      "rows": 47608,
+      "max_abs_error": 7.129713486264677e-16,
+      "mean_abs_error": 1.2201052540469542e-16,
+      "within_1e_minus_5": true
+    },
+    "bb_lower_norm": {
+      "rows": 47608,
+      "max_abs_error": 1.3726242364953123e-12,
+      "mean_abs_error": 3.38513428208947e-14,
+      "within_1e_minus_5": true
+    },
+    "macd_norm": {
+      "rows": 47608,
+      "max_abs_error": 6.688503917384736e-12,
+      "mean_abs_error": 1.837471847659176e-15,
+      "within_1e_minus_5": true
+    },
+    "macd_signal_norm": {
+      "rows": 47608,
+      "max_abs_error": 9.836322728551394e-12,
+      "mean_abs_error": 2.6634701332003786e-15,
+      "within_1e_minus_5": true
+    },
+    "macd_hist_norm": {
+      "rows": 47608,
+      "max_abs_error": 3.1478188111666583e-12,
+      "mean_abs_error": 8.890155832181415e-16,
+      "within_1e_minus_5": true
+    },
+    "rsi_rel_market": {
+      "rows": 47608,
+      "max_abs_error": 2.4022433597892245e-08,
+      "mean_abs_error": 6.817989073587071e-12,
+      "within_1e_minus_5": true
+    },
+    "return5_rel_market": {
+      "rows": 47608,
+      "max_abs_error": 7.355227538141662e-16,
+      "mean_abs_error": 1.0450492051688097e-16,
+      "within_1e_minus_5": true
+    },
+    "return5_rel_spy": {
+      "rows": 47608,
+      "max_abs_error": 7.37257477290143e-16,
+      "mean_abs_error": 1.0733215297020193e-16,
+      "within_1e_minus_5": true
+    },
+    "volchg_rel_market": {
+      "rows": 47608,
+      "max_abs_error": 8.881784197001252e-16,
+      "mean_abs_error": 6.402098893372324e-17,
+      "within_1e_minus_5": true
+    },
+    "market_volatility": {
+      "rows": 47608,
+      "max_abs_error": 1.700029006457271e-16,
+      "mean_abs_error": 7.078216889177454e-17,
+      "within_1e_minus_5": true
+    },
+    "ret5_rel_sector": {
+      "rows": 47608,
+      "max_abs_error": 6.245004513516506e-16,
+      "mean_abs_error": 7.58345072672518e-17,
+      "within_1e_minus_5": true
+    }
+  },
+  "parity_note": "Replays saved stock OHLCV and stored sector returns; does not independently verify Yahoo corporate-action adjustments or source ETF return construction.",
+  "input_hashes": {
+    "features_finance.csv": "f2cbf71f5cd1b292bcab0f83fe0be3c7d2b1a0bbcf5fd36e9c67b3991d66e6e0",
+    "features_sentiment.csv": "b6f7b6af84012cf43901e074533d2ebc62b6a3a9733e52c10cfed318ab9c3ba2",
+    "features_stock.csv": "0743089ae432d902da7395a5f0a2a3dda62674da4cd40348ee3138e7e23d99c6",
+    "sector_returns.csv": "2758265be755ed2f7b833ead2444b744544abf0a69b63c3ac210f81386877c05"
+  }
+}

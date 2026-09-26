@@ -126,6 +126,12 @@ function TickerCard({ row, onClick }) {
         <SignalBadge signal={row.overall_signal} confidence={row.overall_confidence} />
       </div>
 
+      {row.live_mode ? (
+        <div className="text-xs text-gray-400 space-y-2">
+          <p>XGBoost finance / five-session direction</p>
+          {row.is_live ? <><p>Data close: {row.live_date}</p><p>Target close: {row.target_date}</p><p>Open card for historical research details.</p></> : <p className="text-amber-400">{row.live_error}</p>}
+        </div>
+      ) : (<>
       {/* 4-model mini breakdown */}
       <div className="grid grid-cols-2 gap-2">
         {MODEL_COLS.map(m => {
@@ -146,6 +152,7 @@ function TickerCard({ row, onClick }) {
         <AgreementPill level={row.agreement_level} />
         <RiskBadge level={row.risk_level} />
       </div>
+      </>)}
     </div>
   );
 }
@@ -154,7 +161,7 @@ function TickerCard({ row, onClick }) {
 
 export default function Overview() {
   const navigate = useNavigate();
-  const { data, loading }         = useApi("/overview");
+  const { data, loading, error }  = useApi("/overview");
   const { data: metricsRaw }      = useApi("/metrics");
 
   const [search,       setSearch]       = useState("");
@@ -187,6 +194,7 @@ export default function Overview() {
   async function fetchLiveSignals() {
     setLiveLoading(true);
     setLiveError(null);
+    setLiveData(null);
     try {
       const res = await fetch(
         `${import.meta.env.VITE_API_URL || "/api"}/live-overview`
@@ -205,21 +213,26 @@ export default function Overview() {
   function handleLiveToggle() {
     const next = !liveMode;
     setLiveMode(next);
+    setFilterAgree("ALL");
+    setPage(1);
     if (next && !liveData) fetchLiveSignals();
   }
 
   // ── Merge live signals into rows when live mode is on ─────────────────────
   const displayRows = useMemo(() => {
-    if (!liveMode || !liveData) return rows;
+    if (!liveMode) return rows;
     return rows.map(row => {
-      const live = liveData[row.ticker];
-      if (!live || live.source === "fallback" || !live.signal_label) return row;
+      const live = liveData?.[row.ticker];
+      const available = live?.source === "live" && ["BUY", "SELL"].includes(live.signal_label);
       return {
-        ...row,
-        overall_signal    : live.signal_label,
-        overall_confidence: live.confidence ?? row.overall_confidence,
-        is_live           : true,
-        live_date         : live.date,
+        ticker: row.ticker,
+        overall_signal: available ? live.signal_label : "N/A",
+        overall_confidence: available ? live.direction_confidence : null,
+        signals: {}, agreement_level: null, risk_level: null,
+        live_mode: true, is_live: available,
+        live_date: available ? live.date : null,
+        target_date: available ? live.target_date : null,
+        live_error: available ? null : live?.error || "Live signal unavailable",
       };
     });
   }, [rows, liveMode, liveData]);
@@ -232,8 +245,9 @@ export default function Overview() {
     const sellCount   = src.filter(r => r.overall_signal === "SELL").length;
     const holdCount   = src.filter(r => r.overall_signal === "HOLD").length;
     const strongCount = src.filter(r => r.agreement_level === "Strong").length;
-    const avgConf     = src.reduce((s, r) => s + r.overall_confidence, 0) / src.length;
-    return { total: src.length, buyCount, sellCount, holdCount, strongCount, avgConf: avgConf.toFixed(1) };
+    const validConfidence = src.filter(r => r.overall_confidence != null);
+    const avgConf = validConfidence.length ? validConfidence.reduce((sum, r) => sum + r.overall_confidence, 0) / validConfidence.length : null;
+    return { total: src.length, buyCount, sellCount, holdCount, strongCount, avgConf: avgConf == null ? "N/A" : avgConf.toFixed(1) };
   }, [rows, displayRows, liveMode]);
 
   // ── Filter + sort ────────────────────────────────────────────────────
@@ -241,7 +255,7 @@ export default function Overview() {
     let out = [...displayRows];
     if (search.trim())          out = out.filter(r => r.ticker.toLowerCase().includes(search.toLowerCase()));
     if (filterSignal !== "ALL") out = out.filter(r => r.overall_signal === filterSignal);
-    if (filterAgree  !== "ALL") out = out.filter(r => r.agreement_level === filterAgree);
+    if (!liveMode && filterAgree !== "ALL") out = out.filter(r => r.agreement_level === filterAgree);
     out.sort((a, b) => {
       const av = sortCol === "confidence" ? a.overall_confidence : sortCol === "signal" ? a.overall_signal : a.ticker;
       const bv = sortCol === "confidence" ? b.overall_confidence : sortCol === "signal" ? b.overall_signal : b.ticker;
@@ -250,7 +264,7 @@ export default function Overview() {
       return 0;
     });
     return out;
-  }, [displayRows, search, filterSignal, filterAgree, sortCol, sortDir]);
+  }, [displayRows, search, filterSignal, filterAgree, sortCol, sortDir, liveMode]);
 
   // Reset to page 1 whenever the filtered set changes shape (new search/filter)
   useEffect(() => { setPage(1); }, [search, filterSignal, filterAgree]);
@@ -277,7 +291,7 @@ export default function Overview() {
           <h1 className="text-xl font-semibold text-white">Market</h1>
           <p className="text-sm text-gray-500 mt-1">
             {liveMode
-              ? `Live signals from today's market data · ${liveGenerated ? `Updated ${liveGenerated}` : "Loading..."}`
+              ? `XGBoost / latest completed daily session · ${liveGenerated ? `Updated ${liveGenerated}` : "Loading..."}`
               : `Scan all ${loading ? "..." : rows.length} stocks and find opportunities · cached signals from Dec 2024 dataset`
             }
           </p>
@@ -327,15 +341,16 @@ export default function Overview() {
       {/* Live mode disclaimer */}
       {liveMode && !liveLoading && !liveError && (
         <div className="bg-green-900/10 border border-green-800/50 rounded-lg px-4 py-2.5 text-xs text-green-600">
-          ● Live Mode — signals generated from today's Yahoo Finance data using the trained XGBoost model.
-          The model was trained on 2015–2023 patterns. Treat as educational signals, not financial advice.
+          Live mode shows one XGBoost finance model using the latest completed session.
+          The target is five trading sessions ahead. Confidence is the calibrated probability
+          of the selected direction. Historical agreement and risk scores do not apply.
         </div>
       )}
 
       {/* Live mode error */}
       {liveError && (
         <div className="bg-red-900/20 border border-red-800 rounded-lg px-4 py-2.5 text-xs text-red-400">
-          ⚠️ {liveError} — showing cached signals instead.
+          ⚠️ {liveError} Live signals are unavailable.
         </div>
       )}
 
@@ -354,8 +369,8 @@ export default function Overview() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard label="Total Tickers"     value={loading ? "—" : metrics?.total ?? 0}          sub="tickers analysed"             accent="indigo" />
         <MetricCard label="BUY Signals"       value={loading ? "—" : metrics?.buyCount ?? 0}       sub={`${metrics?.sellCount ?? 0} SELL · ${metrics?.holdCount ?? 0} HOLD`} accent="green" />
-        <MetricCard label="Strong Agreement"  value={loading ? "—" : metrics?.strongCount ?? 0}    sub="all 4 models agree"           accent="amber" />
-        <MetricCard label="Avg Confidence"    value={loading ? "—" : `${metrics?.avgConf ?? 0}%`}  sub="across all models"            accent="blue"  />
+        <MetricCard label={liveMode ? "Live Model" : "Strong Agreement"} value={liveMode ? "XGBoost" : loading ? "N/A" : metrics?.strongCount ?? 0} sub={liveMode ? "finance features / five sessions" : "all 4 models agree"} accent="amber" />
+        <MetricCard label="Avg Confidence"    value={loading ? "—" : `${metrics?.avgConf ?? 0}%`}  sub={liveMode ? "selected direction / available signals" : "across all models"}            accent="blue"  />
       </div>
 
       {/* ── Filters ── */}
@@ -379,7 +394,7 @@ export default function Overview() {
         </div>
         <div className="flex rounded-lg overflow-hidden border border-gray-700 text-sm">
           {["ALL", "Strong", "Moderate", "Mixed"].map(v => (
-            <button key={v} onClick={() => setFilterAgree(v)}
+            <button key={v} disabled={liveMode} onClick={() => setFilterAgree(v)}
               className={`px-3 py-1.5 font-medium transition-colors ${
                 filterAgree === v ? "bg-indigo-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-gray-700"
               }`}
@@ -417,6 +432,10 @@ export default function Overview() {
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {Array.from({ length: 8 }).map((_, i) => <LoadingCard key={i} />)}
+        </div>
+      ) : error ? (
+        <div className="card py-16 text-center text-red-600">
+          Could not load tickers — {error}
         </div>
       ) : filtered.length === 0 ? (
         <div className="card py-16 text-center text-gray-600">
@@ -475,7 +494,7 @@ export default function Overview() {
       )}
 
       {/* ── Legend + accuracy key ── */}
-      <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-gray-500">
+      <div hidden={liveMode} className={liveMode ? "hidden" : "flex flex-wrap gap-x-6 gap-y-2 text-xs text-gray-500"}>
         <div className="flex items-center gap-2">
           <span className="font-semibold text-blue-400">XGB Finance</span>
           <span>— XGBoost, price/technical only</span>

@@ -280,7 +280,7 @@ def analyse_bollinger(close: float, bb_upper: float,
         signal = "bullish"
         reason = (
             f"Price (${close:.2f}) in lower half of bands — "
-            "below midline (${bb_mid:.2f}), mild bullish bias"
+            f"below midline (${bb_mid:.2f}), mild bullish bias"
         )
         weight = 0.60
     elif position > 0.80:
@@ -479,6 +479,73 @@ def get_agreement_level(predictions: list[ModelPrediction]) -> str:
         return "Mixed"
 
 
+_reliability_cache = None
+
+def compute_agreement_reliability() -> dict:
+    """
+    Measures, on the held-out test set, how the 4-model consensus's actual
+    accuracy varies with how strongly the models AGREE — the empirical basis
+    for a calibrated "how much should I trust this signal" statement.
+
+    This is the "selective prediction" idea (ICAIF 2021): a model is more
+    accurate on the subset where it's confident, and the honest way to report
+    that is accuracy ALONGSIDE coverage (what fraction of days it applies to).
+    Returns {level: {accuracy, coverage, n}} for Strong/Moderate/Mixed, cached
+    after first computation.
+
+    NOTE: Strong-agreement accuracy sitting above the ~58% single-model
+    leakage-flag line is expected and legitimate here — it's a CONDITIONAL
+    accuracy on a ~40%-coverage subset, not a whole-test-set number. The
+    coverage figure is reported precisely so this isn't mistaken for the
+    latter.
+    """
+    global _reliability_cache
+    if _reliability_cache is not None:
+        return _reliability_cache
+
+    try:
+        dfs = {}
+        for key, path in PREDICTION_FILES.items():
+            if not path.exists():
+                return {}
+            d = _read_csv_cached(path).copy()
+            d["date"] = pd.to_datetime(d["date"]).dt.strftime("%Y-%m-%d")
+            dfs[key] = d[["ticker", "date", "predicted_signal"]].rename(columns={"predicted_signal": key})
+
+        keys = list(dfs.keys())
+        merged = dfs[keys[0]]
+        for k in keys[1:]:
+            merged = merged.merge(dfs[k], on=["ticker", "date"], how="inner")
+
+        gt = _read_csv_cached(FEATURE_FILES["finance"])[["ticker", "date", "signal"]].copy()
+        gt["date"] = pd.to_datetime(gt["date"]).dt.strftime("%Y-%m-%d")
+        merged = merged.merge(gt, on=["ticker", "date"], how="inner")
+        if merged.empty:
+            return {}
+
+        n_buy = merged[keys].sum(axis=1)
+        consensus = (n_buy >= 2).astype(int)
+        correct = (consensus == merged["signal"]).astype(int)
+        level = n_buy.map(lambda n: "Strong" if n in (0, 4) else ("Moderate" if n in (1, 3) else "Mixed"))
+
+        total = len(merged)
+        out = {}
+        for lvl in ("Strong", "Moderate", "Mixed"):
+            mask = (level == lvl).values
+            n = int(mask.sum())
+            if n:
+                out[lvl] = {
+                    "accuracy": round(float(correct[mask].mean()) * 100, 1),
+                    "coverage": round(n / total * 100, 1),
+                    "n": n,
+                }
+        _reliability_cache = out
+        return out
+    except Exception as e:
+        logger.warning(f"Reliability computation failed: {e}")
+        return {}
+
+
 def majority_signal(predictions: list[ModelPrediction]) -> tuple[str, float]:
     """
     Returns (consensus_signal_label, average_confidence).
@@ -573,6 +640,174 @@ def generate_summary(ticker: str, overall_signal: str, agreement: str,
         )
 
     return " ".join(parts)
+
+
+# ── Evaluative "Bull Case vs Bear Case" (XAI for novices) ───────────────────────
+
+def build_evaluative_case(overall_signal: str, agreement: str,
+                          indicator_signals: list[IndicatorSignal],
+                          sentiment_signals: list[SentimentSignal],
+                          models: list[ModelPrediction],
+                          technical_score: float, sentiment_score: float) -> dict:
+    """
+    Presents the evidence FOR and AGAINST the signal side-by-side — the
+    "evaluative AI" pattern the CFA Institute's 2025 XAI-in-finance report
+    recommends specifically to reduce the automation bias a one-sided
+    justification breeds in non-expert users. Rather than only defending the
+    model's call, it surfaces the strongest bull case and the strongest bear
+    case (from the very indicators/sentiment/model votes the engine already
+    computes), then states honestly which way the weight of evidence leans
+    and what the main unresolved tension is.
+
+    Returns {bull_case, bear_case, verdict} where each *_case is a list of
+    {label, detail} points, strongest first.
+    """
+    def _pts(indicators, sentiments, want_model):
+        pts = []
+        for s in indicators:                       # bullish/bearish indicators
+            pts.append({"label": s.name, "detail": s.reason, "weight": round(s.weight, 2), "kind": "indicator"})
+        for s in sentiments:                       # positive/negative sentiment
+            pts.append({"label": f"{s.source} sentiment", "detail": s.reason, "weight": round(s.weight, 2), "kind": "sentiment"})
+        pts = sorted(pts, key=lambda p: -p["weight"])
+        n_model = sum(1 for m in models if m.signal_label == want_model)
+        if n_model:
+            # Model-vote goes LAST regardless of weight: the agreement level
+            # already communicates it, and a concrete indicator is a more
+            # useful "here's the specific thing" point for a novice.
+            pts.append({
+                "label": f"{n_model}/4 models",
+                "detail": f"{n_model} of the 4 model variants independently predict {want_model}.",
+                "weight": round(n_model / 4, 2), "kind": "model",
+            })
+        return pts
+
+    bull_case = _pts(
+        [s for s in indicator_signals if s.signal == "bullish"],
+        [s for s in sentiment_signals if s.signal == "positive"],
+        "BUY",
+    )
+    bear_case = _pts(
+        [s for s in indicator_signals if s.signal == "bearish"],
+        [s for s in sentiment_signals if s.signal == "negative"],
+        "SELL",
+    )
+
+    # Honest synthesis. For a directional call (BUY/SELL) we name which side
+    # the evidence leans and — crucially for reducing automation bias — the
+    # single strongest point on the OPPOSITE side, so a novice sees what could
+    # make it wrong. For a HOLD/Mixed call we present it as the genuine
+    # stand-off it is rather than forcing a direction.
+    if not bull_case and not bear_case:
+        verdict = ("Signals are too weak to build a clear case either way — the models "
+                   "are close to a coin-flip here, so treat this as low-conviction.")
+    elif overall_signal == "BUY" or overall_signal == "SELL":
+        leaning   = "up (BUY)" if overall_signal == "BUY" else "down (SELL)"
+        supporting = bull_case if overall_signal == "BUY" else bear_case
+        opposing   = bear_case if overall_signal == "BUY" else bull_case
+        strongest_support = supporting[0]["label"] if supporting else "the model votes"
+        tension = (f"The biggest counter-argument is {opposing[0]['label'].lower()} — "
+                   f"{opposing[0]['detail']}") if opposing else \
+                  "there's little evidence on the other side right now, which can itself signal crowding — stay alert."
+        conviction = ("The evidence lines up strongly" if agreement == "Strong"
+                      else "The evidence leans, but not decisively," if agreement == "Moderate"
+                      else "The evidence is genuinely split,")
+        verdict = (f"{conviction} toward {leaning}, driven most by {strongest_support.lower()}. "
+                   f"{tension}")
+    else:  # HOLD / Mixed — an honest stand-off, not a hidden direction
+        bull_lead = bull_case[0]["label"].lower() if bull_case else None
+        bear_lead = bear_case[0]["label"].lower() if bear_case else None
+        if bull_lead and bear_lead:
+            verdict = (f"This is a genuine stand-off — no clear edge either way. Bulls point to "
+                       f"{bull_lead}, bears to {bear_lead}. When the two sides are this balanced, "
+                       f"the honest read is to wait for one side to strengthen rather than force a trade.")
+        else:
+            verdict = ("The signals roughly cancel out — no clear directional edge right now, "
+                       "which is itself useful information: this isn't a high-conviction moment.")
+
+    return {"bull_case": bull_case, "bear_case": bear_case, "verdict": verdict}
+
+
+def analyse_row_indicators(row: pd.Series) -> list[IndicatorSignal]:
+    """The 4 technical-indicator reads for one feature row — shared by
+    explain() and the Game's post-answer reasoning so both describe an
+    indicator identically."""
+    close = row.get("Close", np.nan)
+    return [
+        analyse_rsi(row.get("rsi", np.nan)),
+        analyse_macd(row.get("macd", np.nan), row.get("macd_signal", np.nan)),
+        analyse_bollinger(close, row.get("bb_upper", np.nan), row.get("bb_mid", np.nan), row.get("bb_lower", np.nan)),
+        analyse_sma(close, row.get("sma_10", np.nan), row.get("sma_50", np.nan)),
+    ]
+
+
+def game_reasons(row: pd.Series, signal_label: str, max_reasons: int = 3) -> list[str]:
+    """Plain-English reasons a historical row's indicators supported the
+    model's actual call — the Game's teaching moment ("here's WHY it was a
+    BUY"), turning a right/wrong quiz into something that builds real
+    intuition, which is the whole point of the novice-facing product."""
+    want = "bullish" if signal_label == "BUY" else "bearish"
+    sigs = analyse_row_indicators(row)
+    aligned = sorted([s for s in sigs if s.signal == want], key=lambda s: -s.weight)
+    if aligned:
+        return [s.reason for s in aligned[:max_reasons]]
+    # None of these 4 indicators aligned — the model keyed on other features.
+    # Show the strongest non-neutral reads anyway, which is itself a lesson:
+    # the signal isn't always visible in the headline indicators.
+    return [s.reason for s in sorted(sigs, key=lambda s: -s.weight) if s.signal != "neutral"][:max_reasons]
+
+
+def build_counterfactuals(row: pd.Series, model_predictions: list[ModelPrediction],
+                          overall_signal: str) -> list[dict]:
+    """
+    "What would have to change to flip this?" — counterfactual explanations,
+    which the XAI literature finds specifically help non-experts trust and
+    reason about a model (arXiv:2504.13897). Each teaches a novice which
+    concrete level actually matters, in the indicator's own terms, rather
+    than leaving the thresholds implicit. Returns a list of
+    {factor, now, flips_at, effect}, most decision-relevant first.
+    """
+    cfs = []
+
+    # RSI — the 70/30 overbought/oversold lines every novice hears about.
+    rsi = row.get("rsi")
+    if rsi is not None and not pd.isna(rsi):
+        if rsi >= 70:
+            cfs.append({"factor": "RSI", "now": round(float(rsi), 1), "flips_at": 70,
+                        "effect": f"RSI is {rsi:.0f} — above 70, the classic overbought line. If it slipped back under 70, the pullback warning would clear."})
+        elif rsi <= 30:
+            cfs.append({"factor": "RSI", "now": round(float(rsi), 1), "flips_at": 30,
+                        "effect": f"RSI is {rsi:.0f} — below 30, the classic oversold line. If it climbed back above 30, the rebound signal would fade."})
+        else:
+            near = 70 if rsi >= 50 else 30
+            cfs.append({"factor": "RSI", "now": round(float(rsi), 1), "flips_at": near,
+                        "effect": f"RSI is {rsi:.0f}, in neutral territory. It would take a move to {near} to trigger the "
+                                  f"{'overbought' if near == 70 else 'oversold'} signal."})
+
+    # MACD — distance to the signal-line crossover that defines its direction.
+    macd, macd_sig = row.get("macd"), row.get("macd_signal")
+    if macd is not None and macd_sig is not None and not pd.isna(macd) and not pd.isna(macd_sig):
+        gap = macd - macd_sig
+        direction = "bullish" if gap > 0 else "bearish"
+        flip_to   = "bearish" if gap > 0 else "bullish"
+        cfs.append({"factor": "MACD", "now": round(float(macd), 3), "flips_at": round(float(macd_sig), 3),
+                    "effect": f"MACD ({macd:.2f}) is {'above' if gap > 0 else 'below'} its signal line ({macd_sig:.2f}) — a {direction} crossover. "
+                              f"A move of {abs(gap):.2f} the other way would flip momentum {flip_to}."})
+
+    # Model-vote — the most direct counterfactual, since the headline signal
+    # IS a majority vote: how many model flips would change the call.
+    n_buy  = sum(1 for m in model_predictions if m.signal_label == "BUY")
+    n_sell = len(model_predictions) - n_buy
+    if model_predictions:
+        if overall_signal == "BUY":
+            need = n_buy - n_sell
+            cfs.append({"factor": "Model votes", "now": f"{n_buy}/4 BUY", "flips_at": "tie",
+                        "effect": f"{n_buy} of 4 models say BUY. If {max(1, (need + 1)//2)} flipped to SELL, the consensus would drop to a HOLD."})
+        elif overall_signal == "SELL":
+            need = n_sell - n_buy
+            cfs.append({"factor": "Model votes", "now": f"{n_sell}/4 SELL", "flips_at": "tie",
+                        "effect": f"{n_sell} of 4 models say SELL. If {max(1, (need + 1)//2)} flipped to BUY, the consensus would drop to a HOLD."})
+
+    return cfs
 
 
 # ── Main Engine Function ───────────────────────────────────────────────────────
@@ -1069,6 +1304,38 @@ def explain(ticker: str) -> dict:
         indicator_signals, sentiment_signals, model_predictions
     )
 
+    # ── 7b. Bull case vs bear case (evidence for AND against) ──────────────────
+    evaluative = build_evaluative_case(
+        overall_signal, agreement_level, indicator_signals, sentiment_signals,
+        model_predictions, technical_score, sentiment_score
+    )
+
+    # ── 7c. Counterfactuals — "what would flip this?" ──────────────────────────
+    counterfactuals = build_counterfactuals(row, model_predictions, overall_signal)
+
+    # ── 7d. Calibrated reliability — how much to trust THIS signal, based on
+    # how the consensus's actual accuracy tracks its agreement level ──────────
+    reliability = None
+    rel_table = compute_agreement_reliability()
+    if rel_table and agreement_level in rel_table:
+        r = rel_table[agreement_level]
+        if agreement_level == "Strong":
+            phrasing = (f"All 4 models agree here. On the held-out test set, signals with this "
+                        f"full agreement were correct {r['accuracy']}% of the time — but that only "
+                        f"happens on {r['coverage']}% of days, so it's the high-conviction minority.")
+        elif agreement_level == "Moderate":
+            phrasing = (f"3 of 4 models agree. Historically these were right about {r['accuracy']}% "
+                        f"of the time — a real but modest edge; size positions accordingly.")
+        else:
+            phrasing = (f"The models are split. Signals this divided were right only {r['accuracy']}% "
+                        f"of the time historically — essentially a coin flip, so treat this as low-conviction.")
+        reliability = {
+            "level": agreement_level,
+            "historical_accuracy": r["accuracy"],
+            "coverage": r["coverage"],
+            "statement": phrasing,
+        }
+
     # ── 8. Get date from latest prediction ────────────────────────────────────
     latest_date = "N/A"
     if model_predictions:
@@ -1096,6 +1363,11 @@ def explain(ticker: str) -> dict:
         "risk_volatility_pct": risk_info["volatility_pct"],
         "risk_atr_pct"       : risk_info["atr_pct"],
         "summary"            : summary,
+        "bull_case"          : evaluative["bull_case"],
+        "bear_case"          : evaluative["bear_case"],
+        "verdict"            : evaluative["verdict"],
+        "counterfactuals"    : counterfactuals,
+        "reliability"        : reliability,
         "technical_score"    : technical_score,
         "sentiment_score"    : sentiment_score,
         "emotion_score"      : emotion_score,

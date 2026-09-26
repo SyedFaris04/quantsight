@@ -1,0 +1,28 @@
+{
+  "url": "https://huggingface.co/datasets/Zihan1004/FNSPID/resolve/bf9189c41527198897d1af3e17b1a0095279fc45/Stock_news/nasdaq_exteral_data.csv",
+  "revision": "bf9189c41527198897d1af3e17b1a0095279fc45",
+  "http_status": 206,
+  "content_range": "bytes 0-2097151/23232979597",
+  "bytes_read": 2097152,
+  "prefix_sha256": "155244783df7dfc429b9e3110ec58e75e190d784fbc24c9a921838bb3dbbfdd4",
+  "columns": [
+    "Unnamed: 0",
+    "Date",
+    "Article_title",
+    "Stock_symbol",
+    "Url",
+    "Publisher",
+    "Author",
+    "Article",
+    "Lsa_summary",
+    "Luhn_summary",
+    "Textrank_summary",
+    "Lexrank_summary"
+  ],
+  "parsed_rows_excluding_last": 296,
+  "symbol_counts": {
+    "A": 296
+  },
+  "midnight_timestamp_rows": 295,
+  "scope": "Non-random file prefix, useful only for schema and access verification; not a coverage or performance estimate."
+}

@@ -1,25 +1,38 @@
 # QuantSight — AI Decision Support for Stock Signals
 
-> Final Year Project (FYP) — a decision-support platform that predicts next-day
+> Final Year Project (FYP) — a decision-support platform that predicts five-session
 > BUY/SELL direction for 44 US stocks/ETFs, and explains *why*, by combining
 > technical indicators, news + social sentiment, and multi-label emotion
-> detection across two model families.
+> detection, with six model families evaluated.
 
 For step-by-step run instructions, see **[HOW_TO_RUN.md](HOW_TO_RUN.md)**.
 This file is the project overview: what it does, how it's built, and why.
+
+**Current evaluation:** open **Backtesting** (`/backtesting`) for the corrected
+historical simulation, shared-date model comparisons, benchmark curves and audit
+exports. Read [the backtesting protocol](docs/BACKTESTING.md) and
+[the staged improvement roadmap](docs/IMPROVEMENT_ROADMAP.md).
+Saved models remain exploratory: a fresh final test is still required. A new
+historical news archive has been audited and piloted, with partial coverage and no
+convincing sentiment improvement in the first experiment. See the
+[research recommendations](docs/research/RESEARCH_RECOMMENDATIONS.md) and
+[28 September supervisor brief](docs/SUPERVISOR_PROGRESS_2026-09-28.md).
+The five-session live tracker is implemented locally; its Supabase migration and
+hosted integration are still outstanding. Legacy hit rates are not the new evaluation.
 
 ---
 
 ## What This System Does
 
-QuantSight predicts next-day stock direction and — more importantly for an FYP
+QuantSight predicts five-trading-session stock direction and — more importantly for an FYP
 about *decision support* rather than a black-box signal — explains the
 prediction in plain language, shows how confident the model really is, and is
 honest when a data source doesn't cover a given day rather than fabricating a
 number.
 
-It trains **4 model variants** so the value of adding sentiment/emotion data
-is directly measurable, not assumed:
+The original research comparison uses **4 model variants**. The current evaluation
+also includes finance/sentiment pairs of GRU, Random Forest, Logistic Regression
+and Transformer Encoder, plus a four-model probability ensemble:
 
 | # | Model | Data | Output file |
 |---|-------|------|-------------|
@@ -28,28 +41,18 @@ is directly measurable, not assumed:
 | C | LSTM + Attention | Finance only | `lstm_finance_predictions.csv` |
 | D | LSTM + Attention | Finance + Sentiment + Emotion | `lstm_sentiment_predictions.csv` |
 
-**Real, honestly-reported results** (chronological train/test split, 2015–2023
-train / 2023–2024 test, purged walk-forward CV, no leakage):
+Results are generated from saved predictions, not copied into this README.
+`backend/data/backtests/report.json` is the current historical evaluation artifact.
+It compares classification on identical ticker-days, including an always-up
+baseline, and simulates next-open execution with daily portfolio accounting.
+Each report records its inputs' SHA-256 hashes; the API warns if those files change.
 
-| Model | Accuracy | F1 | AUC-ROC |
-|---|---|---|---|
-| XGBoost — Finance only | 51.66% | 61.57% | 50.24% |
-| XGBoost — Finance+Sentiment | 51.63% | 61.55% | 50.31% |
-| LSTM+Attention — Finance only | 51.56% | 51.25% | 53.09% |
-| LSTM+Attention — Finance+Sentiment (**best**) | **53.02%** | **54.27%** | **54.01%** |
-
-Daily stock direction is a genuinely hard prediction problem — accuracy in the
-low-50s is consistent with published literature (see [Research Notes](#research-notes-and-related-work)
-below), not a bug. The more interesting, defensible result is that adding
-sentiment+emotion features gives the LSTM a real backtest lift: **29.27% → 48.49%
-portfolio return**, Sharpe **0.735 → 1.279**, on a top-5 equal-weight
-weekly-rebalanced portfolio vs. SPY.
-
-This table stays focused on the core research question (architecture ×
-sentiment). See the in-app **Leaderboard** (`/leaderboard`) for the full
-ranked comparison, which also includes Random Forest, Logistic Regression,
-GRU, a Transformer encoder, and an ensemble-of-all-4-core-models baseline —
-all real, trained variants, none of them literature numbers.
+The prior return/Sharpe claims have been withdrawn: the old weekly script selected
+using information from within the same week whose return it credited. Existing
+`backend/data/predictions/backtest_results.csv`, `portfolio_values.csv` and
+`weekly_holdings.csv` are legacy artifacts, not current evidence. The new page
+does not consume them. Sentiment features are all zero in the current shared
+test sample, so performance differences cannot establish a benefit from fresh text.
 
 ### Beyond the base prediction
 
@@ -373,6 +376,11 @@ Full interactive docs: `http://localhost:8000/docs`
 ---
 
 ## Deployment
+
+For this existing installation and the latest changes, follow the
+[current setup guide](docs/SETUP_CURRENT_PROGRESS.md). It covers the v2 migration,
+existing cloud projects, deployment checks and the correct local API port.
+The general instructions below include initial account setup already completed here.
 
 Everything below runs on free tiers. See **[CHECKLIST.md](CHECKLIST.md)** for
 a literal step-by-step checklist of this same setup.

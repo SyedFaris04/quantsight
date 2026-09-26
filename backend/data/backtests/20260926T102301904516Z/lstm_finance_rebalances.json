@@ -1,0 +1,1250 @@
+[
+  {
+    "date": "2023-02-22",
+    "signal_date": "2023-02-21",
+    "holdings": [
+      "AAPL",
+      "AMD",
+      "AMZN",
+      "BAC",
+      "C"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-02-27",
+    "signal_date": "2023-02-24",
+    "holdings": [
+      "AAPL",
+      "ADBE",
+      "AMZN",
+      "BAC",
+      "C"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-03-06",
+    "signal_date": "2023-03-03",
+    "holdings": [
+      "AAPL",
+      "ABBV",
+      "ADBE",
+      "AMD",
+      "AMZN"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-03-13",
+    "signal_date": "2023-03-10",
+    "holdings": [
+      "AAPL",
+      "ABBV",
+      "ADBE",
+      "AMZN",
+      "C"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-03-20",
+    "signal_date": "2023-03-17",
+    "holdings": [
+      "AAPL",
+      "ABBV",
+      "ADBE",
+      "AMZN",
+      "COP"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-03-27",
+    "signal_date": "2023-03-24",
+    "holdings": [
+      "AAPL",
+      "ABBV",
+      "ADBE",
+      "AMZN",
+      "COST"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-04-03",
+    "signal_date": "2023-03-31",
+    "holdings": [
+      "AMZN",
+      "COST",
+      "GLD",
+      "GOOGL",
+      "GS"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-04-10",
+    "signal_date": "2023-04-06",
+    "holdings": [
+      "GOOGL",
+      "NVDA",
+      "TSLA",
+      "AAPL",
+      "ADBE"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-04-17",
+    "signal_date": "2023-04-14",
+    "holdings": [
+      "NFLX",
+      "NVDA",
+      "TSLA",
+      "AAPL",
+      "DIA"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-04-24",
+    "signal_date": "2023-04-21",
+    "holdings": [
+      "AAPL",
+      "COST",
+      "DIA",
+      "MCD",
+      "NVDA"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-05-01",
+    "signal_date": "2023-04-28",
+    "holdings": [
+      "ADBE",
+      "C",
+      "DIA",
+      "GLD",
+      "GS"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-05-08",
+    "signal_date": "2023-05-05",
+    "holdings": [
+      "AAPL",
+      "ABBV",
+      "ADBE",
+      "AMD",
+      "AMZN"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-05-15",
+    "signal_date": "2023-05-12",
+    "holdings": [
+      "ADBE",
+      "AMZN",
+      "COST",
+      "DIA",
+      "GLD"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-05-22",
+    "signal_date": "2023-05-19",
+    "holdings": [
+      "ADBE",
+      "AMD",
+      "COST",
+      "DIA",
+      "GLD"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-05-30",
+    "signal_date": "2023-05-26",
+    "holdings": [
+      "AAPL",
+      "ADBE",
+      "AMD",
+      "AMZN",
+      "COST"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-06-05",
+    "signal_date": "2023-06-02",
+    "holdings": [
+      "AAPL",
+      "AMD",
+      "AMZN",
+      "COST",
+      "DIA"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-06-12",
+    "signal_date": "2023-06-09",
+    "holdings": [
+      "AAPL",
+      "COST",
+      "CRM",
+      "DIA",
+      "GS"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-06-20",
+    "signal_date": "2023-06-16",
+    "holdings": [
+      "COST",
+      "CRM",
+      "MRNA",
+      "NVDA",
+      "UNH"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-06-26",
+    "signal_date": "2023-06-23",
+    "holdings": [
+      "COST",
+      "DIA",
+      "UNH",
+      "WMT",
+      "IWM"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-07-03",
+    "signal_date": "2023-06-30",
+    "holdings": [
+      "COST",
+      "DIA",
+      "GS",
+      "INTC",
+      "JNJ"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-07-10",
+    "signal_date": "2023-07-07",
+    "holdings": [
+      "ABBV",
+      "COST",
+      "CRM",
+      "DIA",
+      "GS"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-07-17",
+    "signal_date": "2023-07-14",
+    "holdings": [
+      "COST",
+      "NVDA",
+      "UNH",
+      "AAPL",
+      "DIA"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-07-24",
+    "signal_date": "2023-07-21",
+    "holdings": [
+      "COST",
+      "AAPL",
+      "JPM",
+      "QQQ",
+      "UNH"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-07-31",
+    "signal_date": "2023-07-28",
+    "holdings": [
+      "NVDA",
+      "SLB",
+      "COST",
+      "JPM",
+      "TSLA"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-08-07",
+    "signal_date": "2023-08-04",
+    "holdings": [
+      "BAC",
+      "COST",
+      "GS",
+      "JPM",
+      "MSFT"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-08-14",
+    "signal_date": "2023-08-11",
+    "holdings": [
+      "COST",
+      "MSFT",
+      "NVDA",
+      "TSLA",
+      "QQQ"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-08-21",
+    "signal_date": "2023-08-18",
+    "holdings": [
+      "ADBE",
+      "AMD",
+      "COST",
+      "DIA",
+      "GS"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-08-28",
+    "signal_date": "2023-08-25",
+    "holdings": [
+      "ADBE",
+      "AMD",
+      "AMZN",
+      "BAC",
+      "COST"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-09-05",
+    "signal_date": "2023-09-01",
+    "holdings": [
+      "AMD",
+      "COST",
+      "META",
+      "MRNA",
+      "MSFT"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-09-11",
+    "signal_date": "2023-09-08",
+    "holdings": [
+      "META",
+      "MRNA",
+      "NVDA",
+      "TSLA",
+      "UNH"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-09-18",
+    "signal_date": "2023-09-15",
+    "holdings": [
+      "AAPL",
+      "INTC",
+      "NVDA",
+      "QQQ",
+      "UNH"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-09-25",
+    "signal_date": "2023-09-22",
+    "holdings": [
+      "AAPL",
+      "ADBE",
+      "AMD",
+      "AMZN",
+      "COST"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-10-02",
+    "signal_date": "2023-09-29",
+    "holdings": [
+      "AAPL",
+      "ADBE",
+      "AMD",
+      "AMZN",
+      "BAC"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-10-09",
+    "signal_date": "2023-10-06",
+    "holdings": [
+      "AAPL",
+      "ABBV",
+      "ADBE",
+      "AMD",
+      "AMZN"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-10-16",
+    "signal_date": "2023-10-13",
+    "holdings": [
+      "AAPL",
+      "ADBE",
+      "AMZN",
+      "COST",
+      "GS"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-10-23",
+    "signal_date": "2023-10-20",
+    "holdings": [
+      "AMD",
+      "COST",
+      "GS",
+      "NVDA",
+      "QQQ"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-10-30",
+    "signal_date": "2023-10-27",
+    "holdings": [
+      "AAPL",
+      "ABBV",
+      "AMD",
+      "AMZN",
+      "COST"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-11-06",
+    "signal_date": "2023-11-03",
+    "holdings": [
+      "AAPL",
+      "ABBV",
+      "ADBE",
+      "AMD",
+      "AMZN"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-11-13",
+    "signal_date": "2023-11-10",
+    "holdings": [
+      "COST",
+      "GLD",
+      "MCD",
+      "NVDA",
+      "QQQ"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-11-20",
+    "signal_date": "2023-11-17",
+    "holdings": [
+      "AAPL",
+      "AMZN",
+      "NVDA",
+      "QQQ",
+      "TSLA"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-11-27",
+    "signal_date": "2023-11-24",
+    "holdings": [
+      "AAPL",
+      "NVDA",
+      "QQQ",
+      "TSLA",
+      "UBER"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-12-04",
+    "signal_date": "2023-12-01",
+    "holdings": [
+      "NVDA",
+      "TSLA",
+      "JPM",
+      "AAPL",
+      "MRNA"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-12-11",
+    "signal_date": "2023-12-08",
+    "holdings": [
+      "DIA",
+      "JPM",
+      "MCD",
+      "META",
+      "MRNA"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-12-18",
+    "signal_date": "2023-12-15",
+    "holdings": [
+      "ABBV",
+      "COST",
+      "CRM",
+      "DIA",
+      "JPM"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2023-12-26",
+    "signal_date": "2023-12-22",
+    "holdings": [
+      "ABBV",
+      "ADBE",
+      "DIA",
+      "JPM",
+      "QQQ"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-01-02",
+    "signal_date": "2023-12-29",
+    "holdings": [
+      "ADBE",
+      "DIA",
+      "JPM",
+      "MSFT",
+      "QQQ"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-01-08",
+    "signal_date": "2024-01-05",
+    "holdings": [
+      "ADBE",
+      "DIA",
+      "JPM",
+      "MSFT",
+      "NVDA"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-01-16",
+    "signal_date": "2024-01-12",
+    "holdings": [
+      "ADBE",
+      "DIA",
+      "JNJ",
+      "JPM",
+      "MCD"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-01-22",
+    "signal_date": "2024-01-19",
+    "holdings": [
+      "ABBV",
+      "ADBE",
+      "DIA",
+      "GS",
+      "JNJ"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-01-29",
+    "signal_date": "2024-01-26",
+    "holdings": [
+      "ABBV",
+      "COST",
+      "DIA",
+      "GS",
+      "JNJ"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-02-05",
+    "signal_date": "2024-02-02",
+    "holdings": [
+      "ABBV",
+      "MSFT",
+      "NVDA",
+      "ORCL",
+      "QQQ"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-02-12",
+    "signal_date": "2024-02-09",
+    "holdings": [
+      "AAPL",
+      "ABBV",
+      "DIA",
+      "GOOGL",
+      "MCD"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-02-20",
+    "signal_date": "2024-02-16",
+    "holdings": [
+      "AAPL",
+      "ABBV",
+      "ADBE",
+      "AMZN",
+      "C"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-02-26",
+    "signal_date": "2024-02-23",
+    "holdings": [
+      "AAPL",
+      "ABBV",
+      "ADBE",
+      "AMZN",
+      "COST"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-03-04",
+    "signal_date": "2024-03-01",
+    "holdings": [
+      "ADBE",
+      "DIA",
+      "JPM",
+      "NVDA",
+      "QQQ"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-03-11",
+    "signal_date": "2024-03-08",
+    "holdings": [
+      "ADBE",
+      "DIA",
+      "JPM",
+      "MCD",
+      "TSLA"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-03-18",
+    "signal_date": "2024-03-15",
+    "holdings": [
+      "DIA",
+      "GLD",
+      "GS",
+      "JPM",
+      "MSFT"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-03-25",
+    "signal_date": "2024-03-22",
+    "holdings": [
+      "ADBE",
+      "AMD",
+      "COST",
+      "GLD",
+      "JPM"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-04-01",
+    "signal_date": "2024-03-28",
+    "holdings": [
+      "ADBE",
+      "AMD",
+      "COST",
+      "GLD",
+      "JPM"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-04-08",
+    "signal_date": "2024-04-05",
+    "holdings": [
+      "ADBE",
+      "AMD",
+      "NVDA",
+      "COST",
+      "JPM"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-04-15",
+    "signal_date": "2024-04-12",
+    "holdings": [
+      "AAPL",
+      "ADBE",
+      "AMD",
+      "COST",
+      "CRM"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-04-22",
+    "signal_date": "2024-04-19",
+    "holdings": [
+      "AAPL",
+      "ADBE",
+      "AMD",
+      "COP",
+      "COST"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-04-29",
+    "signal_date": "2024-04-26",
+    "holdings": [
+      "AAPL",
+      "ABBV",
+      "ADBE",
+      "AMD",
+      "AMZN"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-05-06",
+    "signal_date": "2024-05-03",
+    "holdings": [
+      "ADBE",
+      "AAPL",
+      "AMD",
+      "COST",
+      "CRM"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-05-13",
+    "signal_date": "2024-05-10",
+    "holdings": [
+      "ADBE",
+      "AMD",
+      "COST",
+      "CRM",
+      "CVX"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-05-20",
+    "signal_date": "2024-05-17",
+    "holdings": [
+      "NVDA",
+      "PFE",
+      "TSLA",
+      "AMD",
+      "DIA"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-05-28",
+    "signal_date": "2024-05-24",
+    "holdings": [
+      "DIA",
+      "ADBE",
+      "META",
+      "MS",
+      "NVDA"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-06-03",
+    "signal_date": "2024-05-31",
+    "holdings": [
+      "ADBE",
+      "AMD",
+      "CRM",
+      "DIA",
+      "GOOGL"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-06-10",
+    "signal_date": "2024-06-07",
+    "holdings": [
+      "AAPL",
+      "ADBE",
+      "AMD",
+      "AMZN",
+      "COST"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-06-17",
+    "signal_date": "2024-06-14",
+    "holdings": [
+      "ADBE",
+      "AMD",
+      "CRM",
+      "CVS",
+      "DIA"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-06-24",
+    "signal_date": "2024-06-21",
+    "holdings": [
+      "ABBV",
+      "AMD",
+      "AMZN",
+      "CRM",
+      "CVS"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-07-01",
+    "signal_date": "2024-06-28",
+    "holdings": [
+      "AAPL",
+      "ABBV",
+      "AMD",
+      "AMZN",
+      "COST"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-07-08",
+    "signal_date": "2024-07-05",
+    "holdings": [
+      "AMD",
+      "CVS",
+      "DIA",
+      "INTC",
+      "MCD"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-07-15",
+    "signal_date": "2024-07-12",
+    "holdings": [
+      "ABBV",
+      "AMZN",
+      "C",
+      "COST",
+      "CRM"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-07-22",
+    "signal_date": "2024-07-19",
+    "holdings": [
+      "AMZN",
+      "C",
+      "COST",
+      "CRM",
+      "DIA"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-07-29",
+    "signal_date": "2024-07-26",
+    "holdings": [
+      "AAPL",
+      "AMD",
+      "AMZN",
+      "COST",
+      "DIA"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-08-05",
+    "signal_date": "2024-08-02",
+    "holdings": [
+      "AAPL",
+      "ABBV",
+      "ADBE",
+      "AMZN",
+      "C"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-08-12",
+    "signal_date": "2024-08-09",
+    "holdings": [
+      "AAPL",
+      "ABBV",
+      "ADBE",
+      "COST",
+      "CRM"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-08-19",
+    "signal_date": "2024-08-16",
+    "holdings": [
+      "AAPL",
+      "ABBV",
+      "ADBE",
+      "AMD",
+      "COST"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-08-26",
+    "signal_date": "2024-08-23",
+    "holdings": [
+      "MRNA",
+      "NKE",
+      "NVDA",
+      "TSLA",
+      "UBER"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-09-03",
+    "signal_date": "2024-08-30",
+    "holdings": [
+      "AAPL",
+      "ABBV",
+      "AMD",
+      "AMZN",
+      "NKE"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-09-09",
+    "signal_date": "2024-09-06",
+    "holdings": [
+      "ABBV",
+      "AMD",
+      "AMZN",
+      "DIA",
+      "GLD"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-09-16",
+    "signal_date": "2024-09-13",
+    "holdings": [
+      "AAPL",
+      "ABBV",
+      "BAC",
+      "CRM",
+      "DIA"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-09-23",
+    "signal_date": "2024-09-20",
+    "holdings": [
+      "AAPL",
+      "ABBV",
+      "ADBE",
+      "AMZN",
+      "BAC"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-09-30",
+    "signal_date": "2024-09-27",
+    "holdings": [
+      "ADBE",
+      "AAPL",
+      "COST",
+      "INTC",
+      "MCD"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-10-07",
+    "signal_date": "2024-10-04",
+    "holdings": [
+      "ADBE",
+      "AMZN",
+      "COST",
+      "DIA",
+      "INTC"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-10-14",
+    "signal_date": "2024-10-11",
+    "holdings": [
+      "AAPL",
+      "ADBE",
+      "AMZN",
+      "COST",
+      "DIA"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-10-21",
+    "signal_date": "2024-10-18",
+    "holdings": [
+      "ADBE",
+      "COST",
+      "CVS",
+      "DIA",
+      "MCD"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-10-28",
+    "signal_date": "2024-10-25",
+    "holdings": [
+      "ADBE",
+      "AMD",
+      "COST",
+      "DIA",
+      "MCD"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-11-04",
+    "signal_date": "2024-11-01",
+    "holdings": [
+      "AAPL",
+      "ADBE",
+      "AMZN",
+      "COST",
+      "DIA"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-11-11",
+    "signal_date": "2024-11-08",
+    "holdings": [
+      "AAPL",
+      "ADBE",
+      "COST",
+      "DIA",
+      "GLD"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-11-18",
+    "signal_date": "2024-11-15",
+    "holdings": [
+      "ADBE",
+      "COST",
+      "META",
+      "MSFT",
+      "QQQ"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-11-25",
+    "signal_date": "2024-11-22",
+    "holdings": [
+      "INTC",
+      "IWM",
+      "META",
+      "MSFT",
+      "NFLX"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-12-02",
+    "signal_date": "2024-11-29",
+    "holdings": [
+      "AAPL",
+      "META",
+      "MSFT",
+      "NFLX",
+      "NVDA"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-12-09",
+    "signal_date": "2024-12-06",
+    "holdings": [
+      "AAPL",
+      "META",
+      "MSFT",
+      "NFLX",
+      "NVDA"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  },
+  {
+    "date": "2024-12-16",
+    "signal_date": "2024-12-13",
+    "holdings": [
+      "AAPL",
+      "DIA",
+      "GS",
+      "MCD",
+      "MRNA"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": 1.0
+  }
+]

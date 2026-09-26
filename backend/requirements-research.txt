@@ -1,0 +1,3 @@
+# The small news pilot reuses the pinned evaluation environment.
+-r requirements-evaluation.txt
+vaderSentiment==3.3.2

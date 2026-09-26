@@ -22,6 +22,7 @@ const NAV_LINKS = [
   { to: "/compare",   label: "AI Compare", icon: "📊" },
   { to: "/leaderboard", label: "Leaderboard", icon: "🏆" },
   { to: "/track-record", label: "Track Record", icon: "🎯" },
+  { to: "/backtesting", label: "Backtesting", icon: "↗" },
   { to: "/portfolio", label: "Portfolio",  icon: "💼" },
   { to: "/game",       label: "Game",       icon: "🎮" },
   { to: "/settings",   label: "Settings",   icon: "⚙️" },

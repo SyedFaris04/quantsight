@@ -184,7 +184,7 @@ function RsiHint({ rsi }) {
 }
 
 function ResultCard({ result, onNext }) {
-  const { correct, actual_signal, confidence, explanation, points_earned } = result;
+  const { correct, actual_signal, confidence, explanation, points_earned, reasons } = result;
   return (
     <div
       className={`qs-card-in rounded-2xl border p-6 space-y-4 ${
@@ -232,6 +232,23 @@ function ResultCard({ result, onNext }) {
                     rounded-lg px-4 py-3">
         {explanation}
       </p>
+
+      {/* Why the model saw it this way — teaches intuition, not just score */}
+      {reasons?.length > 0 && (
+        <div className="bg-gray-800/40 rounded-lg px-4 py-3">
+          <p className="text-xs font-semibold text-indigo-300 mb-1.5">
+            Why the model saw a {actual_signal} here:
+          </p>
+          <ul className="space-y-1">
+            {reasons.map((r, i) => (
+              <li key={i} className="text-xs text-gray-400 flex gap-1.5">
+                <span className="text-indigo-500 flex-shrink-0">•</span>
+                <span>{r}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Next button */}
       <button
@@ -427,6 +444,7 @@ export default function Game() {
   const [result,    setResult]    = useState(null);
   const [loading,   setLoading]   = useState(false);
   const [answering, setAnswering] = useState(false);
+  const [questionError, setQuestionError] = useState(null);
 
   // ── Score tracking — initialized from localStorage so progress is
   // genuinely cumulative across visits, not wiped on every page load.
@@ -446,8 +464,18 @@ export default function Game() {
   // On sign-in, load progress from Supabase (one row per user). If the
   // account has no row yet but this browser has real guest-mode progress,
   // offer a one-time, non-destructive import instead of silently losing it.
+  //
+  // remoteLoadedRef gates the persist effect below: without it, the persist
+  // effect (which also depends on `user`) fires on the same render as this
+  // load effect, immediately upserting whatever score/streak/etc. currently
+  // hold (stale localStorage defaults, or 0 on a fresh device) BEFORE this
+  // async select has resolved — silently overwriting real remote progress
+  // with zeros. Persist is held off until this load has settled at least
+  // once per sign-in.
+  const remoteLoadedRef = useRef(false);
+
   useEffect(() => {
-    if (!user) return;
+    if (!user) { remoteLoadedRef.current = false; return; }
     let cancelled = false;
     (async () => {
       const { data, error } = await supabase
@@ -458,6 +486,7 @@ export default function Game() {
       if (cancelled) return;
       if (error) {
         console.error("Failed to load game progress from Supabase:", error);
+        remoteLoadedRef.current = true;
         return;
       }
       if (data) {
@@ -471,6 +500,7 @@ export default function Game() {
         const local = loadProgress();
         if (local && (local.total ?? 0) > 0) setImportPrompt(true);
       }
+      remoteLoadedRef.current = true;
     })();
     return () => { cancelled = true; };
   }, [user]);
@@ -501,9 +531,12 @@ export default function Game() {
   }
 
   // Persist on every change — Supabase (one upserted row) when signed in,
-  // localStorage (guest mode, untouched by signing in) otherwise.
+  // localStorage (guest mode, untouched by signing in) otherwise. Gated on
+  // remoteLoadedRef for signed-in users so this can't race the initial
+  // Supabase load above and overwrite real progress with stale defaults.
   useEffect(() => {
     if (user) {
+      if (!remoteLoadedRef.current) return;
       supabase.from("game_progress").upsert({
         user_id: user.id, score, streak, high_score: highScore, total, correct, history,
       }).then(({ error }) => {
@@ -520,6 +553,7 @@ export default function Game() {
     setResult(null);
     setQuestion(null);
     setSelectedAnswer(null);
+    setQuestionError(null);
     try {
       const res = await fetch(
         `${import.meta.env.VITE_API_URL || "/api"}/game/question` +
@@ -530,6 +564,7 @@ export default function Game() {
       setQuestion(data);
     } catch (e) {
       console.error("Failed to fetch question:", e);
+      setQuestionError(e.message || "Could not load a question.");
     } finally {
       setLoading(false);
     }
@@ -924,6 +959,13 @@ export default function Game() {
             Keyboard shortcuts: <kbd className="px-1.5 py-0.5 rounded bg-gray-800 border border-gray-700">B</kbd>
             {" "}for Buy, <kbd className="px-1.5 py-0.5 rounded bg-gray-800 border border-gray-700">S</kbd> for Sell
           </p>
+        </div>
+      ) : questionError ? (
+        <div className="card space-y-3 text-center py-8">
+          <p className="text-red-500 text-sm">Could not load a question — {questionError}</p>
+          <button className="btn-secondary text-sm" onClick={fetchQuestion}>
+            Try again
+          </button>
         </div>
       ) : null}
 

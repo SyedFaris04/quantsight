@@ -1,0 +1,11 @@
+[
+  {
+    "date": "2023-02-22",
+    "signal_date": "2023-02-21",
+    "holdings": [
+      "SPY"
+    ],
+    "target_exposure": 1.0,
+    "prediction_coverage": null
+  }
+]

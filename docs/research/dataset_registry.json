@@ -1,0 +1,85 @@
+{
+  "reviewed_on": "2026-09-26",
+  "purpose": "QuantSight FYP source selection. Candidate inclusion does not certify predictive value or redistribution rights.",
+  "sources": [
+    {
+      "id": "drinkall_news",
+      "url": "https://github.com/FelixDrinkall/financial-news-dataset",
+      "revision": "3d87f0a8140d6517619d56ad9014f7f6c68abdcb",
+      "status": "downloaded_audited_pilot_completed",
+      "priority": 1,
+      "purpose": "Manageable historical finance/news ablation",
+      "period": "2017-2023 source files; conservative availability can roll into 2024",
+      "license_declared": "CC-BY-NC-SA-4.0",
+      "usage": "Local noncommercial academic research; retain attribution and source license; do not publish raw articles through QuantSight",
+      "audit": "news_candidate_audit.json",
+      "blocks_confirmatory_claim": ["Previously examined market period", "Only 26 of 44 tickers covered", "Publication time lacks explicit UTC suffix; repository documents UTC", "Article-version and archive provenance require further review"],
+      "excluded_input_fields": ["next_day_price_*", "curr_day_price_*", "prev_day_price_*", "sentiment", "emotion", "related_companies"]
+    },
+    {
+      "id": "fnspid",
+      "url": "https://huggingface.co/datasets/Zihan1004/FNSPID",
+      "repository": "https://github.com/Zdong104/FNSPID_Financial_News_Dataset",
+      "revision": "bf9189c41527198897d1af3e17b1a0095279fc45",
+      "status": "bounded_prefix_probed_not_fully_downloaded",
+      "priority": 2,
+      "purpose": "Broader historical ticker-linked news coverage",
+      "period_claimed": "1999-2023",
+      "main_news_bytes": 23232979597,
+      "other_news_bytes": 5731397037,
+      "license_declared": "Repository LICENSE says CC-BY-NC-4.0; July 2025 README announcement grants broader use but older restrictions remain",
+      "audit": "fnspid_probe.json",
+      "limitations": ["Resolve inconsistent usage statements before redistribution", "Source maintenance stopped July 2025", "Midnight timestamps may only have day precision", "Paper price-regression R-squared is not five-day directional accuracy", "Full 44-ticker coverage not yet verified"]
+    },
+    {
+      "id": "stocknet",
+      "url": "https://github.com/yumoxu/stocknet-dataset",
+      "revision": "330708b5ddc359961078bef469f43f48992fd6e4",
+      "status": "primary_readme_reviewed",
+      "priority": 3,
+      "purpose": "Separate social-text replication benchmark",
+      "period_claimed": "2014-2016 experimental period",
+      "license_declared": "MIT repository license; source platform content considerations remain",
+      "limitations": ["Different universe and original task", "Not current news coverage", "Must recompute QuantSight five-session labels rather than copy published scores"]
+    },
+    {
+      "id": "financial_phrasebank",
+      "url": "https://huggingface.co/datasets/takala/financial_phrasebank",
+      "status": "dataset_card_reviewed",
+      "purpose": "Sentiment NLP evaluation or training only",
+      "license_declared": "CC-BY-NC-SA-3.0",
+      "limitations": ["No market-time alignment for return backtesting", "ProsusAI FinBERT used PhraseBank for fine-tuning, so it is not an independent evaluation of that model"]
+    },
+    {
+      "id": "twitter_financial_news_sentiment",
+      "url": "https://huggingface.co/datasets/zeroshot/twitter-financial-news-sentiment",
+      "status": "dataset_card_reviewed",
+      "purpose": "Additional bullish/bearish/neutral text evaluation",
+      "license_declared": "MIT as stated by dataset card",
+      "limitations": ["Inspect actual files: card headline document count conflicts with split totals", "Text sentiment labels do not establish future returns", "Deduplicate against training corpora before reporting NLP accuracy"]
+    },
+    {
+      "id": "sec_edgar",
+      "url": "https://www.sec.gov/search-filings/edgar-application-programming-interfaces",
+      "status": "official_api_reviewed_not_ingested",
+      "priority": 4,
+      "purpose": "Filing events and point-in-time fundamental features",
+      "limitations": ["Use filing acceptance/release time, not financial period end", "Join amended/restated facts by availability", "Identify client and obey SEC access policy", "Longer integration effort than news pilot"]
+    },
+    {
+      "id": "alfred",
+      "url": "https://fred.stlouisfed.org/docs/api/fred/realtime_period.html",
+      "status": "official_api_reviewed_not_ingested",
+      "priority": 5,
+      "purpose": "Macro regime features using historical vintages",
+      "limitations": ["Use data known at forecast time, not latest revised historical values", "Release timing and source-specific usage terms matter", "API key may be required"]
+    },
+    {
+      "id": "fingpt_forecaster",
+      "url": "https://huggingface.co/datasets/FinGPT/fingpt-forecaster-dow30-202305-202405",
+      "status": "card_reviewed_not_selected",
+      "purpose": "Reference for financial explanation/forecast task design",
+      "limitations": ["Prompt/answer records are not a ready-made clean price/news panel", "Responses and derived future-movement labels must never be predictors", "Different time horizon and universe require a separate protocol"]
+    }
+  ]
+}
