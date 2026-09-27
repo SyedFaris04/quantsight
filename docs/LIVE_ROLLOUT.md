@@ -11,8 +11,10 @@
   service-role and anonymous reads of all expected v2 columns now return HTTP 200.
   The earlier 404 / `PGRST205` condition is resolved. Hosted write/trigger checks
   remain separate from this read-only confirmation.
-- Render `/backtest` returns 404. `/live-track-record` returns the legacy response,
-  without the v2 protocol or five-session horizon. The hosted backend is not current.
+- Release `baf1aeb` is on GitHub and deployed on Render/Vercel. Hosted `/backtest`
+  returns a current report; `/live-track-record` confirms `nyse-close-5-v2` and five sessions.
+- The latest read-only check passes all requested checks. The first request after idle
+  timed out, then subsequent warm requests passed; cold-start latency remains a limitation.
 
 These observations establish the frontend-to-backend connection and configured
 database identity. They do not verify GitHub webhook settings, deployment secrets,

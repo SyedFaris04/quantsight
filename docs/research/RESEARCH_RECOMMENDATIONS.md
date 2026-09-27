@@ -4,6 +4,9 @@ Prepared 27 September 2026 for the 28 September supervisor progress meeting.
 Primary sources were reviewed on 26 September. Recommendations below are research
 choices, not promises of improved accuracy or investment returns.
 
+Follow-up: the [completed FinBERT study](FINBERT_STUDY.md) records two additional
+fits and the new AI Compare evidence panel. It does not justify replacing the live model.
+
 ## Decision
 
 Prioritize timestamped data, chronological evaluation and strong simple baselines.

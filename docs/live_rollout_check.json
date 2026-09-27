@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-09-26T23:21:14.558993+00:00",
+  "checked_at": "2026-09-27T04:12:45.485117+00:00",
   "mode": "read_only",
   "backend_url": "https://quantsight-rikc.onrender.com",
   "checks": [
@@ -24,18 +24,17 @@
     },
     {
       "check": "published_backtest",
-      "http_status": 404,
-      "error_code": null,
-      "passed": false
+      "http_status": 200,
+      "passed": true
     },
     {
       "check": "five_session_tracker",
       "http_status": 200,
-      "protocol_version": null,
-      "horizon_sessions": null,
-      "passed": false
+      "protocol_version": "nyse-close-5-v2",
+      "horizon_sessions": 5,
+      "passed": true
     }
   ],
-  "all_requested_checks_passed": false,
+  "all_requested_checks_passed": true,
   "limitations": "Reads do not verify hosted write permissions, triggers, scheduler secrets or future outcome resolution."
 }

@@ -1,0 +1,333 @@
+{
+  "run_id": "0024c8e43e438b37",
+  "protocol": {
+    "experiment_id": "news_finbert_extension_v1",
+    "status": "exploratory_historical",
+    "purpose": "Paired FinBERT extension of the fixed VADER pilot; two additional fits, no tuning.",
+    "registered_before_run": "2026-09-27",
+    "seed": 42,
+    "horizon_sessions": 5,
+    "fit_start": "2017-01-01",
+    "fit_end_exclusive": "2022-01-01",
+    "calibration_end_exclusive": "2023-01-01",
+    "evaluation_end_exclusive": "2024-01-01",
+    "purge_rule": "All target outcomes must occur strictly before the next segment starts.",
+    "scorer": {
+      "model": "ProsusAI/finbert",
+      "revision": "4556d13015211d73dccd3fdd39d39232506f3e43",
+      "max_length": 128,
+      "batch_size": 32,
+      "device": "cpu",
+      "dtype": "float32",
+      "threads": 4,
+      "polarity": "P(positive) - P(negative)",
+      "positive_threshold": 0.05,
+      "negative_threshold": -0.05
+    },
+    "text_input": "headline_only",
+    "news_timing": "First NYSE close at or after max(source publication, archive download, modification). Date-only publications delayed by one UTC day.",
+    "arms": [
+      "finance_coverage_finbert"
+    ],
+    "coverage_features": [
+      "news_observed",
+      "news_log_count"
+    ],
+    "sentiment_features": [
+      "news_polarity_mean",
+      "news_polarity_std",
+      "news_positive_share",
+      "news_negative_share"
+    ],
+    "model_families": [
+      "logistic",
+      "hist_gradient_boosting"
+    ],
+    "logistic": {
+      "C": 1.0,
+      "max_iter": 1000
+    },
+    "hist_gradient_boosting": {
+      "learning_rate": 0.05,
+      "max_iter": 150,
+      "max_leaf_nodes": 7,
+      "min_samples_leaf": 100,
+      "l2_regularization": 10.0,
+      "early_stopping": false
+    },
+    "calibration": "One fixed sigmoid fit on the separate 2022 segment; no method search.",
+    "direction_rule": "calibrated_probability_up >= 0.5",
+    "primary_metric": "brier_score",
+    "secondary_metrics": [
+      "balanced_accuracy",
+      "MCC",
+      "ROC_AUC",
+      "log_loss",
+      "accuracy",
+      "BUY_fraction"
+    ],
+    "paired_comparison": [
+      "FinBERT versus VADER",
+      "FinBERT versus coverage-only"
+    ],
+    "bootstrap_block_sessions": 20,
+    "bootstrap_repetitions": 1000,
+    "max_model_fits": 2,
+    "selection_rule": "Do not promote a model from this reused historical window.",
+    "limitations": [
+      "2023 has already been examined elsewhere in QuantSight; this is not an untouched final test.",
+      "Existing finance feature selection was influenced by historical results.",
+      "The fixed ticker universe is not point-in-time index membership.",
+      "Archive timestamps are conservative proxies and article versions require further validation.",
+      "Classification results are not trading returns or Sharpe ratios.",
+      "Pretrained NLP training-corpus overlap is not fully auditable; this is not a point-in-time deployable historical model claim.",
+      "Parent predictions are reused only after exact input hashes and row identity are checked."
+    ],
+    "parent_run_id": "4e1d6bff50369ed5"
+  },
+  "input_sha256": {
+    "news": "132c535ca0688d097077119be84250ad4215449c76288be45b12e58a3c1e386c",
+    "finance": "f2cbf71f5cd1b292bcab0f83fe0be3c7d2b1a0bbcf5fd36e9c67b3991d66e6e0",
+    "feature_list_model": "9a2c4cff2602a31457bed70140b2236ced5c2552b895d7f205cbc3f7573050d8",
+    "parent_predictions": "b1087586d170f0a666885b435def5dfc46ce57162fdc49205ee3f27861eb732a",
+    "parent_results": "5fadc0b21204f6c0885ae073e6556b0e1ed78936c4790199df83b30ff918e18f"
+  },
+  "protocol_sha256": "566fe65448bc91b079285323f0f7f02595b6e1b130ec2d3bb43ef3c1a06b2680",
+  "scoring": {
+    "settings": {
+      "model": "ProsusAI/finbert",
+      "revision": "4556d13015211d73dccd3fdd39d39232506f3e43",
+      "max_length": 128,
+      "batch_size": 32,
+      "device": "cpu",
+      "dtype": "float32",
+      "threads": 4,
+      "polarity": "P(positive) - P(negative)",
+      "positive_threshold": 0.05,
+      "negative_threshold": -0.05
+    },
+    "software": {
+      "torch": "2.12.1",
+      "transformers": "5.13.0",
+      "tokenizers": "0.22.2"
+    },
+    "model_files_sha256": {
+      "config.json": "f6449ddda85eb726207a40be59c0cd3bd4b142ccb27298d5e45f9ae3396b1abe",
+      "pytorch_model.bin": "e15a7b5738df7f17553399b6d94c6e2ff69c89245d066e8e5d183f5803a554e3",
+      "vocab.txt": "07eced375cec144d27c900241f3e339478dec958f92fddbc551f295c992038a3",
+      "tokenizer_config.json": "ffc7913f6084b138dad68de5a0c2f0ee25ac983709260901e01f53be5796b9d9",
+      "special_tokens_map.json": "303df45a03609e4ead04bc3dc1536d0ab19b5358db685b6f3da123d05ec200e3"
+    },
+    "cache_id": "1ad43d2720d590184449",
+    "unique_headlines": 48655,
+    "truncated_headlines": 0,
+    "scores_sha256": "cdd4744f3a52995a022b286c2ac2f80bcf97b127e93bd829a3320e2a58d32337"
+  },
+  "code_sha256": {
+    "research\\finbert_pilot.py": "9748b2d619354bbfdfbe44343d6a0d6bd5c503a752af5f6a5fdb2a1deb0de73b",
+    "research\\news_pilot.py": "37c8c7006bd27ec89efb7d012d47034d50022e3498c0eb5c9a893ce53f19b963"
+  },
+  "software": {
+    "numpy": "2.4.6",
+    "pandas": "3.0.3",
+    "scikit-learn": "1.9.0"
+  },
+  "segments": {
+    "fit": {
+      "rows": 53813,
+      "date_start": "2017-01-03",
+      "date_end": "2021-12-23",
+      "last_label_end": "2021-12-31",
+      "news_observed_rows": 5047
+    },
+    "calibration": {
+      "rows": 10824,
+      "date_start": "2022-01-03",
+      "date_end": "2022-12-22",
+      "last_label_end": "2022-12-30",
+      "news_observed_rows": 3146
+    },
+    "evaluation": {
+      "rows": 10780,
+      "date_start": "2023-01-03",
+      "date_end": "2023-12-21",
+      "last_label_end": "2023-12-29",
+      "news_observed_rows": 3658
+    }
+  },
+  "models": {
+    "logistic_finance_coverage_finbert": {
+      "all_rows": {
+        "n": 10780,
+        "accuracy": 0.47328385899814474,
+        "balanced_accuracy": 0.5123624956688946,
+        "mcc": 0.03682133157015227,
+        "roc_auc": 0.5241827070115255,
+        "brier_score": 0.2561944937798065,
+        "log_loss": 0.7056861915165604,
+        "buy_fraction": 0.12782931354359925
+      },
+      "news_observed_rows": {
+        "n": 3658,
+        "accuracy": 0.4581738655002734,
+        "balanced_accuracy": 0.5081801368455503,
+        "mcc": 0.024157655513247694,
+        "roc_auc": 0.5230608346208586,
+        "brier_score": 0.25851596104266983,
+        "log_loss": 0.7103737905451504,
+        "buy_fraction": 0.12930563149261892
+      },
+      "features": [
+        "rsi",
+        "return_5",
+        "return_10",
+        "bb_width",
+        "volatility_20",
+        "atr",
+        "volume_change",
+        "volume_sma_10",
+        "clv",
+        "cmf_20",
+        "svi_10",
+        "mfi_14",
+        "sma_5_norm",
+        "sma_10_norm",
+        "sma_20_norm",
+        "sma_50_norm",
+        "ema_12_norm",
+        "ema_26_norm",
+        "bb_upper_norm",
+        "bb_mid_norm",
+        "bb_lower_norm",
+        "macd_norm",
+        "macd_signal_norm",
+        "macd_hist_norm",
+        "rsi_rel_market",
+        "return5_rel_market",
+        "return5_rel_spy",
+        "volchg_rel_market",
+        "market_volatility",
+        "ret5_rel_sector",
+        "news_observed",
+        "news_log_count",
+        "news_polarity_mean",
+        "news_polarity_std",
+        "news_positive_share",
+        "news_negative_share"
+      ]
+    },
+    "hist_gradient_boosting_finance_coverage_finbert": {
+      "all_rows": {
+        "n": 10780,
+        "accuracy": 0.44879406307977737,
+        "balanced_accuracy": 0.4942948431412483,
+        "mcc": -0.023087378386700424,
+        "roc_auc": 0.4888340831302175,
+        "brier_score": 0.25835383732803785,
+        "log_loss": 0.7099888227044662,
+        "buy_fraction": 0.06456400742115027
+      },
+      "news_observed_rows": {
+        "n": 3658,
+        "accuracy": 0.43739748496446146,
+        "balanced_accuracy": 0.4978054479446529,
+        "mcc": -0.009924008661476285,
+        "roc_auc": 0.4712382315110093,
+        "brier_score": 0.26081177109215503,
+        "log_loss": 0.7149539329654189,
+        "buy_fraction": 0.05057408419901586
+      },
+      "features": [
+        "rsi",
+        "return_5",
+        "return_10",
+        "bb_width",
+        "volatility_20",
+        "atr",
+        "volume_change",
+        "volume_sma_10",
+        "clv",
+        "cmf_20",
+        "svi_10",
+        "mfi_14",
+        "sma_5_norm",
+        "sma_10_norm",
+        "sma_20_norm",
+        "sma_50_norm",
+        "ema_12_norm",
+        "ema_26_norm",
+        "bb_upper_norm",
+        "bb_mid_norm",
+        "bb_lower_norm",
+        "macd_norm",
+        "macd_signal_norm",
+        "macd_hist_norm",
+        "rsi_rel_market",
+        "return5_rel_market",
+        "return5_rel_spy",
+        "volchg_rel_market",
+        "market_volatility",
+        "ret5_rel_sector",
+        "news_observed",
+        "news_log_count",
+        "news_polarity_mean",
+        "news_polarity_std",
+        "news_positive_share",
+        "news_negative_share"
+      ]
+    }
+  },
+  "paired_comparisons": {
+    "logistic": {
+      "versus_vader": {
+        "brier_improvement": -0.00030415485485618893,
+        "interval_95": [
+          -0.0007056061352284233,
+          4.6156939004011215e-05
+        ],
+        "interpretation": "Positive means lower Brier loss for sentiment; exploratory interval, not adjusted for multiple comparisons."
+      },
+      "versus_coverage": {
+        "brier_improvement": -0.0002661589516154979,
+        "interval_95": [
+          -0.0006602049797863066,
+          5.61066966997466e-05
+        ],
+        "interpretation": "Positive means lower Brier loss for sentiment; exploratory interval, not adjusted for multiple comparisons."
+      }
+    },
+    "hist_gradient_boosting": {
+      "versus_vader": {
+        "brier_improvement": 5.8213702543317575e-05,
+        "interval_95": [
+          5.4403735668872506e-06,
+          0.00011929562531940422
+        ],
+        "interpretation": "Positive means lower Brier loss for sentiment; exploratory interval, not adjusted for multiple comparisons."
+      },
+      "versus_coverage": {
+        "brier_improvement": 5.8213702543317575e-05,
+        "interval_95": [
+          5.4403735668872506e-06,
+          0.00011929562531940422
+        ],
+        "interpretation": "Positive means lower Brier loss for sentiment; exploratory interval, not adjusted for multiple comparisons."
+      }
+    }
+  },
+  "baseline_training_prior": {
+    "n": 10780,
+    "accuracy": 0.5523191094619666,
+    "balanced_accuracy": 0.5,
+    "mcc": 0.0,
+    "roc_auc": 0.5,
+    "brier_score": 0.24762272621169376,
+    "log_loss": 0.6883950276793334,
+    "buy_fraction": 1.0
+  },
+  "baseline_always_up": {
+    "accuracy": 0.5523191094619666,
+    "buy_fraction": 1.0
+  },
+  "completed_at": "2026-09-27T04:12:45.605777+00:00"
+}

@@ -75,6 +75,7 @@ from live_signals import get_live_signal, get_live_signals_batch
 import chatbot_engine
 import prediction_tracker
 from backtesting.routes import router as backtesting_router
+from research.routes import router as research_router
 
 # ── Logging ────────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -107,6 +108,7 @@ app = FastAPI(
     version     = "1.0.0",
 )
 app.include_router(backtesting_router)
+app.include_router(research_router)
 
 # CORS — allow the deployed frontend (+ local dev) to call this API.
 # allow_origin_regex covers Vercel's per-deployment preview URLs

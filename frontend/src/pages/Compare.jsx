@@ -27,6 +27,7 @@
  */
 
 import { useState, useMemo } from "react";
+import ResearchComparison from "../components/ResearchComparison";
 import { useNavigate } from "react-router-dom";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -386,8 +387,16 @@ export default function Compare() {
       <div>
         <h1 className="text-xl font-semibold text-white">Model Comparison</h1>
         <p className="text-sm text-gray-500 mt-1">
-          XGBoost vs LSTM+Transformer — with and without sentiment data
+          Controlled news research and historical model comparisons
         </p>
+      </div>
+
+      <ResearchComparison />
+
+      <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm leading-relaxed text-amber-100">
+        <strong>Historical model variants below:</strong> the saved 2023–2024 text inputs are zero.
+        Differences between these older variants do not demonstrate a sentiment benefit.
+        Their evaluation period was reused during development; the controlled news study above is a separate experiment.
       </div>
 
       {/* ══ KPI summary row — all values derived from model_metrics.json ═══ */}
@@ -397,7 +406,7 @@ export default function Compare() {
         ) : summaryKpis ? (
           <>
             <div className="card border border-indigo-600/40 bg-indigo-600/5">
-              <div className="text-xs text-gray-500 uppercase tracking-wider">Best Model</div>
+              <div className="text-xs text-gray-500 uppercase tracking-wider">Highest historical accuracy</div>
               <div className="text-lg font-semibold text-white mt-1">{summaryKpis.bestModelLabel}</div>
             </div>
             <div className="card border border-green-600/40 bg-green-600/5">
@@ -405,25 +414,25 @@ export default function Compare() {
               <div className="text-2xl font-semibold text-white mt-1">{summaryKpis.bestAccuracy.toFixed(2)}%</div>
             </div>
             <div className="card border border-amber-600/40 bg-amber-600/5">
-              <div className="text-xs text-gray-500 uppercase tracking-wider">Best Accuracy Lift</div>
+              <div className="text-xs text-gray-500 uppercase tracking-wider">Variant accuracy difference</div>
               <div className="text-2xl font-semibold text-white mt-1">
                 {summaryKpis.bestAccDelta != null
-                  ? `${summaryKpis.bestAccDelta >= 0 ? "+" : ""}${summaryKpis.bestAccDelta.toFixed(2)}%`
+                  ? `${summaryKpis.bestAccDelta >= 0 ? "+" : ""}${summaryKpis.bestAccDelta.toFixed(2)}pp`
                   : "—"}
               </div>
               <div className="text-xs text-gray-500 mt-0.5">accuracy vs finance-only</div>
             </div>
             <div className="card border border-blue-600/40 bg-blue-600/5">
-              <div className="text-xs text-gray-500 uppercase tracking-wider">Best F1 Lift</div>
+              <div className="text-xs text-gray-500 uppercase tracking-wider">Variant F1 difference</div>
               <div className="text-2xl font-semibold text-white mt-1">
                 {summaryKpis.bestF1Delta != null
-                  ? `${summaryKpis.bestF1Delta >= 0 ? "+" : ""}${summaryKpis.bestF1Delta.toFixed(2)}%`
+                  ? `${summaryKpis.bestF1Delta >= 0 ? "+" : ""}${summaryKpis.bestF1Delta.toFixed(2)}pp`
                   : "—"}
               </div>
               <div className="text-xs text-gray-500 mt-0.5">F1 vs finance-only</div>
             </div>
             <div className="card border border-purple-600/40 bg-purple-600/5">
-              <div className="text-xs text-gray-500 uppercase tracking-wider">Confidence Boost</div>
+              <div className="text-xs text-gray-500 uppercase tracking-wider">Confidence difference</div>
               <div className="text-2xl font-semibold text-white mt-1">
                 {confBoostLoading ? "—" : confBoost?.best && confBoost[confBoost.best]
                   ? `${confBoost[confBoost.best].avg_confidence_boost >= 0 ? "+" : ""}${confBoost[confBoost.best].avg_confidence_boost.toFixed(2)}pp`
@@ -559,7 +568,7 @@ export default function Compare() {
                 tickLine={false}
               />
               <YAxis
-                domain={[50, 100]}
+                domain={[0, 100]}
                 tick={{ fill: "#9ca3af", fontSize: 11 }}
                 axisLine={false}
                 tickLine={false}
@@ -580,9 +589,9 @@ export default function Compare() {
       {/* ══ Section 3 — Sentiment & Emotion Impact ═══════════════════════════ */}
       <div className="card">
         <SectionTitle
-          sub="How much did adding WSB sentiment + GoEmotions emotion features improve each model?"
+          sub="Descriptive differences between saved variants; these do not isolate the effect of sentiment."
         >
-          Sentiment & Emotion Impact Analysis
+          Historical Variant Differences
         </SectionTitle>
 
         {metricsLoading ? (
@@ -688,7 +697,7 @@ export default function Compare() {
               />
               <PolarRadiusAxis
                 angle={90}
-                domain={[50, 100]}
+                domain={[0, 100]}
                 tick={{ fill: "#4b5563", fontSize: 9 }}
                 tickCount={4}
               />

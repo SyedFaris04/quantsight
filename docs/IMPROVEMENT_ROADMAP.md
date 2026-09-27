@@ -24,7 +24,8 @@ result is reported rather than tuned away on the final test period.
 
 The first published run uses 1,000 random portfolios and 1,000 bootstrap samples.
 Independent trade-ledger reconstruction agrees with the reported equity to less
-than USD 0.000001. Browser visual QA and production deployment have not been run.
+than USD 0.000001. The report is now deployed and its hosted API freshness check passes.
+Backtesting-specific browser visual QA remains outstanding.
 
 ## Stage 2 - Data and live evaluation consistency (local implementation complete)
 
@@ -41,10 +42,11 @@ than USD 0.000001. Browser visual QA and production deployment have not been run
 - [x] Fix summary pagination, inserted/duplicate/skipped counts and scheduler failures.
 - [x] Separate live XGBoost from historical consensus/risk in Market; correct Track Record.
 - [x] Pass 39 tests, frontend build, API smoke checks and a real live inference check.
-- [ ] Apply and integration-test the additive Supabase migration, then deploy.
-      The follow-up read-only check reached Supabase but found the v2 table missing.
-      Eleven isolated PostgreSQL migration tests pass; hosted services remain unchanged.
-      See [rollout status](LIVE_ROLLOUT.md).
+- [x] User applied the Supabase migration; server/public reads of expected columns pass.
+      Render and Vercel deployed the first release; hosted backtest and v2 tracker checks pass.
+      Eleven isolated PostgreSQL migration tests pass. See [rollout status](LIVE_ROLLOUT.md).
+- [ ] Verify actual hosted recording and fifth-session resolution through the scheduler;
+      read-only readiness checks do not establish hosted write/trigger behavior.
 - [x] Acquire and audit an overlapping historical news dataset; run a versioned
       timestamp-aware exploratory pilot. Coverage is limited to 26 of 44 tickers.
 - [ ] Acquire/freeze a genuinely unused evaluation window before further tuning.
@@ -52,7 +54,8 @@ than USD 0.000001. Browser visual QA and production deployment have not been run
 
 Details and rollout order: [Data and live evaluation](DATA_AND_LIVE_EVALUATION.md).
 Stage 2's local engineering and initial historical data acquisition are complete;
-cloud rollout and fresh-window acquisition remain open. Browser visual QA is outstanding.
+hosted write/outcome verification and fresh-window acquisition remain open.
+AI Compare now has desktop/mobile browser verification; other pages still need visual QA.
 
 ## Stage 3 - Controlled model research (exploratory pilot complete)
 
@@ -61,11 +64,16 @@ cloud rollout and fresh-window acquisition remain open. Browser visual QA is out
 - [x] Complete six fixed model fits with purged fit/calibration/evaluation segments.
 - [x] Compare finance, coverage-only and VADER sentiment on matching rows; report
       baselines and paired block-bootstrap uncertainty. No convincing sentiment gain;
-      serving models unchanged. Full suite now contains 47 passing tests.
+      serving models unchanged.
+- [x] Complete two frozen FinBERT extension fits and publish paired comparisons in AI Compare.
+      No directional-accuracy improvement; a small boosting Brier gain does not beat the
+      constant baseline. Full Python suite now contains 56 passing tests.
+      See [FinBERT study](research/FINBERT_STUDY.md).
 
 Results and next choices: [Research recommendations](research/RESEARCH_RECOMMENDATIONS.md).
 Meeting evidence: [28 September supervisor brief](SUPERVISOR_PROGRESS_2026-09-28.md).
-The six new fits are logged, but do not reconstruct older unrecorded trials.
+Eight recent fits are recorded across the VADER pilot and FinBERT extension,
+but do not reconstruct older unrecorded trials.
 Still required:
 
 - Freeze a fresh final test window before further experiments.

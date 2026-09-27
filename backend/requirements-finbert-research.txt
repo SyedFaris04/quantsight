@@ -1,0 +1,5 @@
+# Offline experiment only; do not install this extra on Render for serving reports.
+-r requirements-research.txt
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.12.1+cpu
+transformers==5.13.0

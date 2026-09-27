@@ -1,0 +1,85 @@
+{
+  "experiment_id": "news_finbert_extension_v1",
+  "status": "exploratory_historical",
+  "purpose": "Paired FinBERT extension of the fixed VADER pilot; two additional fits, no tuning.",
+  "registered_before_run": "2026-09-27",
+  "seed": 42,
+  "horizon_sessions": 5,
+  "fit_start": "2017-01-01",
+  "fit_end_exclusive": "2022-01-01",
+  "calibration_end_exclusive": "2023-01-01",
+  "evaluation_end_exclusive": "2024-01-01",
+  "purge_rule": "All target outcomes must occur strictly before the next segment starts.",
+  "scorer": {
+    "model": "ProsusAI/finbert",
+    "revision": "4556d13015211d73dccd3fdd39d39232506f3e43",
+    "max_length": 128,
+    "batch_size": 32,
+    "device": "cpu",
+    "dtype": "float32",
+    "threads": 4,
+    "polarity": "P(positive) - P(negative)",
+    "positive_threshold": 0.05,
+    "negative_threshold": -0.05
+  },
+  "text_input": "headline_only",
+  "news_timing": "First NYSE close at or after max(source publication, archive download, modification). Date-only publications delayed by one UTC day.",
+  "arms": [
+    "finance_coverage_finbert"
+  ],
+  "coverage_features": [
+    "news_observed",
+    "news_log_count"
+  ],
+  "sentiment_features": [
+    "news_polarity_mean",
+    "news_polarity_std",
+    "news_positive_share",
+    "news_negative_share"
+  ],
+  "model_families": [
+    "logistic",
+    "hist_gradient_boosting"
+  ],
+  "logistic": {
+    "C": 1.0,
+    "max_iter": 1000
+  },
+  "hist_gradient_boosting": {
+    "learning_rate": 0.05,
+    "max_iter": 150,
+    "max_leaf_nodes": 7,
+    "min_samples_leaf": 100,
+    "l2_regularization": 10.0,
+    "early_stopping": false
+  },
+  "calibration": "One fixed sigmoid fit on the separate 2022 segment; no method search.",
+  "direction_rule": "calibrated_probability_up >= 0.5",
+  "primary_metric": "brier_score",
+  "secondary_metrics": [
+    "balanced_accuracy",
+    "MCC",
+    "ROC_AUC",
+    "log_loss",
+    "accuracy",
+    "BUY_fraction"
+  ],
+  "paired_comparison": [
+    "FinBERT versus VADER",
+    "FinBERT versus coverage-only"
+  ],
+  "bootstrap_block_sessions": 20,
+  "bootstrap_repetitions": 1000,
+  "max_model_fits": 2,
+  "selection_rule": "Do not promote a model from this reused historical window.",
+  "limitations": [
+    "2023 has already been examined elsewhere in QuantSight; this is not an untouched final test.",
+    "Existing finance feature selection was influenced by historical results.",
+    "The fixed ticker universe is not point-in-time index membership.",
+    "Archive timestamps are conservative proxies and article versions require further validation.",
+    "Classification results are not trading returns or Sharpe ratios.",
+    "Pretrained NLP training-corpus overlap is not fully auditable; this is not a point-in-time deployable historical model claim.",
+    "Parent predictions are reused only after exact input hashes and row identity are checked."
+  ],
+  "parent_run_id": "4e1d6bff50369ed5"
+}

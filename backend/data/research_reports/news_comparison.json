@@ -1,0 +1,229 @@
+{
+  "schema_version": 1,
+  "status": "exploratory",
+  "parent_run_id": "4e1d6bff50369ed5",
+  "run_id": "0024c8e43e438b37",
+  "completed_at": "2026-09-27T04:12:45.605777+00:00",
+  "horizon_sessions": 5,
+  "segments": {
+    "fit": {
+      "rows": 53813,
+      "date_start": "2017-01-03",
+      "date_end": "2021-12-23",
+      "last_label_end": "2021-12-31",
+      "news_observed_rows": 5047
+    },
+    "calibration": {
+      "rows": 10824,
+      "date_start": "2022-01-03",
+      "date_end": "2022-12-22",
+      "last_label_end": "2022-12-30",
+      "news_observed_rows": 3146
+    },
+    "evaluation": {
+      "rows": 10780,
+      "date_start": "2023-01-03",
+      "date_end": "2023-12-21",
+      "last_label_end": "2023-12-29",
+      "news_observed_rows": 3658
+    }
+  },
+  "covered_tickers": 26,
+  "universe_tickers": 44,
+  "unique_headlines": 48655,
+  "models": [
+    {
+      "key": "logistic_finance",
+      "family": "logistic",
+      "label": "Logistic regression",
+      "inputs": "Finance",
+      "metrics": {
+        "n": 10780,
+        "accuracy": 0.47430426716141,
+        "balanced_accuracy": 0.5141302618319397,
+        "mcc": 0.04310926623626317,
+        "roc_auc": 0.5295622566211099,
+        "brier_score": 0.2555799449664857,
+        "log_loss": 0.7044245785441665,
+        "buy_fraction": 0.12087198515769944
+      }
+    },
+    {
+      "key": "logistic_finance_coverage",
+      "family": "logistic",
+      "label": "Logistic regression",
+      "inputs": "Finance + coverage",
+      "metrics": {
+        "n": 10780,
+        "accuracy": 0.47430426716141,
+        "balanced_accuracy": 0.5136788106523547,
+        "mcc": 0.04111417312148904,
+        "roc_auc": 0.5274411460372874,
+        "brier_score": 0.25592833482819105,
+        "log_loss": 0.7051378417421708,
+        "buy_fraction": 0.125139146567718
+      }
+    },
+    {
+      "key": "logistic_finance_coverage_sentiment",
+      "family": "logistic",
+      "label": "Logistic regression",
+      "inputs": "Finance + VADER",
+      "metrics": {
+        "n": 10780,
+        "accuracy": 0.474860853432282,
+        "balanced_accuracy": 0.514104160353009,
+        "mcc": 0.04220569861504884,
+        "roc_auc": 0.5271082651759915,
+        "brier_score": 0.2558903389249504,
+        "log_loss": 0.7050607449598745,
+        "buy_fraction": 0.1264378478664193
+      }
+    },
+    {
+      "key": "logistic_finance_coverage_finbert",
+      "family": "logistic",
+      "label": "Logistic regression",
+      "inputs": "Finance + FinBERT",
+      "metrics": {
+        "n": 10780,
+        "accuracy": 0.47328385899814474,
+        "balanced_accuracy": 0.5123624956688946,
+        "mcc": 0.03682133157015227,
+        "roc_auc": 0.5241827070115255,
+        "brier_score": 0.2561944937798065,
+        "log_loss": 0.7056861915165604,
+        "buy_fraction": 0.12782931354359925
+      }
+    },
+    {
+      "key": "hist_gradient_boosting_finance",
+      "family": "hist_gradient_boosting",
+      "label": "Gradient boosting",
+      "inputs": "Finance",
+      "metrics": {
+        "n": 10780,
+        "accuracy": 0.4489795918367347,
+        "balanced_accuracy": 0.49448242576983004,
+        "mcc": -0.022328277238027102,
+        "roc_auc": 0.4881039029576247,
+        "brier_score": 0.2584120510305812,
+        "log_loss": 0.7101063829361133,
+        "buy_fraction": 0.06456400742115027
+      }
+    },
+    {
+      "key": "hist_gradient_boosting_finance_coverage",
+      "family": "hist_gradient_boosting",
+      "label": "Gradient boosting",
+      "inputs": "Finance + coverage",
+      "metrics": {
+        "n": 10780,
+        "accuracy": 0.4489795918367347,
+        "balanced_accuracy": 0.49448242576983004,
+        "mcc": -0.022328277238027102,
+        "roc_auc": 0.4881039029576247,
+        "brier_score": 0.2584120510305812,
+        "log_loss": 0.7101063829361133,
+        "buy_fraction": 0.06456400742115027
+      }
+    },
+    {
+      "key": "hist_gradient_boosting_finance_coverage_sentiment",
+      "family": "hist_gradient_boosting",
+      "label": "Gradient boosting",
+      "inputs": "Finance + VADER",
+      "metrics": {
+        "n": 10780,
+        "accuracy": 0.4489795918367347,
+        "balanced_accuracy": 0.49448242576983004,
+        "mcc": -0.022328277238027102,
+        "roc_auc": 0.4881039029576247,
+        "brier_score": 0.2584120510305812,
+        "log_loss": 0.7101063829361133,
+        "buy_fraction": 0.06456400742115027
+      }
+    },
+    {
+      "key": "hist_gradient_boosting_finance_coverage_finbert",
+      "family": "hist_gradient_boosting",
+      "label": "Gradient boosting",
+      "inputs": "Finance + FinBERT",
+      "metrics": {
+        "n": 10780,
+        "accuracy": 0.44879406307977737,
+        "balanced_accuracy": 0.4942948431412483,
+        "mcc": -0.023087378386700424,
+        "roc_auc": 0.4888340831302175,
+        "brier_score": 0.25835383732803785,
+        "log_loss": 0.7099888227044662,
+        "buy_fraction": 0.06456400742115027
+      }
+    }
+  ],
+  "baseline": {
+    "n": 10780,
+    "accuracy": 0.5523191094619666,
+    "balanced_accuracy": 0.5,
+    "mcc": 0.0,
+    "roc_auc": 0.5,
+    "brier_score": 0.24762272621169376,
+    "log_loss": 0.6883950276793334,
+    "buy_fraction": 1.0
+  },
+  "always_up_accuracy": 0.5523191094619666,
+  "comparisons": {
+    "logistic": {
+      "versus_vader": {
+        "brier_improvement": -0.00030415485485618893,
+        "interval_95": [
+          -0.0007056061352284233,
+          4.6156939004011215e-05
+        ],
+        "interpretation": "Positive means lower Brier loss for sentiment; exploratory interval, not adjusted for multiple comparisons."
+      },
+      "versus_coverage": {
+        "brier_improvement": -0.0002661589516154979,
+        "interval_95": [
+          -0.0006602049797863066,
+          5.61066966997466e-05
+        ],
+        "interpretation": "Positive means lower Brier loss for sentiment; exploratory interval, not adjusted for multiple comparisons."
+      }
+    },
+    "hist_gradient_boosting": {
+      "versus_vader": {
+        "brier_improvement": 5.8213702543317575e-05,
+        "interval_95": [
+          5.4403735668872506e-06,
+          0.00011929562531940422
+        ],
+        "interpretation": "Positive means lower Brier loss for sentiment; exploratory interval, not adjusted for multiple comparisons."
+      },
+      "versus_coverage": {
+        "brier_improvement": 5.8213702543317575e-05,
+        "interval_95": [
+          5.4403735668872506e-06,
+          0.00011929562531940422
+        ],
+        "interpretation": "Positive means lower Brier loss for sentiment; exploratory interval, not adjusted for multiple comparisons."
+      }
+    }
+  },
+  "limitations": [
+    "The 2023 period was previously examined; this is not a fresh final test.",
+    "News covers only part of the fixed instrument universe.",
+    "Pretrained model corpus overlap and article-version timing remain limitations.",
+    "Classification results do not establish trading returns. The live model is unchanged."
+  ],
+  "sources": [
+    {
+      "label": "FinBERT model",
+      "url": "https://huggingface.co/ProsusAI/finbert"
+    },
+    {
+      "label": "News archive",
+      "url": "https://github.com/FelixDrinkall/financial-news-dataset"
+    }
+  ]
+}

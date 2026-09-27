@@ -17,13 +17,14 @@ live tracking and interface refinement."
   drawdown, return, cost sensitivity and uncertainty measures.
 - Backtesting interface and downloadable metrics, daily values and trade records.
 - Shared five-session labels and live feature calculations; separate live forecast
-  metadata and historical results. Supabase migration prepared but not applied.
+  metadata and historical results. Supabase migration applied; hosted read checks pass.
 - Timestamp-aware research data ingestion, source hashes and a fixed six-fit news study.
-- 47 automated tests passed. Earlier frontend build/API checks passed; browser visual
-  inspection and hosted integration remain outstanding.
+- 56 Python tests and 11 database migration tests passed. Frontend build/API checks
+  passed; AI Compare was checked in Chromium on desktop/mobile with error recovery.
 
-These are local implementation results. GitHub/Render/Vercel/Supabase production
-integration has not been verified or updated by this work.
+The first release is on GitHub and deployed on Render/Vercel. Hosted backtest and
+five-session database reads pass; actual scheduled writes and matured outcomes
+still require verification. The FinBERT comparison adds two exploratory classifier fits.
 
 ## Historical backtest to demonstrate
 
@@ -68,10 +69,13 @@ five-session boundary purging. It compares finance, coverage and sentiment input
 | Constant training-prior probability | 55.23% | 0.247623 |
 | Logistic regression, finance only | 47.43% | 0.255580 |
 | Logistic regression, finance + coverage + VADER | 47.49% | 0.255890 |
+| Logistic regression, finance + coverage + FinBERT | 47.33% | 0.256194 |
 
 Lower Brier loss is better. Sentiment's small improvement over the coverage-only
 control has an uncertainty interval containing zero. The pilot did not beat the
-simple baselines, and no live model was replaced. This is not a fresh final test,
+simple baselines, and no live model was replaced. The FinBERT follow-up also did
+not improve accuracy; boosting had a small Brier gain that still failed to beat the
+constant baseline. See [the complete comparison](research/FINBERT_STUDY.md). This is not a fresh final test,
 because 2023 and the existing finance feature list were already examined.
 
 ## Five-minute demonstration
@@ -94,7 +98,8 @@ claim: newly recorded five-session outcomes cannot mature before Monday.
 1. Verify cloud migration and live logging so new forecasts accumulate independently.
 2. Freeze an unused final evaluation period and use purged walk-forward validation
    within development data; record every model/feature trial.
-3. Compare FinBERT against VADER and coverage-only controls on identical samples.
+3. Use the completed FinBERT/VADER study to define the next training-only experiment;
+   investigate calibration/regime stability before selecting another architecture.
 4. Backtest eligible new predictions after costs, then improve the interface and
    complete user testing and production integration.
 
