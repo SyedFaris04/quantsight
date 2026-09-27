@@ -1,7 +1,8 @@
 # QuantSight — How to Run
 
-For the current existing-project setup, start with [the detailed setup guide](docs/SETUP_CURRENT_PROGRESS.md).
-It separates completed local work from the remaining cloud rollout.
+For tomorrow's presentation, use [the supervisor progress and local demo guide](SUPERVISOR_PROGRESS.md).
+It includes the exact tested PowerShell commands and explains which features need internet.
+For service configuration, see [the detailed setup guide](docs/SETUP_CURRENT_PROGRESS.md).
 
 ## Corrected backtesting
 
@@ -70,7 +71,7 @@ Data and models already exist on disk, so this is all you need. Two terminals.
 
 ```powershell
 Set-Location 'C:\Users\syeda\OneDrive\Desktop\quantsightv2\backend'
-.\.venv\Scripts\python.exe -m uvicorn main:app --reload --port 8001
+.\.venv\Scripts\python.exe -m uvicorn main:app --host 127.0.0.1 --port 8001
 ```
 
 Expected tail of the output:
@@ -87,11 +88,14 @@ Swagger UI listing every endpoint (`/explain/{ticker}`, `/overview`,
 
 ### Terminal 2 — frontend
 
-```bash
-cd frontend
-npm install       # first time only, or after pulling new dependencies
-npm run dev
+```powershell
+Set-Location 'C:\Users\syeda\OneDrive\Desktop\quantsightv2\frontend'
+$env:VITE_API_URL = 'http://127.0.0.1:8001'
+.\node_modules\.bin\vite.cmd --host 127.0.0.1 --port 3000 --strictPort
 ```
+
+Dependencies are already installed on this laptop. The explicit API setting directs
+this session to the local backend; it does not change Vercel configuration.
 
 Expected output:
 ```
@@ -101,18 +105,19 @@ VITE ready
 
 ### Open it
 
-**http://localhost:3000** — that's the whole app. Both terminals must stay
+**http://127.0.0.1:3000** — that's the whole app. Both terminals must stay
 running while you use it. Navigation is a left sidebar (Dashboard / Market /
-AI Compare / Leaderboard / Track Record / Portfolio / Game / Settings), plus
+AI Compare / Backtesting / Leaderboard / Track Record / Portfolio / Game / Settings), plus
 a floating AI Assistant button (bottom-right) on every page.
 
 | Page | URL | What it shows |
 |---|---|---|
-| Dashboard | `/` | KPI summary, Top Opportunities, real-time Market Sentiment (VADER over current news), AI Insight summary, Market News |
+| Dashboard | `/` | Dated historical model snapshot, historical candidates, saved-news coverage and evaluation links |
 | Market | `/market` | All 44 tickers as cards (with company names), all 4 model signals each, filters, Live Mode |
 | Detail | `/detail/AAPL` (any ticker) | Real OHLC candlestick chart + volume, radial confidence gauge, AI Copilot explanation, tabs: **Overview / Technical / Sentiment & Emotion / History / Learn** — includes the LSTM attention chart and a per-ticker Sentiment Impact comparison |
-| AI Compare | `/compare` | Accuracy table + charts across all 4 model variants, sentiment+emotion impact, Confidence Boost KPI |
-| Leaderboard | `/leaderboard` | The 4 *model* variants ranked by accuracy — not the Game's player leaderboard, see below |
+| AI Compare | `/compare` | Controlled VADER/FinBERT study, visible baseline and legacy model comparisons with limitations |
+| Backtesting | `/backtesting` | Saved net returns, risk metrics, benchmarks, methodology and downloadable trade records |
+| Leaderboard | `/leaderboard` | Historical model rankings including the extended roster; separate from the Game's player leaderboard |
 | Track Record | `/track-record` | Live, forward-looking prediction accuracy — needs the optional Supabase/GitHub Actions setup below to show real data, otherwise a clean empty state |
 | Portfolio | `/portfolio` | Your tracked holdings (localStorage in guest mode, Supabase if signed in) + live prices + BUY suggestions |
 | Game | `/game` | Prediction quiz — score/streak/level, sound/confetti/celebrations, a real cross-user leaderboard (needs sign-in to appear on it, viewable by anyone) |
@@ -248,19 +253,19 @@ Then start the servers as in **Quick Start** above.
 ## Common errors and fixes
 
 **`ModuleNotFoundError: No module named '...'`**
-```bash
-cd backend && source .venv/Scripts/activate && pip install -r requirements.txt
+```powershell
+Set-Location 'C:\Users\syeda\OneDrive\Desktop\quantsightv2\backend'
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
 **`port 8001 already in use` (backend)**
-```bash
-# find and stop whatever's holding it, then re-run uvicorn
-netstat -ano | findstr :8001
-taskkill /PID <pid> /F
-```
+First open the local backend URL: the expected server may already be running.
+If it is your previous server, stop it with `Ctrl+C` in its terminal before
+restarting. Do not terminate an unknown process just to free the port.
 
-**`port 3000 already in use` (frontend)** — same idea with `:3000`, or just
-let Vite pick the next free port (it will tell you in its own output).
+**`port 3000 already in use` (frontend)** — first check the existing local website.
+The demo uses `--strictPort`, so it will report the conflict instead of silently
+switching to a different URL. Stop your previous frontend with `Ctrl+C` before restarting.
 
 **Frontend shows "Could not load..." / red error banner**
 Backend isn't running or crashed. Check Terminal 1's output for a traceback.
@@ -292,14 +297,19 @@ training/output files.
 
 | Terminal | Location | Command |
 |---|---|---|
-| 1 — backend | `quantsightv2/backend/` | `.\.venv\Scripts\python.exe -m uvicorn main:app --reload --port 8001` |
-| 2 — frontend | `quantsightv2/frontend/` | `npm run dev` |
+| 1 — backend | `quantsightv2/backend/` | `.\.venv\Scripts\python.exe -m uvicorn main:app --host 127.0.0.1 --port 8001` |
+| 2 — frontend | `quantsightv2/frontend/` | Use Terminal 2 commands above (explicit local API URL) |
 
-Both must stay running. Then open **http://localhost:3000**.
+Both must stay running. Then open **http://127.0.0.1:3000**.
 
 ## Live evaluation v2 rollout
 
-Before deploying the updated live tracker, apply `backend/supabase/002_live_predictions_v2.sql` in Supabase SQL Editor. It creates a separate five-session table and preserves legacy rows. Install the updated backend requirements, then deploy backend and frontend together. See [the validation and rollout notes](docs/DATA_AND_LIVE_EVALUATION.md). The migration has not been applied by the local implementation.
+Migration `backend/supabase/002_live_predictions_v2.sql` has been applied to the current
+Supabase project, and hosted reads pass. It creates a separate five-session table and
+preserves legacy rows. There is no need to reapply it for the presentation. Genuine
+scheduled forecast writes and matured outcomes still need verification. For a new
+Supabase project, apply the documented migrations and configure its credentials
+before using the live tracker. See [the validation and rollout notes](docs/DATA_AND_LIVE_EVALUATION.md).
 
 Use the [current rollout guide](docs/LIVE_ROLLOUT.md) for verified service URLs,
 the 11 PostgreSQL migration checks and the read-only hosted diagnostic command.

@@ -1,5 +1,9 @@
 # Supervisor progress brief - Monday, 28 September 2026
 
+For the simple bullet-point presentation version and tested local backup commands,
+use [Supervisor progress and demonstration](../SUPERVISOR_PROGRESS.md).
+For terminology, models and architecture, use [the project cheat sheet](../PROJECT_CHEAT_SHEET.md).
+
 ## Opening statement
 
 "QuantSight now has a deployed, auditable backtesting system and a
