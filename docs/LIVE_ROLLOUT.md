@@ -48,24 +48,18 @@ environment variables, retries transient failures and limits overlapping workflo
 runs using [GitHub concurrency](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency).
 It does not cancel a running job when another is queued. Database insert/update
 idempotence remains necessary because network timeouts do not guarantee the server
-stopped processing. These workflow changes are local and have not run on GitHub yet.
+stopped processing. These workflow changes are published on GitHub; execution of
+the updated daily scheduler still needs to be observed.
 
 ## Remaining rollout steps
 
-1. In the project's [Supabase SQL Editor](https://supabase.com/dashboard/project/wlsphzugowaaqljqjuvz/sql/new),
-   run [002_live_predictions_v2.sql](../backend/supabase/002_live_predictions_v2.sql).
-   It creates a separate table and retains `live_predictions`. The available local
-   service key is for the data API, not a database administration connection;
-   no signed-in browser or DDL connection is available to this workspace.
-2. Re-run the read-only checker below. Database reads should pass even while Render
-   still uses the old backend. A nonzero exit status is expected until all requested
-   checks pass.
-3. Release the reviewed backend/frontend changes through the existing repository
-   and Render/Vercel setup. The workspace contains substantial earlier changes and
-   model artifacts; a release needs a concrete reviewed commit, not a blind push.
-4. Verify hosted permissions/triggers against the migration and the five-session
-   API response. Confirm the two GitHub scheduler secrets match Render's settings.
-5. Observe a genuine scheduled after-close forecast and its fifth-session outcome.
+The migration and initial release are complete; no repeat SQL setup is needed for
+the FinBERT comparison, which serves a committed aggregate report.
+
+1. Verify hosted permissions/triggers against the migration. The five-session API
+   response and table reads already pass, but they do not test hosted writes.
+2. Verify the configured GitHub scheduler secrets through a genuine scheduled run.
+3. Observe a genuine scheduled after-close forecast and its fifth-session outcome.
    Do not insert synthetic test predictions into production or backfill missed ones.
 
 Read-only diagnostic, run from the repository root:
