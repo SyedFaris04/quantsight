@@ -54,6 +54,9 @@ were inspected. The page includes metric explanations and visible SPY reference 
       timestamp-aware exploratory pilot. Coverage is limited to 26 of 44 tickers.
 - [ ] Acquire/freeze a genuinely unused evaluation window before further tuning.
       The new historical archive does not make the previously examined period fresh.
+      A separate 2025 candidate price snapshot is now frozen and passes structural
+      checks for all 44 instruments plus six sector ETFs. Prior external use remains
+      unconfirmed; no final-test scores were computed. See [fresh validation](research/FRESH_VALIDATION.md).
 
 Details and rollout order: [Data and live evaluation](DATA_AND_LIVE_EVALUATION.md).
 Stage 2's local engineering and initial historical data acquisition are complete;
@@ -81,6 +84,10 @@ but do not reconstruct older unrecorded trials.
 Still required:
 
 - Freeze a fresh final test window before further experiments.
+- [x] Build tested calendar-exact labels and purged fit/calibration/validation segments
+      on the new development snapshot; reject candidate-holdout rows in the loader.
+      Three development folds are prepared; 72 Python tests pass. Model selection and
+      a confirmed unused final window remain outstanding.
 - Use shared chronological folds, label-overlap purging and training-only feature selection.
 - Compare finance, news, social polarity and emotion ablations on matching samples.
 - Tune model/threshold/calibrator on appropriate separate validation windows.

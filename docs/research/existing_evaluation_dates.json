@@ -1,0 +1,126 @@
+{
+  "checked_at": "2026-09-27T14:16:29.954836+00:00",
+  "files": [
+    {
+      "path": "backend/data/processed/features_finance.csv",
+      "sha256": "f2cbf71f5cd1b292bcab0f83fe0be3c7d2b1a0bbcf5fd36e9c67b3991d66e6e0",
+      "rows": 104076,
+      "first_date": "2015-05-01",
+      "last_date": "2024-12-20"
+    },
+    {
+      "path": "backend/data/processed/features_sentiment.csv",
+      "sha256": "b6f7b6af84012cf43901e074533d2ebc62b6a3a9733e52c10cfed318ab9c3ba2",
+      "rows": 104076,
+      "first_date": "2015-05-01",
+      "last_date": "2024-12-20"
+    },
+    {
+      "path": "backend/data/predictions/ensemble_predictions.csv",
+      "sha256": "cc35ebca6da56080a0967afbc0281a2769ad9754e5aa17decb438dced4823430",
+      "rows": 20372,
+      "first_date": "2023-02-21",
+      "last_date": "2024-12-20"
+    },
+    {
+      "path": "backend/data/predictions/gru_finance_predictions.csv",
+      "sha256": "98cd3ded2d5a62912aeaf7740991b536c9a989620b2a2659a0b2f0d0e95c1f53",
+      "rows": 20372,
+      "first_date": "2023-02-21",
+      "last_date": "2024-12-20"
+    },
+    {
+      "path": "backend/data/predictions/gru_sentiment_predictions.csv",
+      "sha256": "c1130050f818b6f70d644b9deba6fc1a3cdbc6881fcf54a25b8c26b4e769aab8",
+      "rows": 20372,
+      "first_date": "2023-02-21",
+      "last_date": "2024-12-20"
+    },
+    {
+      "path": "backend/data/predictions/logreg_finance_predictions.csv",
+      "sha256": "7a7db708a9c0f297913f1c566b7b87937927eed7dd693646adab67d7fce77a5a",
+      "rows": 20812,
+      "first_date": "2023-02-06",
+      "last_date": "2024-12-20"
+    },
+    {
+      "path": "backend/data/predictions/logreg_sentiment_predictions.csv",
+      "sha256": "c854fdcb77b5333c53c8521da8f1b7fd64134006e9b0b1eab27c9350375b512b",
+      "rows": 20812,
+      "first_date": "2023-02-06",
+      "last_date": "2024-12-20"
+    },
+    {
+      "path": "backend/data/predictions/lstm_finance_predictions.csv",
+      "sha256": "74417e0a17d94a487bdffccc09f7b5898aa894f60658dd3bc510d8e5ac8e6c47",
+      "rows": 20372,
+      "first_date": "2023-02-21",
+      "last_date": "2024-12-20"
+    },
+    {
+      "path": "backend/data/predictions/lstm_predictions.csv",
+      "sha256": "eb0e4b6f6a22a5004a210aeb174032367a007afd425af1d9a886633b2b0455e2",
+      "rows": 9944,
+      "first_date": "2024-01-31",
+      "last_date": "2024-12-20"
+    },
+    {
+      "path": "backend/data/predictions/lstm_sentiment_predictions.csv",
+      "sha256": "c72b076eb7ff887ff77b1e2c5d0fe3ce2ae832e2ad226f872254527a61d02d0c",
+      "rows": 20372,
+      "first_date": "2023-02-21",
+      "last_date": "2024-12-20"
+    },
+    {
+      "path": "backend/data/predictions/rf_finance_predictions.csv",
+      "sha256": "10a293cf65eb6cb1acf8572668fe24fe53d2afabae879efacaaf08a24e8e54b3",
+      "rows": 20812,
+      "first_date": "2023-02-06",
+      "last_date": "2024-12-20"
+    },
+    {
+      "path": "backend/data/predictions/rf_sentiment_predictions.csv",
+      "sha256": "5b4e00b0752c01a0a92d6bd522387d72e6cc0b8c75292fc79847782c009bd5df",
+      "rows": 20812,
+      "first_date": "2023-02-06",
+      "last_date": "2024-12-20"
+    },
+    {
+      "path": "backend/data/predictions/transformer_finance_predictions.csv",
+      "sha256": "f67876411b3a9ab73c37e2a1a71ad3457ba5212836c6a29fe535f1acee2f1ebe",
+      "rows": 20372,
+      "first_date": "2023-02-21",
+      "last_date": "2024-12-20"
+    },
+    {
+      "path": "backend/data/predictions/transformer_sentiment_predictions.csv",
+      "sha256": "8796ba5b114cddaf49319d936cdaccb6c9e372aa898b24502b3aaecd7ea6f016",
+      "rows": 20372,
+      "first_date": "2023-02-21",
+      "last_date": "2024-12-20"
+    },
+    {
+      "path": "backend/data/predictions/xgb_finance_predictions.csv",
+      "sha256": "fca09a624038062e54ff0da73efcf9ee51fe925eeb6ef059425792662c57c284",
+      "rows": 20812,
+      "first_date": "2023-02-06",
+      "last_date": "2024-12-20"
+    },
+    {
+      "path": "backend/data/predictions/xgb_predictions.csv",
+      "sha256": "55c6d0a37aa4ff921e0864e69bd2afb84665120e7f6f22572ae93bca9ae6f7b2",
+      "rows": 2460,
+      "first_date": "2024-01-02",
+      "last_date": "2024-12-20"
+    },
+    {
+      "path": "backend/data/predictions/xgb_sentiment_predictions.csv",
+      "sha256": "095ebe94c7d6fbac9203f3c0476d94f91ecb12c40dec2e4bcbeb0d06a39e32e5",
+      "rows": 20812,
+      "first_date": "2023-02-06",
+      "last_date": "2024-12-20"
+    }
+  ],
+  "finding": "Inspected feature and prediction files, including legacy predictions, end in 2024. This does not establish no prior external use of 2025. Live inference may download 2025 bars as rolling feature history; this is not a recorded 2025 evaluation.",
+  "prior_2025_use": "unconfirmed"
+}

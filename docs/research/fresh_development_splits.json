@@ -1,0 +1,87 @@
+{
+  "snapshot_id": "20260927T141409402344Z",
+  "created_at": "2026-09-27T14:15:19.888235+00:00",
+  "status": "development_splits_prepared",
+  "protocol_sha256": "ee87f059fb8467e2fddbc446c33c609d7b9546b535d898afd99544698d3cc650",
+  "snapshot_manifest_sha256": "226537533d14bb8e6d705437a852de9b3160af9352d91ae93992b5f8bda86464",
+  "preparation_code_sha256": "3b8f544ef4aafa6f563630056026892ab29c0919523a9f80a01fb00ca6cec66a",
+  "split_code_sha256": "e5a68b97ab91f7bd0047f67478805a153890cb894c3302d06cc547ccedf6dd81",
+  "development_rows": 107949,
+  "unknown_tail_labels": 220,
+  "label_price_basis": "Adj Close from the frozen vendor snapshot",
+  "folds": {
+    "validate_2022": {
+      "fit": {
+        "rows": 63509,
+        "tickers": 44,
+        "start": "2015-01-02",
+        "end": "2020-12-23",
+        "last_label_end": "2020-12-31"
+      },
+      "calibration": {
+        "rows": 10868,
+        "tickers": 44,
+        "start": "2021-01-04",
+        "end": "2021-12-23",
+        "last_label_end": "2021-12-31"
+      },
+      "validation": {
+        "rows": 10824,
+        "tickers": 44,
+        "start": "2022-01-03",
+        "end": "2022-12-22",
+        "last_label_end": "2022-12-30"
+      }
+    },
+    "validate_2023": {
+      "fit": {
+        "rows": 74597,
+        "tickers": 44,
+        "start": "2015-01-02",
+        "end": "2021-12-23",
+        "last_label_end": "2021-12-31"
+      },
+      "calibration": {
+        "rows": 10824,
+        "tickers": 44,
+        "start": "2022-01-03",
+        "end": "2022-12-22",
+        "last_label_end": "2022-12-30"
+      },
+      "validation": {
+        "rows": 10780,
+        "tickers": 44,
+        "start": "2023-01-03",
+        "end": "2023-12-21",
+        "last_label_end": "2023-12-29"
+      }
+    },
+    "validate_2024": {
+      "fit": {
+        "rows": 85641,
+        "tickers": 44,
+        "start": "2015-01-02",
+        "end": "2022-12-22",
+        "last_label_end": "2022-12-30"
+      },
+      "calibration": {
+        "rows": 10780,
+        "tickers": 44,
+        "start": "2023-01-03",
+        "end": "2023-12-21",
+        "last_label_end": "2023-12-29"
+      },
+      "validation": {
+        "rows": 10868,
+        "tickers": 44,
+        "start": "2024-01-02",
+        "end": "2024-12-23",
+        "last_label_end": "2024-12-31"
+      }
+    }
+  },
+  "candidate_holdout_files_opened": false,
+  "model_fits": 0,
+  "holdout_scores_computed": false,
+  "prior_2025_use": "unconfirmed"
+}

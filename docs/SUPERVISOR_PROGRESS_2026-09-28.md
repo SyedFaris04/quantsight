@@ -19,13 +19,17 @@ validation, alongside forward tracking and interface refinement."
 - Shared five-session labels and live feature calculations; separate live forecast
   metadata and historical results. Supabase migration applied; hosted read checks pass.
 - Timestamp-aware research data ingestion, source hashes and a fixed six-fit news study.
-- 63 Python tests and 11 database migration tests passed. Frontend build/API checks
+- 72 Python tests and 11 database migration tests passed. Frontend build/API checks
   passed; AI Compare was checked against the live deployment in Chromium on desktop/mobile
   with error recovery. Backtesting browser checks cover all 15 strategies, four downloads,
   keyboard scrolling, small screens and unavailable/stale-report handling.
 - The redesigned Dashboard distinguishes the saved 20 December 2024 predictions
   from the news archive ending 23 April 2026. Data age is displayed explicitly;
   unavailable requests no longer appear as zero signals or neutral sentiment.
+- New price-data preparation: 135,545 rows across 44 instruments and six sector
+  ETFs; all 250 sessions in 2025 are covered. Development and candidate-holdout files
+  are separate and hashed, with three purged development folds ready. The prior-use
+  status of 2025 remains unconfirmed; no new model scores or holdout results are claimed.
 
 The first release is on GitHub and deployed on Render/Vercel. Hosted backtest and
 five-session database reads pass; actual scheduled writes and matured outcomes

@@ -1,0 +1,3 @@
+# Offline acquisition only; not installed by Render.
+-r requirements-evaluation.txt
+yfinance==1.5.1
