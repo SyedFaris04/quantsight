@@ -4,6 +4,7 @@ import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid,
 import api, { useApi } from "../hooks/useApi";
 
 const pct = value => value == null ? "—" : `${(value * 100).toFixed(2)}%`;
+const points = value => value == null ? "—" : `${(value * 100).toFixed(2)} pp`;
 const num = value => value == null ? "—" : value.toFixed(2);
 const money = value => value == null ? "—" : new Intl.NumberFormat("en-US", {
   style: "currency", currency: "USD", maximumFractionDigits: 0,
@@ -90,12 +91,22 @@ export default function Backtesting() {
       <span>Risk-free assumption: {pct(cfg.annual_risk_free_rate)}</span>
     </div>
 
-    <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+    <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
       <Metric label="Net total return" value={pct(m.total_return)} note={`${money(m.final_equity)} ending value, after final liquidation`} />
-      <Metric label="Sharpe ratio" value={num(m.sharpe)} note={ci ? `95% block-bootstrap interval: ${num(ci[0])} to ${num(ci[1])}` : "Undefined when excess-return volatility is zero"} />
-      <Metric label="Maximum drawdown" value={pct(m.max_drawdown)} note={`Longest underwater period: ${m.max_drawdown_duration_sessions} sessions`} />
-      <Metric label="Return minus SPY" value={pct(m.excess_total_return)} note="Difference in total return, in percentage points" />
+      <Metric label="Sharpe ratio" value={num(m.sharpe)} note={`SPY: ${num(spy?.metrics.sharpe)}. ${ci ? `95% block-bootstrap interval: ${num(ci[0])} to ${num(ci[1])}` : "Undefined when excess-return volatility is zero"}`} />
+      <Metric label="Maximum drawdown" value={pct(m.max_drawdown)} note={`SPY: ${pct(spy?.metrics.max_drawdown)}. Longest underwater period: ${m.max_drawdown_duration_sessions} sessions`} />
+      <Metric label="Return minus SPY" value={points(m.excess_total_return)} note={`Percentage-point difference. SPY net return: ${pct(spy?.metrics.total_return)}`} />
     </div>
+
+    <details className="rounded-xl border border-gray-800 bg-gray-900/50 p-5">
+      <summary className="cursor-pointer font-medium text-gray-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-400">How to read these results</summary>
+      <dl className="mt-4 grid gap-4 text-sm sm:grid-cols-2">
+        <div><dt className="font-medium text-gray-200">Return and CAGR</dt><dd className="mt-1 leading-relaxed text-gray-400">Net return measures the portfolio's total change after costs. CAGR expresses compound growth as an annual rate. A 10 pp advantage means a difference of ten percentage points.</dd></div>
+        <div><dt className="font-medium text-gray-200">Sharpe and Sortino</dt><dd className="mt-1 leading-relaxed text-gray-400">Sharpe compares average excess return with return volatility. Sortino uses downside variation. Higher values indicate more return per unit of measured risk in this simulation; the uncertainty interval shows how imprecise the estimate may be.</dd></div>
+        <div><dt className="font-medium text-gray-200">Drawdown and Calmar</dt><dd className="mt-1 leading-relaxed text-gray-400">Maximum drawdown is the largest decline from a previous portfolio peak. A value closer to zero means a smaller decline. Calmar divides CAGR by the magnitude of this decline.</dd></div>
+        <div><dt className="font-medium text-gray-200">Judge the results together</dt><dd className="mt-1 leading-relaxed text-gray-400">Compare return, risk, costs and uncertainty with the benchmarks on the same dates. Higher accuracy or a higher return alone does not establish a successful trading strategy. Fresh data and forward tracking are still required.</dd></div>
+      </dl>
+    </details>
 
     <section className="card" aria-label="Equity curve">
       <div className="flex flex-wrap items-center justify-between gap-2 mb-5"><h2 className="text-lg font-semibold">Growth of {money(cfg.initial_capital)}</h2>
@@ -128,10 +139,11 @@ export default function Backtesting() {
     </div>
 
     <section className="card !p-0 overflow-hidden"><h2 className="text-lg font-semibold px-5 pt-5 pb-3">All strategies · same evaluation period</h2>
-      <div className="overflow-x-auto"><table className="data-table"><thead><tr>
-        <th>Strategy</th><th>Net return</th><th>CAGR</th><th>Sharpe</th><th>Sortino</th><th>Max drawdown</th><th>Exposure</th>
+      <p className="px-5 pb-3 text-xs text-gray-400">Select a strategy to update the charts. Scroll horizontally to see all metrics.</p>
+      <div className="overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-400" role="region" aria-label="All strategy metrics" tabIndex={0}><table className="data-table"><caption className="sr-only">Net performance after costs on the same evaluation dates. Strategy buttons update the selected portfolio.</caption><thead><tr>
+        <th scope="col">Strategy</th><th scope="col">Net return</th><th scope="col">CAGR</th><th scope="col">Sharpe</th><th scope="col">Sortino</th><th scope="col">Max drawdown</th><th scope="col">Exposure</th>
       </tr></thead><tbody>{report.strategies.map(s => <tr key={s.key} className={s.key === selected ? "bg-indigo-950/30" : ""}>
-        <td><button onClick={() => setSelected(s.key)} className="text-left text-gray-200 hover:text-indigo-300 focus-visible:underline">{s.name}</button></td>
+        <td><button onClick={() => setSelected(s.key)} aria-pressed={s.key === selected} className="text-left text-gray-200 hover:text-indigo-300 focus-visible:underline">{s.name}</button></td>
         <td className="tabular-nums">{pct(s.metrics.total_return)}</td><td>{pct(s.metrics.cagr)}</td>
         <td>{num(s.metrics.sharpe)}</td><td>{num(s.metrics.sortino)}</td><td>{pct(s.metrics.max_drawdown)}</td><td>{pct(s.metrics.average_exposure)}</td>
       </tr>)}</tbody></table></div>
@@ -155,8 +167,8 @@ export default function Backtesting() {
         <p className="mt-3 text-xs text-gray-400">A high percentile does not remove historical selection bias or replace a fresh test.</p>
       </section>
       <section className="card"><h2 className="text-lg font-semibold">Cost sensitivity · ensemble</h2>
-        <table className="data-table mt-3"><thead><tr><th>Cost per side</th><th>Net return</th><th>Sharpe</th></tr></thead>
-          <tbody>{report.cost_sensitivity.map(row => <tr key={row.one_way_cost_bps}><td>{row.one_way_cost_bps} bps</td><td>{pct(row.total_return)}</td><td>{num(row.sharpe)}</td></tr>)}</tbody></table>
+        <div className="overflow-x-auto mt-3" role="region" aria-label="Ensemble cost sensitivity" tabIndex={0}><table className="data-table"><caption className="sr-only">Four-model ensemble performance under different transaction cost assumptions.</caption><thead><tr><th scope="col">Cost per side</th><th scope="col">Net return</th><th scope="col">Sharpe</th></tr></thead>
+          <tbody>{report.cost_sensitivity.map(row => <tr key={row.one_way_cost_bps}><td>{row.one_way_cost_bps} bps</td><td>{pct(row.total_return)}</td><td>{num(row.sharpe)}</td></tr>)}</tbody></table></div>
       </section>
     </div>
     <details className="card"><summary className="cursor-pointer font-semibold text-gray-100">Methodology and study limitations</summary>

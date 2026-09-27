@@ -13,6 +13,11 @@
   remain separate from this read-only confirmation.
 - Release `baf1aeb` is on GitHub and deployed on Render/Vercel. Hosted `/backtest`
   returns a current report; `/live-track-record` confirms `nyse-close-5-v2` and five sessions.
+- The FinBERT follow-up (`0d91cac`, documentation correction `ac7c44c`) is also
+  verified live. `/research/news-comparison` returns run `0024c8e43e438b37`.
+  Chromium checks against the public Vercel site passed for both model selectors,
+  actual API values, method disclosure, mobile layout, and failed-request/retry recovery.
+  All GitHub checks for `ac7c44c` passed.
 - The latest read-only check passes all requested checks. The first request after idle
   timed out, then subsequent warm requests passed; cold-start latency remains a limitation.
 

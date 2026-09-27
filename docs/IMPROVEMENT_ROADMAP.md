@@ -25,7 +25,10 @@ result is reported rather than tuned away on the final test period.
 The first published run uses 1,000 random portfolios and 1,000 bootstrap samples.
 Independent trade-ledger reconstruction agrees with the reported equity to less
 than USD 0.000001. The report is now deployed and its hosted API freshness check passes.
-Backtesting-specific browser visual QA remains outstanding.
+Backtesting browser QA now covers all 15 strategy controls, API-matched percentage-point
+units, four real downloads, export-to-report reconciliation, keyboard table scrolling,
+390px/320px layouts and error/retry/empty/stale-report states. Desktop/mobile screenshots
+were inspected. The page includes metric explanations and visible SPY reference values.
 
 ## Stage 2 - Data and live evaluation consistency (local implementation complete)
 
@@ -55,7 +58,8 @@ Backtesting-specific browser visual QA remains outstanding.
 Details and rollout order: [Data and live evaluation](DATA_AND_LIVE_EVALUATION.md).
 Stage 2's local engineering and initial historical data acquisition are complete;
 hosted write/outcome verification and fresh-window acquisition remain open.
-AI Compare now has desktop/mobile browser verification; other pages still need visual QA.
+AI Compare has desktop/mobile browser verification on the deployed site. Backtesting
+also has desktop/mobile checks; other pages still need visual QA.
 
 ## Stage 3 - Controlled model research (exploratory pilot complete)
 

@@ -2,14 +2,14 @@
 
 ## Opening statement
 
-"QuantSight now has a locally implemented, auditable backtesting system and a
+"QuantSight now has a deployed, auditable backtesting system and a
 consistent five-trading-session prediction target. I found that the original text
 data did not overlap the recent evaluation period, so I acquired and audited another
-news dataset. A controlled first experiment did not show a reliable sentiment benefit.
-My next step is stronger validation and a paired FinBERT comparison, followed by
-live tracking and interface refinement."
+news dataset. Controlled VADER and FinBERT comparisons did not establish a reason
+to replace the live model. My next step is an unused evaluation window and stronger
+validation, alongside forward tracking and interface refinement."
 
-## What is complete locally
+## Implemented and verified
 
 - Backtesting with prior-close decisions, next-open execution, transaction costs,
   slippage, share/cash accounting and final liquidation.
@@ -20,7 +20,9 @@ live tracking and interface refinement."
   metadata and historical results. Supabase migration applied; hosted read checks pass.
 - Timestamp-aware research data ingestion, source hashes and a fixed six-fit news study.
 - 56 Python tests and 11 database migration tests passed. Frontend build/API checks
-  passed; AI Compare was checked in Chromium on desktop/mobile with error recovery.
+  passed; AI Compare was checked against the live deployment in Chromium on desktop/mobile
+  with error recovery. Backtesting browser checks cover all 15 strategies, four downloads,
+  keyboard scrolling, small screens and unavailable/stale-report handling.
 
 The first release is on GitHub and deployed on Render/Vercel. Hosted backtest and
 five-session database reads pass; actual scheduled writes and matured outcomes
@@ -86,16 +88,19 @@ because 2023 and the existing finance feature list were already examined.
    export the trade ledger to demonstrate auditability.
 3. **2:15-3:00:** Explain the original news/price date mismatch and the new coverage audit.
 4. **3:00-4:00:** Show the small pilot table. Explain why a negative result is retained.
-5. **4:00-5:00:** Present the next controlled experiment and remaining deployment/UI work.
+5. **4:00-5:00:** Present the fresh-window validation plan and remaining forward-tracking/UI work.
 
-Before the meeting, start the local backend/frontend using [HOW_TO_RUN](../HOW_TO_RUN.md).
-Check `/backtesting` and exports manually. Keep this brief and the saved report as
+Before the meeting, open the [live Backtesting page](https://quantsight.vercel.app/backtesting)
+and [AI Compare](https://quantsight.vercel.app/compare) early to allow Render to wake up.
+If a cold start causes a request timeout, retry once the backend responds. Local
+startup instructions are in [HOW_TO_RUN](../HOW_TO_RUN.md). Keep this brief and the saved report as
 offline evidence if hosted services are unavailable. Do not rely on a live accuracy
 claim: newly recorded five-session outcomes cannot mature before Monday.
 
 ## Next milestones and supervisor discussion
 
-1. Verify cloud migration and live logging so new forecasts accumulate independently.
+1. Observe genuine scheduled forecast writes and their fifth-session outcomes;
+   the migration and hosted read checks are already complete.
 2. Freeze an unused final evaluation period and use purged walk-forward validation
    within development data; record every model/feature trial.
 3. Use the completed FinBERT/VADER study to define the next training-only experiment;
