@@ -16,7 +16,7 @@ ALL ENDPOINTS:
     GET  /compare/{ticker}          side-by-side 4-model comparison for ticker
     GET  /metrics                   all 4 model accuracy metrics (for Compare page)
     GET  /confidence-boost          avg confidence delta from adding sentiment (Compare page)
-    GET  /market-sentiment          real-time VADER sentiment over current news (Dashboard)
+    GET  /market-sentiment          VADER sentiment over a dated saved-news window
     GET  /news/{ticker}             GDELT news headlines for one ticker
     GET  /live/{ticker}             live signal for one ticker (Yahoo Finance + XGBoost)
     GET  /live-overview             live signals for all tickers (Market page Live Mode)
@@ -76,6 +76,7 @@ import chatbot_engine
 import prediction_tracker
 from backtesting.routes import router as backtesting_router
 from research.routes import router as research_router
+from dashboard_evidence import snapshot_metadata, news_sentiment
 
 # ── Logging ────────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -559,6 +560,7 @@ def get_dashboard():
     ]
 
     return {
+        "snapshot": snapshot_metadata(rows),
         "kpis": {
             "total_tickers"    : len(rows),
             "buy_signals"      : len(buy),
@@ -762,59 +764,8 @@ def get_confidence_boost():
 
 @app.get("/market-sentiment")
 def get_market_sentiment(days: int = Query(default=14, ge=1, le=90)):
-    """
-    Real-time VADER sentiment over the CURRENT GDELT news feed
-    (all_news.parquet — genuinely up to date, distinct from the 2015-2024
-    historical training data). Scores each headline on the fly (VADER is a
-    lightweight rule-based scorer, no model loading required) and buckets
-    into positive/neutral/negative. Used by the Dashboard's Market
-    Sentiment panel.
-    """
-    news = _cache.get("news", pd.DataFrame())
-    empty_response = {
-        "positive_pct": None, "neutral_pct": None, "negative_pct": None,
-        "article_count": 0, "days": days, "trend": [],
-    }
-    if news.empty:
-        return empty_response
-
-    df = news.copy()
-    df["date"] = pd.to_datetime(df["date"])
-    cutoff = df["date"].max() - pd.Timedelta(days=days)
-    recent = df[df["date"] >= cutoff].drop_duplicates(subset=["title"]).copy()
-
-    if recent.empty:
-        return empty_response
-
-    recent["compound"] = recent["title"].fillna("").astype(str).apply(
-        lambda t: _vader.polarity_scores(t)["compound"]
-    )
-    recent["bucket"] = recent["compound"].apply(
-        lambda c: "positive" if c >= 0.05 else ("negative" if c <= -0.05 else "neutral")
-    )
-
-    counts = recent["bucket"].value_counts()
-    total  = len(recent)
-
-    trend_df = (
-        recent.groupby(recent["date"].dt.date)["compound"]
-        .mean()
-        .reset_index()
-        .sort_values("date")
-    )
-    trend = [
-        {"date": str(row["date"]), "avg_compound": round(float(row["compound"]), 3)}
-        for _, row in trend_df.iterrows()
-    ]
-
-    return {
-        "positive_pct"  : round(100 * counts.get("positive", 0) / total, 1),
-        "neutral_pct"   : round(100 * counts.get("neutral",  0) / total, 1),
-        "negative_pct"  : round(100 * counts.get("negative", 0) / total, 1),
-        "article_count" : int(total),
-        "days"          : days,
-        "trend"         : trend,
-    }
+    """Score saved headlines and report their archive window and age explicitly."""
+    return news_sentiment(_cache.get("news", pd.DataFrame()), _vader, days)
 
 
 @app.get("/news/{ticker}")

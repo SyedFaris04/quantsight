@@ -1,324 +1,146 @@
-/**
- * frontend/src/pages/Dashboard.jsx
- * Home page — market summary at a glance.
- *
- * ALL DATA IS REAL:
- *   - KPI cards          → /dashboard kpis (computed from /overview)
- *   - Top Opportunities  → /dashboard top_opportunities
- *   - Market News        → /dashboard news (recent GDELT headlines)
- *   - Market Sentiment   → /market-sentiment (real-time VADER over the
- *                           CURRENT news feed — genuinely computed, not
- *                           precomputed into a file)
- *   - AI Insight         → one sentence assembled client-side from the
- *                           already-fetched real KPI numbers, no
- *                           text-generation backend involved
- *
- * No mockup data. No sector claims (no sector data exists in this project).
- */
-
-import { useNavigate } from "react-router-dom";
-import { AreaChart, Area, ResponsiveContainer, YAxis } from "recharts";
+import { Link } from "react-router-dom";
 import { useApi } from "../hooks/useApi";
+import { companyName } from "../data/companyNames";
 
-// ── Small helpers ──────────────────────────────────────────────────────────────
-function signalColor(signal) {
-  if (signal === "BUY")  return "text-green-400";
-  if (signal === "SELL") return "text-red-400";
-  return "text-amber-400"; // HOLD
-}
-function signalArrow(signal) {
-  if (signal === "BUY")  return "▲";
-  if (signal === "SELL") return "▼";
-  return "◆";
-}
-function agreementColor(level) {
-  if (level === "Strong")   return "text-green-400 bg-green-900/20 border-green-800";
-  if (level === "Moderate") return "text-amber-400 bg-amber-900/20 border-amber-800";
-  return "text-gray-400 bg-gray-800 border-gray-700";
-}
-function riskColor(level) {
-  if (level === "Low")  return "text-green-400";
-  if (level === "High") return "text-red-400";
-  return "text-amber-400";
-}
-function riskDots(level) {
-  return level === "Low" ? "●" : level === "High" ? "●●●" : "●●";
+const display = value => value == null ? "—" : value;
+const percent = value => value == null ? "—" : `${value}%`;
+const focus = "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-indigo-400";
+
+function Metric({ label, value, note }) {
+  return <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
+    <dt className="text-xs font-medium text-gray-400">{label}</dt>
+    <dd className="mt-2 text-3xl font-semibold tabular-nums text-white">{value}</dd>
+    <p className="mt-2 text-xs leading-relaxed text-gray-400">{note}</p>
+  </div>;
 }
 
-// ── KPI card ───────────────────────────────────────────────────────────────────
-function KpiCard({ label, value, sub, accent }) {
-  const accentBar = {
-    indigo: "bg-indigo-500",
-    green:  "bg-green-500",
-    amber:  "bg-amber-500",
-    blue:   "bg-blue-500",
-  }[accent] || "bg-indigo-500";
-
-  return (
-    <div className="relative bg-gray-900 border border-gray-800 rounded-xl p-4 overflow-hidden">
-      <div className={`absolute left-0 top-0 bottom-0 w-1 ${accentBar}`} />
-      <div className="pl-2">
-        <div className="text-3xl font-bold text-white">{value}</div>
-        <div className="text-sm font-medium text-gray-300 mt-1">{label}</div>
-        {sub && <div className="text-xs text-gray-500 mt-0.5">{sub}</div>}
-      </div>
-    </div>
-  );
+function Unavailable({ message, retry }) {
+  return <div role="alert" className="rounded-xl border border-gray-700 bg-gray-900 p-5">
+    <p className="text-sm text-gray-300">{message}</p>
+    <button onClick={retry} className={`btn-secondary mt-3 text-sm ${focus}`}>Try again</button>
+  </div>;
 }
 
-// ── Market Sentiment panel ───────────────────────────────────────────────────
-function MarketSentimentPanel() {
-  const { data, loading } = useApi("/market-sentiment");
-
-  return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-      <div className="mb-3">
-        <h2 className="text-base font-semibold text-white">Market Sentiment</h2>
-        <p className="text-xs text-gray-500">Real-time VADER score over current news headlines</p>
-      </div>
-
-      {loading ? (
-        <div className="h-32 bg-gray-800 rounded-lg animate-pulse" />
-      ) : !data || data.article_count === 0 ? (
-        <p className="text-sm text-gray-600 py-6 text-center">No recent news to score.</p>
-      ) : (
-        <>
-          {data.trend?.length > 1 && (
-            <div className="h-16 -mx-1 mb-3">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={data.trend}>
-                  <YAxis hide domain={["dataMin", "dataMax"]} />
-                  <defs>
-                    <linearGradient id="sentimentFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#6366f1" stopOpacity={0.4} />
-                      <stop offset="100%" stopColor="#6366f1" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <Area
-                    type="monotone"
-                    dataKey="avg_compound"
-                    stroke="#818cf8"
-                    strokeWidth={1.5}
-                    fill="url(#sentimentFill)"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <div>
-              <div className="text-green-400 font-bold text-lg">{data.positive_pct}%</div>
-              <div className="text-xs text-gray-500">Positive</div>
-            </div>
-            <div>
-              <div className="text-gray-400 font-bold text-lg">{data.neutral_pct}%</div>
-              <div className="text-xs text-gray-500">Neutral</div>
-            </div>
-            <div>
-              <div className="text-red-400 font-bold text-lg">{data.negative_pct}%</div>
-              <div className="text-xs text-gray-500">Negative</div>
-            </div>
-          </div>
-          <p className="text-xs text-gray-600 mt-3 text-center">
-            {data.article_count.toLocaleString()} headlines · last {data.days} days
-          </p>
-        </>
-      )}
-    </div>
-  );
-}
-
-// ── AI Insight card — real sentence from already-fetched KPIs ──────────────
-function AiInsightCard({ kpis, loading }) {
-  const insight = kpis
-    ? `${kpis.buy_signals} of ${kpis.total_tickers} tickers show a BUY signal today, with ` +
-      `${kpis.strong_agreement} in strong 4-model agreement. Average model confidence across ` +
-      `all stocks is ${kpis.avg_confidence}%.`
-    : null;
-
-  return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-      <div className="flex items-start gap-3">
-        <span className="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-600/40
-                         flex items-center justify-center text-base flex-shrink-0">
-          🤖
-        </span>
-        <div className="flex-1 min-w-0">
-          <h2 className="text-base font-semibold text-white mb-1">AI Insight</h2>
-          {loading ? (
-            <div className="h-10 bg-gray-800 rounded animate-pulse" />
-          ) : (
-            <p className="text-sm text-gray-400 leading-relaxed">{insight}</p>
-          )}
+function NewsSentiment() {
+  const { data, loading, error, refetch } = useApi("/market-sentiment");
+  return <section className="card" aria-labelledby="news-sentiment-title">
+    <p className="text-xs font-medium uppercase tracking-wider text-indigo-300">Language analysis</p>
+    <h2 id="news-sentiment-title" className="mt-2 text-lg font-semibold text-white">Saved news sentiment</h2>
+    <p className="mt-2 text-sm leading-relaxed text-gray-400">VADER scores headline language. These scores are separate from the historical prediction snapshot.</p>
+    {loading ? <p role="status" className="mt-5 text-sm text-gray-400">Loading news analysis...</p>
+      : error ? <div className="mt-4"><Unavailable message="News analysis could not be loaded." retry={refetch} /></div>
+      : !data?.article_count ? <p className="mt-5 text-sm text-gray-400">No dated headlines are available to score.</p>
+      : <>
+        <div className="mt-4 rounded-lg border border-gray-700 bg-gray-950/50 p-3 text-xs leading-relaxed text-gray-300">
+          <p>Archive window: {data.window_start || "Unknown"} to {data.window_end || "Unknown"}</p>
+          <p className="mt-1">Latest saved article: {data.age_days == null ? "age unavailable" : `${data.age_days} days old`}. This is not a live news feed.</p>
         </div>
-      </div>
-    </div>
-  );
+        <dl className="mt-5 grid grid-cols-3 gap-3 text-center">
+          {[["Positive", "positive_pct", "text-emerald-300"], ["Neutral", "neutral_pct", "text-gray-200"], ["Negative", "negative_pct", "text-rose-300"]].map(([label, key, color]) =>
+            <div key={key}><dt className="text-xs text-gray-400">{label}</dt><dd className={`mt-2 text-xl font-semibold tabular-nums ${color}`}>{percent(data[key])}</dd></div>)}
+        </dl>
+        <p className="mt-4 text-xs text-gray-400">{data.article_count.toLocaleString()} unique headlines in a {data.days}-day archive window.</p>
+        <details className="mt-4 text-xs text-gray-400"><summary className={`cursor-pointer text-gray-300 ${focus}`}>Daily sentiment values</summary>
+          <div className="mt-3 max-h-48 overflow-auto" role="region" aria-label="Daily saved-news sentiment" tabIndex={0}>
+            <table className="w-full text-left"><caption className="sr-only">Mean VADER compound score by article date, from minus one to plus one.</caption>
+              <thead><tr><th scope="col" className="py-2">Article date</th><th scope="col" className="py-2 text-right">Mean score</th></tr></thead>
+              <tbody>{data.trend?.map(row => <tr key={row.date} className="border-t border-gray-800"><td className="py-2">{row.date}</td><td className="py-2 text-right tabular-nums">{row.avg_compound.toFixed(3)}</td></tr>)}</tbody>
+            </table>
+          </div>
+        </details>
+      </>}
+  </section>;
 }
 
-// ── Main ────────────────────────────────────────────────────────────────────────
+const pathways = [
+  { to: "/backtesting", label: "Backtesting", tag: "Historical simulation", text: "Compare net returns, Sharpe, drawdown and trading costs against benchmarks." },
+  { to: "/compare", label: "AI Compare", tag: "Controlled research", text: "Inspect finance, VADER and FinBERT results alongside simple baselines." },
+  { to: "/track-record", label: "Track Record", tag: "Forward evaluation", text: "Follow recorded forecasts and their outcomes after five trading sessions." },
+];
+
+function articleUrl(value) {
+  try { const url = new URL(value); return ["https:", "http:"].includes(url.protocol) ? url.href : null; }
+  catch { return null; }
+}
+
 export default function Dashboard() {
-  const navigate = useNavigate();
-  const { data, loading, error } = useApi("/dashboard");
-
+  const { data, loading, error, refetch } = useApi("/dashboard");
   const kpis = data?.kpis;
-  const opps = data?.top_opportunities || [];
-  const news = data?.news || [];
-
-  return (
-    <div className="space-y-6">
-
-      {/* ── Header ── */}
-      <div className="flex items-end justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-white">
-            Good day, Investor <span className="text-indigo-400">👋</span>
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Your AI market overview — {loading ? "loading…" : `${kpis?.total_tickers ?? 0} stocks analysed`}
-          </p>
-        </div>
-        <button
-          onClick={() => navigate("/market")}
-          className="text-sm font-medium text-indigo-400 hover:text-indigo-300 border border-indigo-800
-                     bg-indigo-900/20 rounded-lg px-4 py-2 transition-colors"
-        >
-          View Full Market →
-        </button>
+  const snapshot = data?.snapshot;
+  const dates = snapshot?.latest_signal_date
+    ? snapshot.earliest_signal_date === snapshot.latest_signal_date ? snapshot.latest_signal_date
+      : `${snapshot.earliest_signal_date} to ${snapshot.latest_signal_date}`
+    : "Date unavailable";
+  const ready = !loading && !error && kpis;
+  return <div className="mx-auto max-w-7xl space-y-6">
+    <section className="rounded-2xl border border-indigo-500/25 bg-gradient-to-br from-indigo-950/60 via-gray-900 to-gray-900 p-6 sm:p-8">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <p className="text-xs font-semibold uppercase tracking-widest text-indigo-300">QuantSight research workspace</p>
+        <span className="rounded-full border border-indigo-400/30 bg-indigo-400/10 px-3 py-1 text-xs text-indigo-200">Five-session prediction horizon</span>
       </div>
-
-      {error && (
-        <div className="bg-red-900/20 border border-red-800 rounded-lg px-4 py-3 text-sm text-red-400">
-          Could not load dashboard data — {error}. Is the backend running at{" "}
-          {import.meta.env.VITE_API_URL || "/api"}?
-        </div>
-      )}
-
-      {/* ── KPI row ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {loading ? (
-          [1, 2, 3, 4].map(i => <div key={i} className="h-24 bg-gray-900 rounded-xl animate-pulse" />)
-        ) : (
-          <>
-            <KpiCard label="Total Tickers"    value={kpis?.total_tickers ?? 0}    sub="US stocks analysed"         accent="blue" />
-            <KpiCard label="BUY Signals"      value={kpis?.buy_signals ?? 0}      sub={`${kpis?.sell_signals ?? 0} SELL · ${kpis?.hold_signals ?? 0} HOLD`} accent="green" />
-            <KpiCard label="Strong Agreement" value={kpis?.strong_agreement ?? 0} sub="all 4 models agree"          accent="indigo" />
-            <KpiCard label="Avg Confidence"   value={`${kpis?.avg_confidence ?? 0}%`} sub="across all stocks"       accent="amber" />
-          </>
-        )}
+      <h1 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">Understand the signal. Check the evidence.</h1>
+      <p className="mt-3 max-w-2xl text-sm leading-relaxed text-gray-300">Explore model predictions, compare their historical performance, and follow outcomes as new forecasts mature.</p>
+      <div className="mt-6 flex flex-wrap gap-3">
+        <Link to="/backtesting" className={`btn-primary text-sm ${focus}`}>Explore backtesting</Link>
+        <Link to="/market" className={`btn-secondary text-sm ${focus}`}>Open market explorer</Link>
       </div>
+    </section>
 
-      {/* ── Row: Top Opportunities + Market Sentiment ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-        {/* Top Opportunities */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-base font-semibold text-white">Top Opportunities</h2>
-              <p className="text-xs text-gray-500">Highest-confidence BUY signals right now</p>
-            </div>
-            <span className="text-xs text-indigo-400 bg-indigo-900/20 border border-indigo-800 rounded-full px-2 py-0.5">
-              Live signals
-            </span>
-          </div>
-
-          {loading ? (
-            <div className="space-y-2">{[1,2,3,4,5].map(i => <div key={i} className="h-12 bg-gray-800 rounded-lg animate-pulse" />)}</div>
-          ) : opps.length === 0 ? (
-            <p className="text-sm text-gray-600 py-6 text-center">No strong BUY opportunities right now.</p>
-          ) : (
-            <div className="space-y-2">
-              {opps.map((o, i) => (
-                <button
-                  key={o.ticker}
-                  onClick={() => navigate(`/detail/${o.ticker}`)}
-                  className="w-full flex items-center gap-3 bg-gray-800/50 hover:bg-gray-800
-                             border border-gray-800 hover:border-gray-700 rounded-lg px-3 py-2.5
-                             transition-colors text-left"
-                >
-                  <span className="text-indigo-400 font-bold text-sm w-5 flex-shrink-0">{i + 1}</span>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-white text-sm">{o.ticker}</div>
-                    <div className="text-xs text-gray-500">
-                      <span className={`inline-block px-1.5 py-0.5 rounded-full border text-[10px] ${agreementColor(o.agreement_level)}`}>
-                        {o.agreement_level}
-                      </span>
-                      <span className={`ml-2 ${riskColor(o.risk_level)}`}>{riskDots(o.risk_level)} {o.risk_level} risk</span>
-                    </div>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <div className={`font-bold text-sm ${signalColor(o.overall_signal)}`}>
-                      {signalArrow(o.overall_signal)} {o.overall_signal}
-                    </div>
-                    <div className="text-xs text-gray-500">{o.confidence}% conf.</div>
-                  </div>
-                  <span className="text-gray-600 text-sm flex-shrink-0">→</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <MarketSentimentPanel />
+    <section aria-labelledby="snapshot-title" className="space-y-4">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div><h2 id="snapshot-title" className="text-lg font-semibold text-white">Historical model snapshot</h2>
+          <p className="mt-1 text-sm text-gray-400">Saved model outputs for research; these are not current trading signals.</p></div>
+        <p className="rounded-lg border border-gray-700 px-3 py-2 text-xs text-gray-300">Signal dates: {loading ? "Loading..." : error ? "Unavailable" : dates}</p>
       </div>
+      {loading ? <div role="status" className="grid grid-cols-2 gap-4 lg:grid-cols-4"><span className="sr-only">Loading historical snapshot</span>{[1,2,3,4].map(i => <div key={i} className="h-32 animate-pulse rounded-xl bg-gray-900" />)}</div>
+        : error || !kpis ? <Unavailable message="The historical snapshot could not be loaded." retry={refetch} />
+        : <>
+          {(snapshot?.mixed_signal_dates || snapshot?.undated_signals > 0) && <p className="rounded-lg border border-amber-700/50 bg-amber-950/20 p-3 text-xs text-amber-100">Some saved signals have different or missing dates. This summary does not represent one synchronized market observation.</p>}
+          <dl className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <Metric label="Instruments covered" value={display(kpis.total_tickers)} note="Stocks and ETFs in the saved snapshot" />
+            <Metric label="Historical BUY votes" value={display(kpis.buy_signals)} note={`${display(kpis.sell_signals)} SELL / ${display(kpis.hold_signals)} HOLD`} />
+            <Metric label="Unanimous model votes" value={display(kpis.strong_agreement)} note="All available models agree on direction" />
+            <Metric label="Mean model confidence" value={percent(kpis.avg_confidence)} note="Average model score; not ensemble accuracy" />
+          </dl>
+        </>}
+    </section>
 
-      {/* ── Row: Market News + AI Insight ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <nav aria-label="Explore the evidence" className="grid gap-4 md:grid-cols-3">
+      {pathways.map(item => <Link key={item.to} to={item.to} className={`group rounded-xl border border-gray-800 bg-gray-900 p-5 transition-colors hover:border-indigo-500/60 ${focus}`}>
+        <p className="text-xs font-medium text-indigo-300">{item.tag}</p><h2 className="mt-2 text-lg font-semibold text-white">{item.label} <span aria-hidden="true" className="text-indigo-400">→</span></h2>
+        <p className="mt-2 text-sm leading-relaxed text-gray-400">{item.text}</p>
+      </Link>)}
+    </nav>
 
-        {/* Market News */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-base font-semibold text-white">Market News</h2>
-              <p className="text-xs text-gray-500">Recent headlines across all stocks (GDELT)</p>
-            </div>
-          </div>
-
-          {loading ? (
-            <div className="space-y-3">{[1,2,3,4].map(i => <div key={i} className="h-14 bg-gray-800 rounded-lg animate-pulse" />)}</div>
-          ) : news.length === 0 ? (
-            <p className="text-sm text-gray-600 py-6 text-center">No recent news available.</p>
-          ) : (
-            <div className="space-y-3">
-              {news.map((article, i) => (
-                <a
-                  key={i}
-                  href={article.url || "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block border-b border-gray-800 last:border-0 pb-3 last:pb-0
-                             hover:bg-gray-800/30 -mx-2 px-2 rounded transition-colors"
-                >
-                  <div className="flex items-start gap-2">
-                    {article.ticker && (
-                      <span className="text-xs font-bold text-indigo-400 bg-indigo-900/20 border border-indigo-800
-                                       rounded px-1.5 py-0.5 flex-shrink-0 mt-0.5">
-                        {article.ticker}
-                      </span>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-200 leading-snug line-clamp-2">{article.title}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs text-gray-600">{String(article.date).slice(0, 10)}</span>
-                        {article.source && <span className="text-xs text-gray-600">· {article.source}</span>}
-                      </div>
-                    </div>
-                  </div>
-                </a>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <AiInsightCard kpis={kpis} loading={loading} />
-      </div>
-
-      {/* Disclaimer */}
-      <p className="text-xs text-gray-600 text-center">
-        Signals are model predictions for educational decision support — not financial advice.
-      </p>
+    <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+      <section className="card" aria-labelledby="historical-candidates-title">
+        <p className="text-xs font-medium uppercase tracking-wider text-indigo-300">Saved consensus</p>
+        <h2 id="historical-candidates-title" className="mt-2 text-lg font-semibold text-white">Historical BUY candidates</h2>
+        <p className="mt-2 text-sm leading-relaxed text-gray-400">Ranked by model agreement, then confidence. Open an instrument to inspect its saved analysis.</p>
+        {!ready ? <p className="mt-5 text-sm text-gray-400">{loading ? "Loading saved candidates..." : "Candidates are unavailable until the snapshot loads."}</p>
+          : !data.top_opportunities?.length ? <p className="mt-5 text-sm text-gray-400">No BUY candidates in this saved snapshot.</p>
+          : <ol className="mt-5 space-y-2">{data.top_opportunities.map((item, index) => <li key={item.ticker}>
+            <Link to={`/detail/${item.ticker}`} className={`flex items-center gap-3 rounded-xl border border-gray-800 bg-gray-950/40 p-3 transition-colors hover:border-gray-600 ${focus}`}>
+              <span aria-hidden="true" className="w-5 text-sm text-gray-500">{index + 1}</span>
+              <div className="min-w-0 flex-1"><p className="text-sm font-semibold text-white">{item.ticker}</p><p className="truncate text-xs text-gray-400">{companyName(item.ticker)}</p><p className="mt-1 text-xs text-gray-400">{item.agreement_level} agreement</p></div>
+              <div className="text-right"><p className="text-sm font-medium text-emerald-300">BUY</p><p className="mt-1 text-xs text-gray-300">{percent(item.confidence)}</p></div>
+            </Link>
+          </li>)}</ol>}
+        <p className="mt-4 text-xs leading-relaxed text-gray-500">Confidence and agreement are model outputs, not a measured probability of investment success.</p>
+      </section>
+      <NewsSentiment />
     </div>
-  );
+
+    <section className="card" aria-labelledby="saved-headlines-title">
+      <div className="flex flex-wrap items-end justify-between gap-3"><div><h2 id="saved-headlines-title" className="text-lg font-semibold text-white">Saved news headlines</h2><p className="mt-1 text-sm text-gray-400">Latest entries in the GDELT archive, with their publication dates.</p></div><span className="text-xs text-gray-400">Separate from model signal dates</span></div>
+      {!ready ? <p className="mt-5 text-sm text-gray-400">{loading ? "Loading saved headlines..." : "Headlines could not be loaded."}</p>
+        : !data.news?.length ? <p className="mt-5 text-sm text-gray-400">No saved headlines are available.</p>
+        : <ul className="mt-5 grid gap-4 md:grid-cols-2">{data.news.map((article, index) => {
+          const url = articleUrl(article.url);
+          const title = <><p className="text-sm font-medium leading-relaxed text-gray-200">{article.title}</p><p className="mt-2 break-words text-xs text-gray-400">{article.ticker || "Market"} / {article.date ? String(article.date).slice(0, 10) : "Date unavailable"}{article.source ? ` / ${article.source}` : ""}</p></>;
+          return <li key={`${article.url}-${index}`} className="rounded-xl border border-gray-800 bg-gray-950/30">{url ? <a href={url} target="_blank" rel="noopener noreferrer" className={`block rounded-xl p-4 hover:bg-gray-800/30 ${focus}`}>{title}<span className="sr-only">Opens in a new tab</span></a> : <div className="p-4">{title}</div>}</li>;
+        })}</ul>}
+    </section>
+    <p className="text-center text-xs text-gray-500">Educational decision support. Historical simulations and new live outcomes are evaluated separately.</p>
+  </div>;
 }

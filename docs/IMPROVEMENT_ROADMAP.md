@@ -103,6 +103,10 @@ accuracy percentage and no promise that complexity must outperform simpler model
 
 - Extend Backtesting's spacing, typography and evidence-first layout across the app.
 - Redesign Dashboard, Market and Detail; group research vs learning navigation.
+- [x] Redesign Dashboard with dated historical snapshots, saved-news window/age,
+      research links, separate retry states and mobile checks. Remove the static
+      sidebar "Live" label and update chatbot tool descriptions to respect source dates.
+      Seven provenance tests bring the Python suite to 63; Market/Detail redesign remains.
 - Fix portfolio daily P&L and account/guest-state separation.
 - Fix game replay scoring; distinguish model-interpretation from outcome prediction.
 - Add keyboard/focus, chart alternatives, responsive and loading/error-state checks.

@@ -145,11 +145,11 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
           <AccountSection />
         </div>
 
-        {/* Live status */}
+        {/* Product label; connection status is verified within each data view. */}
         <div className="px-5 py-4 border-t border-gray-800 flex-shrink-0">
           <div className="flex items-center gap-2 text-xs text-gray-500">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-            <span>Live</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
+            <span>Research & learning</span>
           </div>
           <p className="text-[10px] text-gray-600 mt-1">AI Decision Support</p>
         </div>

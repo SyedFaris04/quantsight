@@ -61,6 +61,9 @@ get_live_price_signal tool specifically when the user asks about "right now" \
 or "today".
 
 Rules:
+- Respect the dates and source in every tool result. Saved model snapshots and \
+saved news archives are historical, even when returned by a running server. \
+State their dates; never describe them as today's signals or live news.
 - Never invent a signal, confidence %, or price. If a question is about a \
 specific ticker or the overall market, call a tool first and answer from its \
 real result.
@@ -101,7 +104,7 @@ TOOLS = [
         "type": "function",
         "function": {
             "name": "get_market_overview",
-            "description": "Snapshot of the whole market: counts of BUY/SELL/HOLD tickers, average model confidence, and the top current BUY opportunities. Use for broad questions like 'what's trending' or 'what looks good today'.",
+            "description": "Saved historical model snapshot: counts of BUY/SELL/HOLD tickers, average model confidence and ranked historical BUY candidates. Includes signal-date provenance. This is not today's market overview.",
             "parameters": {"type": "object", "properties": {}, "required": []},
         },
     },
@@ -109,7 +112,7 @@ TOOLS = [
         "type": "function",
         "function": {
             "name": "get_stock_signal",
-            "description": "The current BUY/SELL/HOLD signal, confidence, model agreement, and risk level for one ticker, from all 4 trained models.",
+            "description": "Saved historical BUY/SELL/HOLD signals, confidence, model agreement and risk level for one ticker. Each model signal includes its historical date; do not describe it as current.",
             "parameters": {
                 "type": "object",
                 "properties": {"ticker": {"type": "string", "description": "Stock ticker symbol, e.g. AAPL"}},
@@ -145,7 +148,7 @@ TOOLS = [
         "type": "function",
         "function": {
             "name": "get_market_sentiment",
-            "description": "Real-time overall news sentiment (% positive/neutral/negative) across recent market headlines.",
+            "description": "VADER sentiment percentages over a saved news archive window. Includes window dates and age of the latest article. This is not a real-time news feed; state its dates when summarizing.",
             "parameters": {"type": "object", "properties": {}, "required": []},
         },
     },
