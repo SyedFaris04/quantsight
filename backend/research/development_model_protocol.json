@@ -1,0 +1,29 @@
+{
+  "protocol_id": "finance_development_v1",
+  "status": "development_model_selection",
+  "snapshot_id": "20260927T141409402344Z",
+  "holdout_start": "2025-01-01",
+  "horizon_sessions": 5,
+  "features": ["return_1", "return_5", "return_10", "return_20", "volatility_20", "drawdown_20", "ma20_distance", "ma60_distance", "intraday_range", "volume_relative_20", "rsi_14", "spy_return_5", "excess_return_5"],
+  "feature_policy": "Fixed compact finance-only features; trailing windows include the completed signal session, no feature selection or ticker identity. No news inputs. Reindex to NYSE sessions before calculating lags; do not fill gaps.",
+  "price_policy": "Returns, trend and labels use frozen Adj Close. Intraday range uses same-session vendor High/Low/Close; volume uses a trailing ratio. Vendor adjustments are retrieval-time, not point-in-time vintages.",
+  "models": {
+    "logistic": {"C": 1.0, "max_iter": 1000, "random_state": 42},
+    "hist_boost": {"learning_rate": 0.05, "max_iter": 150, "max_leaf_nodes": 8, "max_depth": 3, "min_samples_leaf": 100, "l2_regularization": 10.0, "early_stopping": false, "random_state": 42},
+    "xgboost": {"n_estimators": 200, "max_depth": 3, "learning_rate": 0.03, "min_child_weight": 20, "subsample": 0.8, "colsample_bytree": 0.8, "reg_lambda": 5.0, "reg_alpha": 0.1, "objective": "binary:logistic", "eval_metric": "logloss", "tree_method": "hist", "n_jobs": 2, "random_state": 42}
+  },
+  "preprocessing": "StandardScaler fitted only on fit rows for logistic; trees use raw ratio features. Drop rows missing any fixed feature equally for all candidates.",
+  "calibration": {"method": "logistic_sigmoid_of_clipped_raw_logit", "C": 1.0, "max_iter": 1000, "probability_clip": 0.000001, "data": "Separate immediately preceding calendar year; no validation outcomes used"},
+  "candidate_outputs": ["raw", "sigmoid"],
+  "baselines": ["fit_prior", "calibration_prior", "always_up"],
+  "direction_threshold": 0.5,
+  "direction_policy": "Each candidate's displayed probability determines its direction; raw and sigmoid outputs are separately named candidates. Legacy serving labels are unchanged.",
+  "fold_source": "Frozen snapshot development_folds: validation 2022, 2023, 2024, with five-session outcome purging at every segment end",
+  "selection": "Lowest equal-year mean validation Brier loss across all six model outputs AND the three baselines. Exact ties prefer baseline, then logistic, hist_boost, xgboost; raw before sigmoid. No threshold search, early-stopping search, extra seeds or additional fits after viewing results.",
+  "fit_budget": {"predictors": 9, "calibrators": 9, "total": 18},
+  "diagnostics": ["accuracy", "balanced_accuracy", "mcc", "roc_auc", "brier_score", "log_loss", "buy_fraction", "10 equal-width reliability bins", "year stability"],
+  "uncertainty": {"method": "Paired circular date-block bootstrap separately within each validation year; retain all tickers on sampled dates; average year gains", "block_sessions": 20, "repetitions": 1000, "seed": 42, "comparator": "fit_prior", "limitations": "Exploratory, conditional on fitted models, not multiplicity-adjusted and not a post-selection guarantee"},
+  "holdout_policy": "Read only development CSVs; do not read or score 2025 candidate holdout regardless of prior-use answer during this experiment.",
+  "promotion_policy": "Never overwrite serving models or promote from these reused development years. Freeze a later cost-aware strategy and confirm unused holdout before final evaluation.",
+  "limitations": ["Development years were previously examined", "Fixed survivor universe", "Retrieval-time adjusted data can be revised", "Finance-only comparison does not test sentiment", "Prediction metrics do not establish profitable trading"]
+}
