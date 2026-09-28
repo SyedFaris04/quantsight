@@ -4,6 +4,7 @@
 - **Prepared:** 27 September 2026, Malaysia time.
 - **Current status:** deployed working prototype; backtesting and research comparison are ready to demonstrate. Final predictive performance is still being validated.
 - **Companion:** [Simple project cheat sheet](PROJECT_CHEAT_SHEET.md).
+- **Presentation:** [PowerPoint progress slides](docs/presentations/QuantSight_Supervisor_Progress_2026-09-28.pptx), with short bullets and speaker notes for the explanations.
 
 ## 1. What to say first
 
