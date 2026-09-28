@@ -33,7 +33,7 @@ Updated 28 September 2026.
 - **LSTM attention:** saved weights across ten input sessions. They describe internal weighting, not exact reasoning or causal importance.
 - **Indicator/vote scenarios:** thresholds that change an indicator assessment or vote count. They do not rerun the predictor or guarantee that its output will flip.
 - **Chat explanations:** generated text based on retrieved project data and instructions. Tool use reduces unsupported claims but does not guarantee correctness.
-- **Offline SHAP work:** feature-importance analysis exists in the research workflow. The current stock-detail summaries are not live per-prediction SHAP attributions.
+- **Per-prediction TreeSHAP:** Stock Detail now has a separate, verified attribution panel for both saved XGBoost models. Existing indicator summaries remain rule-based; offline global SHAP analysis is separate.
 - This release corrects the interface's previous claim that attention was the model's "exact reasoning" and clarifies the limits of its scenarios.
 
 ## Grounding improvements
@@ -57,10 +57,31 @@ Updated 28 September 2026.
 - Browser fault tests intercept only the test browser's requests. Test fixtures are not served by the application.
 - These are functional checks, not an evaluation proving all chatbot answers correct. An initial open-ended answer still made an incorrect RSI-scale claim, reinforcing the need for factual checks. The prompt now explicitly supplies the correct scale, and the subsequent real response passed that check.
 
-## Next XAI improvement
+## Per-prediction XGBoost attribution — implemented 28 September 2026
 
-1. Add actual per-prediction XGBoost feature contributions, using the exact saved input vector and model version.
-2. Label the contribution scale correctly: tree-model raw score contributions do not directly explain a separately calibrated probability.
-3. Verify that the baseline plus contributions reconstructs the model output within numerical tolerance.
-4. Show prediction date, model version, leading positive/negative contributions and an explanation-method label.
-5. Test whether users understand these explanations and their limits before claiming improved trust or decision quality.
+- Open **Stock Detail → Overview → What moved this model's prediction?** and choose Finance or Finance + Sentiment.
+- Endpoint: `GET /feature-attribution/AAPL?model=xgb_finance`; only the two saved XGBoost variants are supported.
+- Scope: latest saved historical prediction per ticker (currently 20 December 2024). This endpoint does not explain a live prediction, LSTM output or the four-model consensus.
+- The server selects the exact ticker/date feature row, preserves the bundle's feature order and applies its saved StandardScaler. Only the latest rows are cached to avoid duplicating the full feature panels in memory.
+- XGBoost's native `pred_contribs=True`, with `approx_contribs=False`, computes exact TreeSHAP from the saved trees. No new SHAP runtime dependency or external model API is needed.
+- Contributions use the tree model's reference distribution; they describe model associations, not causal market effects. Correlated inputs can make the attribution interpretation sensitive to its assumptions.
+- Positive contributions increase the raw UP log-odds; negative contributions decrease them. They are not percentage-point changes, measured accuracy or separate explanations of the calibrated output.
+- The baseline plus **all** feature contributions must match the raw margin (absolute/relative tolerance `1e-5`). The sigmoid of that margin must match classifier P(UP) (tolerance `1e-6`). Any early-stopped model uses the same best iteration as classifier inference.
+- The regenerated raw direction and calibrated P(UP) must also match the saved CSV. Probability tolerance is `0.00005001`, reflecting rounding of the CSV percentage to two decimals. Invalid/missing/duplicate input evidence or mismatches produce an unavailable explanation, not invented bars.
+- Direction uses raw P(UP) at 50%; calibration can cross that threshold without changing the saved direction. For AAPL Finance: raw P(UP) is approximately 46.49%, calibrated P(UP) 55.19%, and the saved direction is SELL.
+- The panel displays the eight largest absolute contributions plus the sum of remaining inputs. An expandable table includes every raw/scaled input and contribution, full model/input SHA-256 hashes, tree count and reconstruction error.
+- Model hash covers the saved bundle, including scaler and calibrator; input hash covers the ordered raw feature names/values. Ticker/date are returned separately. These identify evidence; they do not establish how the historical model was trained or remove evaluation-period reuse.
+- Finance + Sentiment uses saved inputs, not current news. The latest historical text values are zero; SHAP can assign a nonzero contribution to a zero-valued feature based on tree splits and the reference score. This does not demonstrate a benefit from fresh sentiment data.
+- The earlier “Signal Contribution” section is now labelled “Indicator & Model Summary” to distinguish heuristic scores from actual model attribution.
+- No new environment variable, API key or Supabase migration is required. Deploy the updated backend and frontend together.
+
+### Verification of this addition
+
+- All **88 latest predictions** (44 tickers × 2 models) reproduce saved directions and probabilities. Maximum raw-score reconstruction error: **6.28 × 10⁻⁷**.
+- Seven new regression tests cover real-tree reconstruction, early stopping, calibration/direction separation, corrupted contributions, invalid inputs, saved-output mismatches, exact-date matching, cache refresh, duplicate evidence and HTTP failure handling.
+- Full backend suite: **90 passing tests**. Frontend production build passes with its existing bundle-size warning.
+- Local Chromium checks pass for both model options, all-input tables, 390/320-pixel layouts, a simulated API failure and retry. No uncaught page errors or page-level horizontal overflow were observed.
+- Test screenshots and per-prediction reconstruction results are local in `backend/data/research/xai_verification/` (excluded from Git).
+- Functional consistency is verified. Human understanding, usefulness and trust still need a user study; this addition does not change model accuracy.
+
+Implementation references: [XGBoost prediction and early stopping](https://xgboost.readthedocs.io/en/latest/prediction.html) and [native contribution API](https://xgboost.readthedocs.io/en/latest/python/python_api.html).

@@ -65,6 +65,10 @@ test sample, so performance differences cannot establish a benefit from fresh te
 - **Explainability (XAI)**, two methods, matched to what each model actually
   supports:
   - SHAP `TreeExplainer` — global feature importance for both XGBoost variants.
+  - Stock Detail now computes native TreeSHAP for each ticker's latest saved
+    XGBoost prediction. Signed contributions reconstruct its raw score; model
+    and input hashes, calibrated probability and all inputs are available.
+    See [XAI implementation and limits](docs/CHATBOT_AND_XAI.md).
   - The LSTM's own internal attention weights, exposed per-prediction (not a
     post-hoc approximation). Honest finding: weights come out **near-uniform**
     across the 10-day window rather than sharply peaked — a real result, not

@@ -13,6 +13,7 @@ import { useApi } from "../hooks/useApi";
 import { companyName } from "../data/companyNames";
 import RadialProgress from "../components/RadialProgress";
 import CandlestickChart from "../components/CandlestickChart";
+import FeatureAttribution from "../components/FeatureAttribution";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -942,8 +943,8 @@ export default function Detail() {
 
         {/* ── Signal contribution ── */}
         <div className="card flex flex-col gap-5">
-          <SectionTitle sub="How each layer contributes to the signal">
-            Signal Contribution
+          <SectionTitle sub="Rule-based summaries and average model P(UP); these are not feature attributions">
+            Indicator & Model Summary
           </SectionTitle>
 
           {explLoading ? (
@@ -957,7 +958,7 @@ export default function Detail() {
               <ScoreBar label="Technical Indicators" score={explanation.technical_score}  color="#6366f1" />
               <ScoreBar label="Sentiment (GDELT+WSB)" score={explanation.sentiment_score} color="#10b981" />
               <ScoreBar label="Emotion (WSB/GoEmotions)" score={explanation.emotion_score} color="#ec4899" />
-              <ScoreBar label="Model Confidence"      score={explanation.model_score}     color="#f59e0b" />
+              <ScoreBar label="Average Model P(UP)"    score={explanation.model_score}     color="#f59e0b" />
 
               <div className="border-t border-gray-800 pt-4">
                 <p className="section-title">4 Model Signals</p>
@@ -975,6 +976,7 @@ export default function Detail() {
       </div>
 
       {/* ── Bull Case vs Bear Case (evaluative XAI) ── */}
+      <FeatureAttribution key={ticker} ticker={ticker} />
       {!explLoading && explanation && <EvaluativePanel explanation={explanation} />}
 
       {/* ── Risk Assessment ── */}

@@ -76,6 +76,7 @@ from chat_http import chat_response
 import prediction_tracker
 from backtesting.routes import router as backtesting_router
 from research.routes import router as research_router
+from feature_attribution import router as feature_attribution_router
 from dashboard_evidence import snapshot_metadata, news_sentiment
 
 # ── Logging ────────────────────────────────────────────────────────────────────
@@ -110,6 +111,7 @@ app = FastAPI(
 )
 app.include_router(backtesting_router)
 app.include_router(research_router)
+app.include_router(feature_attribution_router)
 
 # CORS — allow the deployed frontend (+ local dev) to call this API.
 # allow_origin_regex covers Vercel's per-deployment preview URLs

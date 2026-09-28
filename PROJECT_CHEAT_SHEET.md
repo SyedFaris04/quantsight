@@ -147,10 +147,13 @@
 
 - The interface explains technical indicators, sentiment readings, model outputs and historical attention weights.
 - Indicator scores in the Copilot are rule-based summaries; they are not automatically SHAP values.
-- Offline SHAP analysis exists for feature importance; it is not the source of every displayed explanation.
+- Stock Detail has per-prediction TreeSHAP for both XGBoost variants: positive inputs push toward UP; negative inputs push toward DOWN.
+- Contributions explain the raw model score in log-odds. Raw P(UP), calibrated P(UP), saved date and model/input hashes are shown separately.
+- The baseline plus all contributions must reconstruct the score, and inference must reproduce the saved direction/probability; otherwise the explanation is withheld.
+- These explanations cover the latest saved historical prediction per ticker, not Live Mode or LSTM. Offline global SHAP analysis remains a separate research feature.
 - Attention weights indicate which input days receive more weight; they do not establish cause and effect.
 - Existing threshold-based "what would change" explanations describe indicator/vote conditions; they are not verified model counterfactuals that guarantee a prediction flip.
-- Explanation fidelity and user understanding remain evaluation tasks.
+- Numerical reconstruction is verified for all 88 latest XGBoost predictions. User understanding and explanation usefulness still need evaluation; reconstruction does not prove predictive accuracy or causality.
 
 ## 12. Pages: what to demonstrate
 
