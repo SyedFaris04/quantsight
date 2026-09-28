@@ -51,6 +51,9 @@ Updated 28 September 2026.
 - The complete backend suite passes: 83 tests. Frontend production build passes with the existing large-bundle warning.
 - Local browser checks cover a real Groq answer, retry, empty response, cancellation, disabled Clear during requests, invalid stored history and 390/320-pixel layouts.
 - A real saved-AAPL query returned dated model signals and P(UP) labels through the updated local backend.
+- GitHub's evaluation, frontend, database and Supabase Preview checks passed for release `92e3598`; Vercel reported successful deployment.
+- Hosted verification on 28 September: Render eventually recovered from initial request timeouts, then answered real RSI and saved-AAPL questions with HTTP 200. The Vercel chat widget also displayed a real provider response without uncaught page errors.
+- Production verification artifacts remain local in `backend/data/research/chat_repair/`. No Render configuration or Supabase schema change was needed.
 - Browser fault tests intercept only the test browser's requests. Test fixtures are not served by the application.
 - These are functional checks, not an evaluation proving all chatbot answers correct. An initial open-ended answer still made an incorrect RSI-scale claim, reinforcing the need for factual checks. The prompt now explicitly supplies the correct scale, and the subsequent real response passed that check.
 
