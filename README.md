@@ -217,14 +217,15 @@ scale and avoids adding JWT-verification middleware to the API.
 ## AI Assistant
 
 A floating chat widget, present on every page, backed by
-[Groq](https://console.groq.com)'s free tier (Llama 3.3 70B). It isn't a
-generic chatbot bolted on for show — it's wired via tool-calling to
-QuantSight's own real endpoints (`backend/chatbot_engine.py`), so a question
-like "why is AAPL a BUY" or "can I trust this?" gets answered from an actual
-tool call (current signal, full explanation, live price-based signal,
-backtested per-ticker accuracy, live track record, market-wide sentiment),
-never an invented number. Same no-mock-data policy as the rest of the app,
-just applied to an LLM instead of a chart.
+[Groq](https://console.groq.com), using `openai/gpt-oss-120b` by default.
+Set `GROQ_MODEL` on the backend to select another compatible model. The previous
+Llama 3.3 model was retired for free/developer accounts on 16 August 2026.
+The assistant calls QuantSight's data tools for saved signals, indicator summaries,
+completed-session live inference and track records, with dates and source limits.
+These explanations can still be wrong and should be checked against the source.
+The full answer is generated first, then sent in small chunks. Service failures
+return explicit error statuses and the widget supports retry and cancellation.
+See [chat repair and XAI scope](docs/CHATBOT_AND_XAI.md).
 
 ---
 
@@ -364,7 +365,7 @@ Full interactive docs: `http://localhost:8000/docs`
 | Frontend | React 18, Vite, TailwindCSS, Recharts |
 | Backend | FastAPI, Uvicorn |
 | Auth + Database | Supabase (Postgres + Auth, Row Level Security) |
-| AI Assistant | Groq (Llama 3.3 70B, free tier), tool-calling |
+| AI Assistant | Groq (`openai/gpt-oss-120b` default), configurable model and tool-calling |
 | Scheduling | GitHub Actions (daily live-prediction job trigger) |
 | ML Models | XGBoost, PyTorch (LSTM + Attention) |
 | Sentiment / Emotion | VADER, FinBERT, HuggingFace `transformers` (GoEmotions RoBERTa) |

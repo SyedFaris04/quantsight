@@ -16,23 +16,27 @@ import { useLocation } from "react-router-dom";
 
 const STORAGE_KEY = "quantsight_chat_history";
 const MAX_STORED = 30;
-const API_URL = import.meta.env.VITE_API_URL || "/api";
+const API_URL = (import.meta.env.VITE_API_URL || "/api").replace(/\/$/, "");
 
 function loadHistory() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed.filter(m =>
+      m && ["user", "assistant"].includes(m.role) && typeof m.content === "string" && m.content.trim()
+    ).slice(-MAX_STORED) : [];
   } catch { return []; }
 }
 
 function saveHistory(msgs) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(msgs.slice(-MAX_STORED)));
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(msgs.slice(-MAX_STORED))); }
+  catch { /* Storage restrictions must not prevent a conversation. */ }
 }
 
 const SUGGESTIONS = [
-  "What's trending today?",
+  "Explain AAPL's saved signal",
   "Explain RSI in simple terms",
-  "What's the market sentiment right now?",
+  "Summarize the saved news sentiment",
   "Should I look at AAPL?",
 ];
 
@@ -85,28 +89,36 @@ export default function ChatWidget() {
   const [messages, setMessages] = useState(loadHistory);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
+  const [error, setError] = useState(null);
+  const requestRef = useRef(null);
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
   const location = useLocation();
 
   useEffect(() => { saveHistory(messages); }, [messages]);
+  useEffect(() => () => requestRef.current?.abort(), []);
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-  }, [messages, isOpen]);
+  }, [messages, isOpen, error]);
 
   useEffect(() => {
     if (isOpen) inputRef.current?.focus();
   }, [isOpen]);
 
-  async function sendMessage(text) {
+  async function sendMessage(text, retry = false) {
     const content = text.trim();
-    if (!content || streaming) return;
+    if (!content || streaming || requestRef.current) return;
 
-    const history = [...messages, { role: "user", content }];
+    const history = retry ? messages : [...messages, { role: "user", content }];
     setMessages([...history, { role: "assistant", content: "" }]);
     setInput("");
     setStreaming(true);
+    setError(null);
+    const controller = new AbortController();
+    requestRef.current = controller;
+    let timedOut = false;
+    const timeout = setTimeout(() => { timedOut = true; controller.abort(); }, 90000);
 
     const detailMatch = location.pathname.match(/^\/detail\/([^/]+)/);
     const page_context = detailMatch
@@ -117,9 +129,19 @@ export default function ChatWidget() {
       const res = await fetch(`${API_URL}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: history, page_context }),
+        body: JSON.stringify({ messages: history.slice(-16), page_context }),
+        signal: controller.signal,
       });
-      if (!res.ok || !res.body) throw new Error(`Request failed (${res.status})`);
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        const detail = body.detail;
+        const message = typeof detail?.message === "string" ? detail.message
+          : typeof detail === "string" ? detail
+          : res.status === 429 ? "Too many requests. Please wait and retry."
+          : "The AI Assistant could not complete this request. Please retry.";
+        throw new Error(message);
+      }
+      if (!res.body) throw new Error("The AI service returned no answer. Please retry.");
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
@@ -135,17 +157,17 @@ export default function ChatWidget() {
           return copy;
         });
       }
+      acc += decoder.decode();
+      if (!acc.trim()) throw new Error("The AI service returned no answer. Please retry.");
+      setMessages([...history, { role: "assistant", content: acc }]);
     } catch (e) {
-      console.error("Chat request failed:", e);
-      setMessages(prev => {
-        const copy = [...prev];
-        copy[copy.length - 1] = {
-          role: "assistant",
-          content: "Sorry, I couldn't reach the AI Assistant just now. Please try again in a moment.",
-        };
-        return copy;
-      });
+      setMessages(history);
+      setError(e.name === "AbortError"
+        ? timedOut ? "The request timed out. The server may still be starting. Please retry." : "Reply stopped. You can retry your message."
+        : e instanceof TypeError ? "Could not connect to the AI Assistant. Check your connection and retry." : e.message);
     } finally {
+      clearTimeout(timeout);
+      requestRef.current = null;
       setStreaming(false);
     }
   }
@@ -183,8 +205,9 @@ export default function ChatWidget() {
             </div>
             {messages.length > 0 && (
               <button
-                onClick={() => setMessages([])}
-                className="text-xs text-gray-500 hover:text-gray-300 flex-shrink-0"
+                onClick={() => { setMessages([]); setError(null); }}
+                disabled={streaming}
+                className="text-xs text-gray-500 hover:text-gray-300 flex-shrink-0 disabled:opacity-40"
               >
                 Clear
               </button>
@@ -226,6 +249,11 @@ export default function ChatWidget() {
                 </div>
               </div>
             ))}
+            {error && <div role="alert" className="rounded-xl border border-amber-700/60 bg-amber-950/30 p-3 text-sm text-amber-100">
+              <p>{error}</p>
+              <button type="button" onClick={() => sendMessage(messages[messages.length - 1]?.content || "", true)}
+                className="mt-2 underline underline-offset-4">Try again</button>
+            </div>}
           </div>
 
           {/* Input */}
@@ -238,17 +266,20 @@ export default function ChatWidget() {
               value={input}
               onChange={e => setInput(e.target.value)}
               placeholder="Ask about a stock…"
+              aria-label="Message to AI Assistant"
+              maxLength={2000}
               disabled={streaming}
               className="input flex-1 text-sm disabled:opacity-50"
             />
-            <button
+            {streaming ? <button type="button" onClick={() => requestRef.current?.abort()}
+              className="btn-primary text-sm px-3.5">Stop</button> : <button
               type="submit"
               disabled={streaming || !input.trim()}
               aria-label="Send"
               className="btn-primary text-sm px-3.5 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               →
-            </button>
+            </button>}
           </form>
         </div>
       )}

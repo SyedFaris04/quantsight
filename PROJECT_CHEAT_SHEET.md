@@ -76,7 +76,7 @@
 - **FinBERT (`ProsusAI/finbert`):** classifies financial headlines as positive, negative or neutral; its outputs become numerical news features.
 - FinBERT is a text classifier, not the model that directly predicts a five-session stock return.
 - **GoEmotions (`SamLowe/roberta-base-go_emotions`):** pretrained emotion classifier used for historical WSB features, including fear, optimism and excitement.
-- **Chat assistant (`llama-3.3-70b-versatile` through Groq):** answers questions using tools that retrieve project data; streams its response.
+- **Chat assistant (`openai/gpt-oss-120b` through Groq, updated 28 September):** answers questions using tools that retrieve project data, then sends the answer in chunks. `GROQ_MODEL` can override the default model.
 - The chat language model explains information; it is separate from the numerical stock-prediction models.
 - `copilot_engine.py` builds indicator/model explanations; `chatbot_engine.py` handles the conversational assistant.
 

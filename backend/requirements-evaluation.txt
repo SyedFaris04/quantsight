@@ -7,3 +7,6 @@ httpx==0.28.1
 
 # NYSE holidays, early closes and DST for live evaluation
 pandas-market-calendars==5.4.0
+
+# Chat provider contract and HTTP error regression tests
+groq==1.5.0

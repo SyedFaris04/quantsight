@@ -51,7 +51,6 @@ from typing import Optional
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import logging
@@ -73,6 +72,7 @@ except ImportError:
 from copilot_engine import explain, get_all_model_metrics, get_ticker_comparison, calculate_risk_level, get_latest_features, get_prediction_history, get_accuracy_track_record, game_reasons
 from live_signals import get_live_signal, get_live_signals_batch
 import chatbot_engine
+from chat_http import chat_response
 import prediction_tracker
 from backtesting.routes import router as backtesting_router
 from research.routes import router as research_router
@@ -1100,7 +1100,11 @@ def _tool_get_stock_signal(ticker: str):
     if ticker not in _cache.get("tickers", []):
         return {"error": f"Unknown ticker '{ticker}'. Call list_tickers for what's available."}
     row = next((r for r in get_overview()["data"] if r["ticker"] == ticker), None)
-    return row or {"error": f"No signal data for {ticker}"}
+    if row is None:
+        return {"error": f"No signal data for {ticker}"}
+    return {"source": "historical_model_snapshot",
+            "confidence_definition": "Per-model confidence is P(UP) in percent, including for SELL signals; it is not measured accuracy.",
+            **row}
 
 def _tool_get_ai_explanation(ticker: str):
     ticker = ticker.upper()
@@ -1108,7 +1112,10 @@ def _tool_get_ai_explanation(ticker: str):
         return {"error": f"Unknown ticker '{ticker}'. Call list_tickers for what's available."}
     result = explain(ticker)
     result.pop("lstm_attention", None)
-    return result
+    return {"source": "historical_indicator_explanation",
+            "signal_dates": {key: value["date"] for key, value in get_latest_signals_for_ticker(ticker).items()},
+            "method": "Rule-based indicator summaries, not SHAP attribution or verified model counterfactuals.",
+            **result}
 
 def _tool_get_live_price_signal(ticker: str):
     if not YFINANCE_AVAILABLE:
@@ -1171,15 +1178,7 @@ def chat(req: ChatRequest, request: Request):
 
     messages = [m.model_dump() for m in req.messages]
 
-    def generate():
-        try:
-            for chunk in chatbot_engine.run_chat_stream(messages, TOOL_EXECUTORS, req.page_context):
-                yield chunk
-        except RuntimeError as e:
-            # e.g. GROQ_API_KEY missing
-            yield str(e)
-
-    return StreamingResponse(generate(), media_type="text/plain")
+    return chat_response(chatbot_engine.run_chat_stream(messages, TOOL_EXECUTORS, req.page_context))
 
 
 # ── Live prediction track record ────────────────────────────────────────────

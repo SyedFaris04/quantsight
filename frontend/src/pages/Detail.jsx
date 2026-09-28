@@ -212,7 +212,7 @@ function EvaluativePanel({ explanation }) {
 
   return (
     <div className="card flex flex-col gap-4">
-      <SectionTitle sub="The honest case for and against — not just why the model is 'right'">
+      <SectionTitle sub="Rule-based indicator evidence for and against the saved signal. These summaries are not model feature attributions.">
         Bull Case vs Bear Case
       </SectionTitle>
 
@@ -240,7 +240,8 @@ function EvaluativePanel({ explanation }) {
 
       {cfs.length > 0 && (
         <div className="border-t border-gray-800 pt-4">
-          <p className="section-title mb-2">What would change this signal?</p>
+          <p className="section-title mb-2">Indicator and vote scenarios</p>
+          <p className="text-xs text-gray-400 mb-3">These threshold scenarios do not rerun the model or guarantee a prediction change.</p>
           <ul className="flex flex-col gap-2">
             {cfs.map((cf, i) => (
               <li key={i} className="text-xs flex gap-2">
@@ -1015,14 +1016,14 @@ export default function Detail() {
         <div className="card"><div className="h-40 bg-gray-800 rounded-xl animate-pulse" /></div>
       ) : explanation?.lstm_attention?.length > 0 ? (
         <div className="card">
-          <SectionTitle sub="LSTM+Transformer's own internal attention mechanism — which of the last 10 trading days it weighted most heavily for this prediction. This is the model's exact reasoning, not a post-hoc approximation like SHAP/LIME.">
+          <SectionTitle sub="The LSTM attention layer weights the last 10 input sessions. These weights show internal weighting, not exact reasoning, causal importance or SHAP attribution.">
             AI Model Attention — Last 10 Trading Days
           </SectionTitle>
           <AttentionChart attention={explanation.lstm_attention} />
         </div>
       ) : explanation && !explLoading ? (
         <div className="card">
-          <SectionTitle sub="LSTM+Transformer's own internal attention mechanism — which of the last 10 trading days it weighted most heavily for this prediction.">
+          <SectionTitle sub="Saved LSTM attention weights over the last 10 input sessions. Attention is a limited explanation of internal weighting.">
             AI Model Attention — Last 10 Trading Days
           </SectionTitle>
           <p className="text-gray-600 text-sm">
@@ -1184,7 +1185,7 @@ const GLOSSARY_TERMS = [
   {
     term : "LSTM Attention Weights",
     short: "Which of the last 10 trading days the LSTM model focused on most when making its prediction.",
-    detail: "The LSTM+Transformer model has a built-in attention layer that scores each of the 10 days in its lookback window before combining them into a prediction. Unlike SHAP or LIME (which approximate a model's reasoning after the fact), these weights are the model's own exact internal calculation. In this project the weights come out close to uniform (~10% per day) rather than sharply peaked on one day — a real, honest finding: the model relies on the whole 10-day window fairly evenly rather than any single standout day. This mirrors a well-documented result in attention-mechanism research (attention weights don't always concentrate sharply, and don't always agree with other explanation methods).",
+    detail: "The LSTM model uses an attention layer to combine its 10 input sessions. The saved weights are close to uniform, around 10% per day. Attention weights describe internal weighting but do not establish which feature caused a prediction. SHAP is a separate attribution method. The current indicator summaries and threshold scenarios are rule-based explanations, not live SHAP values or verified counterfactual predictions.",
   },
 ];
 
