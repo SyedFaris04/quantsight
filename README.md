@@ -56,6 +56,12 @@ test sample, so performance differences cannot establish a benefit from fresh te
 
 ### Beyond the base prediction
 
+- **Controlled finance development study** — three fixed model families evaluated
+  across 2022–2024, with separate calibration years and simple baselines. None beat
+  the training-prior baseline on mean Brier loss. AI Compare includes yearly scores,
+  reliability bins, uncertainty and a JSON export. The 2025 candidate holdout remains
+  unopened and serving models are unchanged. [Study and method](docs/research/FINANCE_DEVELOPMENT_STUDY.md).
+
 - **Multi-label emotion detection** — GoEmotions taxonomy (27 emotions +
   neutral) via a pretrained RoBERTa (`SamLowe/roberta-base-go_emotions`) run
   as a frozen feature extractor over WallStreetBets posts. 6 finance-relevant

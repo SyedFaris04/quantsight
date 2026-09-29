@@ -28,6 +28,7 @@
 
 import { useState, useMemo } from "react";
 import ResearchComparison from "../components/ResearchComparison";
+import DevelopmentComparison from "../components/DevelopmentComparison";
 import { useNavigate } from "react-router-dom";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -282,7 +283,7 @@ function TickerCompare({ tickers }) {
 // ── Main Component ─────────────────────────────────────────────────────────────
 
 export default function Compare() {
-  const { data: metricsRaw, loading: metricsLoading, error: metricsError } =
+  const { data: metricsRaw, loading: metricsLoading, error: metricsError, refetch: retryMetrics } =
     useApi("/metrics");
   const { data: tickerData } = useApi("/tickers");
   const { data: confBoost, loading: confBoostLoading } = useApi("/confidence-boost");
@@ -367,15 +368,14 @@ export default function Compare() {
 
   if (metricsError) {
     return (
-      <div className="flex flex-col items-center justify-center py-32 gap-4">
-        <span className="text-4xl">⚠️</span>
-        <p className="text-gray-400 text-sm text-center max-w-md">
-          Could not load model metrics. Make sure{" "}
-          <code className="text-indigo-400">train_xgboost.py</code> and{" "}
-          <code className="text-indigo-400">train_lstm.py</code> have been run
-          and <code className="text-indigo-400">model_metrics.json</code> exists.
-        </p>
-        <p className="text-xs text-gray-600">{metricsError}</p>
+      <div className="space-y-8">
+        <h1 className="text-xl font-semibold text-white">Model Comparison</h1>
+        <DevelopmentComparison />
+        <ResearchComparison />
+        <div className="card text-sm text-gray-400" role="alert">
+          <p>The legacy model metrics could not be loaded. The independent research reports remain available above.</p>
+          <button onClick={retryMetrics} className="btn-secondary mt-3">Retry historical metrics</button>
+        </div>
       </div>
     );
   }
@@ -387,10 +387,11 @@ export default function Compare() {
       <div>
         <h1 className="text-xl font-semibold text-white">Model Comparison</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Controlled news research and historical model comparisons
+          Finance development, controlled news research and historical model comparisons
         </p>
       </div>
 
+      <DevelopmentComparison />
       <ResearchComparison />
 
       <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm leading-relaxed text-amber-100">
@@ -611,9 +612,9 @@ export default function Compare() {
                   const delta = (sentimentImpact.xgbS[key] ?? 0) -
                                 (sentimentImpact.xgbF[key] ?? 0);
                   return (
-                    <div key={key} className="flex items-center justify-between text-sm">
+                    <div key={key} className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-sm">
                       <span className="text-gray-400 w-24">{label}</span>
-                      <div className="flex items-center gap-3 flex-1 ml-4">
+                      <div className="flex items-center gap-3 flex-1 sm:ml-4">
                         <span className="text-gray-500 text-xs w-14 text-right">
                           {sentimentImpact.xgbF[key]?.toFixed(1)}%
                         </span>
@@ -649,9 +650,9 @@ export default function Compare() {
                   const delta = (sentimentImpact.lstmS[key] ?? 0) -
                                 (sentimentImpact.lstmF[key] ?? 0);
                   return (
-                    <div key={key} className="flex items-center justify-between text-sm">
+                    <div key={key} className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-sm">
                       <span className="text-gray-400 w-24">{label}</span>
-                      <div className="flex items-center gap-3 flex-1 ml-4">
+                      <div className="flex items-center gap-3 flex-1 sm:ml-4">
                         <span className="text-gray-500 text-xs w-14 text-right">
                           {sentimentImpact.lstmF[key]?.toFixed(1)}%
                         </span>

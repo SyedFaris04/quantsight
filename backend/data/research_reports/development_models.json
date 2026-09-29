@@ -1,0 +1,2702 @@
+{
+  "schema_version": 1,
+  "status": "development_only",
+  "run_id": "99c94ee337b258ff",
+  "created_at": "2026-09-28T13:45:15.221160+00:00",
+  "registration": {
+    "registered_at": "2026-09-28T13:45:04.577933+00:00",
+    "protocol": {
+      "protocol_id": "finance_development_v1",
+      "status": "development_model_selection",
+      "snapshot_id": "20260927T141409402344Z",
+      "holdout_start": "2025-01-01",
+      "horizon_sessions": 5,
+      "features": [
+        "return_1",
+        "return_5",
+        "return_10",
+        "return_20",
+        "volatility_20",
+        "drawdown_20",
+        "ma20_distance",
+        "ma60_distance",
+        "intraday_range",
+        "volume_relative_20",
+        "rsi_14",
+        "spy_return_5",
+        "excess_return_5"
+      ],
+      "feature_policy": "Fixed compact finance-only features; trailing windows include the completed signal session, no feature selection or ticker identity. No news inputs. Reindex to NYSE sessions before calculating lags; do not fill gaps.",
+      "price_policy": "Returns, trend and labels use frozen Adj Close. Intraday range uses same-session vendor High/Low/Close; volume uses a trailing ratio. Vendor adjustments are retrieval-time, not point-in-time vintages.",
+      "models": {
+        "logistic": {
+          "C": 1.0,
+          "max_iter": 1000,
+          "random_state": 42
+        },
+        "hist_boost": {
+          "learning_rate": 0.05,
+          "max_iter": 150,
+          "max_leaf_nodes": 8,
+          "max_depth": 3,
+          "min_samples_leaf": 100,
+          "l2_regularization": 10.0,
+          "early_stopping": false,
+          "random_state": 42
+        },
+        "xgboost": {
+          "n_estimators": 200,
+          "max_depth": 3,
+          "learning_rate": 0.03,
+          "min_child_weight": 20,
+          "subsample": 0.8,
+          "colsample_bytree": 0.8,
+          "reg_lambda": 5.0,
+          "reg_alpha": 0.1,
+          "objective": "binary:logistic",
+          "eval_metric": "logloss",
+          "tree_method": "hist",
+          "n_jobs": 2,
+          "random_state": 42
+        }
+      },
+      "preprocessing": "StandardScaler fitted only on fit rows for logistic; trees use raw ratio features. Drop rows missing any fixed feature equally for all candidates.",
+      "calibration": {
+        "method": "logistic_sigmoid_of_clipped_raw_logit",
+        "C": 1.0,
+        "max_iter": 1000,
+        "probability_clip": 1e-06,
+        "data": "Separate immediately preceding calendar year; no validation outcomes used"
+      },
+      "candidate_outputs": [
+        "raw",
+        "sigmoid"
+      ],
+      "baselines": [
+        "fit_prior",
+        "calibration_prior",
+        "always_up"
+      ],
+      "direction_threshold": 0.5,
+      "direction_policy": "Each candidate's displayed probability determines its direction; raw and sigmoid outputs are separately named candidates. Legacy serving labels are unchanged.",
+      "fold_source": "Frozen snapshot development_folds: validation 2022, 2023, 2024, with five-session outcome purging at every segment end",
+      "selection": "Lowest equal-year mean validation Brier loss across all six model outputs AND the three baselines. Exact ties prefer baseline, then logistic, hist_boost, xgboost; raw before sigmoid. No threshold search, early-stopping search, extra seeds or additional fits after viewing results.",
+      "fit_budget": {
+        "predictors": 9,
+        "calibrators": 9,
+        "total": 18
+      },
+      "diagnostics": [
+        "accuracy",
+        "balanced_accuracy",
+        "mcc",
+        "roc_auc",
+        "brier_score",
+        "log_loss",
+        "buy_fraction",
+        "10 equal-width reliability bins",
+        "year stability"
+      ],
+      "uncertainty": {
+        "method": "Paired circular date-block bootstrap separately within each validation year; retain all tickers on sampled dates; average year gains",
+        "block_sessions": 20,
+        "repetitions": 1000,
+        "seed": 42,
+        "comparator": "fit_prior",
+        "limitations": "Exploratory, conditional on fitted models, not multiplicity-adjusted and not a post-selection guarantee"
+      },
+      "holdout_policy": "Read only development CSVs; do not read or score 2025 candidate holdout regardless of prior-use answer during this experiment.",
+      "promotion_policy": "Never overwrite serving models or promote from these reused development years. Freeze a later cost-aware strategy and confirm unused holdout before final evaluation.",
+      "limitations": [
+        "Development years were previously examined",
+        "Fixed survivor universe",
+        "Retrieval-time adjusted data can be revised",
+        "Finance-only comparison does not test sentiment",
+        "Prediction metrics do not establish profitable trading"
+      ]
+    },
+    "protocol_sha256": "2e453df60aa6e5f7bd563b5d6dff6ac69780f8063377e65b4f79cac1308e016b",
+    "snapshot_manifest_sha256": "226537533d14bb8e6d705437a852de9b3160af9352d91ae93992b5f8bda86464",
+    "code_hashes": {
+      "development_models.py": "6430e4073489a5f0e4a3e1e10ad9d5839ec26440237681baf117d65e800b7171",
+      "validation.py": "e5a68b97ab91f7bd0047f67478805a153890cb894c3302d06cc547ccedf6dd81",
+      "freeze_prices.py": "b758604e347544aaddd3809782f41b9021edada2e6735ca10b8f5c882e3301e7",
+      "news_pilot.py": "37c8c7006bd27ec89efb7d012d47034d50022e3498c0eb5c9a893ce53f19b963",
+      "market_calendar.py": "81a2431d72cb4b849f1f02e451bd1e99acd85d3c8a7c1e85d67532166b334865"
+    },
+    "versions": {
+      "numpy": "2.4.6",
+      "pandas": "3.0.3",
+      "scikit-learn": "1.9.0",
+      "xgboost": "3.3.0",
+      "pandas-market-calendars": "5.4.0"
+    }
+  },
+  "coverage": {
+    "input_rows": 107949,
+    "feature_complete_rows": 105353,
+    "dropped_warmup_or_missing_rows": 2596
+  },
+  "validation_rows": 32472,
+  "tickers": 44,
+  "folds": [
+    {
+      "name": "validate_2022",
+      "fit_start": "2015-01-01",
+      "fit_end_exclusive": "2021-01-01",
+      "calibration_end_exclusive": "2022-01-01",
+      "evaluation_end_exclusive": "2023-01-01"
+    },
+    {
+      "name": "validate_2023",
+      "fit_start": "2015-01-01",
+      "fit_end_exclusive": "2022-01-01",
+      "calibration_end_exclusive": "2023-01-01",
+      "evaluation_end_exclusive": "2024-01-01"
+    },
+    {
+      "name": "validate_2024",
+      "fit_start": "2015-01-01",
+      "fit_end_exclusive": "2023-01-01",
+      "calibration_end_exclusive": "2024-01-01",
+      "evaluation_end_exclusive": "2025-01-01"
+    }
+  ],
+  "results": [
+    {
+      "fold": "validate_2022",
+      "year": 2022,
+      "candidate": "fit_prior",
+      "metrics": {
+        "n": 10824,
+        "accuracy": 0.47320768662232077,
+        "balanced_accuracy": 0.5,
+        "mcc": 0.0,
+        "roc_auc": 0.5,
+        "brier_score": 0.25732415124169217,
+        "log_loss": 0.7078945779108761,
+        "buy_fraction": 1.0
+      },
+      "reliability": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 10824,
+          "mean_probability": 0.5628847700819202,
+          "observed_up_rate": 0.47320768662232077
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        }
+      ]
+    },
+    {
+      "fold": "validate_2022",
+      "year": 2022,
+      "candidate": "calibration_prior",
+      "metrics": {
+        "n": 10824,
+        "accuracy": 0.47320768662232077,
+        "balanced_accuracy": 0.5,
+        "mcc": 0.0,
+        "roc_auc": 0.5,
+        "brier_score": 0.25795608904453726,
+        "log_loss": 0.7091799309006965,
+        "buy_fraction": 1.0
+      },
+      "reliability": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 10824,
+          "mean_probability": 0.5663415531836584,
+          "observed_up_rate": 0.47320768662232077
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        }
+      ]
+    },
+    {
+      "fold": "validate_2022",
+      "year": 2022,
+      "candidate": "always_up",
+      "metrics": {
+        "n": 10824,
+        "accuracy": 0.47320768662232077,
+        "balanced_accuracy": 0.5,
+        "mcc": 0.0,
+        "roc_auc": 0.5,
+        "brier_score": 0.5267923133776792,
+        "log_loss": 18.98751955143625,
+        "buy_fraction": 1.0
+      },
+      "reliability": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 10824,
+          "mean_probability": 1.0,
+          "observed_up_rate": 0.47320768662232077
+        }
+      ]
+    },
+    {
+      "fold": "validate_2022",
+      "year": 2022,
+      "candidate": "logistic_raw",
+      "metrics": {
+        "n": 10824,
+        "accuracy": 0.4754249815225425,
+        "balanced_accuracy": 0.5014888902980533,
+        "mcc": 0.012802386932033954,
+        "roc_auc": 0.5162344990577848,
+        "brier_score": 0.2578347238568426,
+        "log_loss": 0.7090785145959919,
+        "buy_fraction": 0.9863266814486327
+      },
+      "reliability": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 2,
+          "mean_probability": 0.3836388438493286,
+          "observed_up_rate": 1.0
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 146,
+          "mean_probability": 0.4812240293204942,
+          "observed_up_rate": 0.410958904109589
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 9988,
+          "mean_probability": 0.5629692204672329,
+          "observed_up_rate": 0.473768522226672
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 673,
+          "mean_probability": 0.614232647199419,
+          "observed_up_rate": 0.48291233283803864
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 13,
+          "mean_probability": 0.7570198967190753,
+          "observed_up_rate": 0.23076923076923078
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 2,
+          "mean_probability": 0.8057460672208903,
+          "observed_up_rate": 0.0
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        }
+      ]
+    },
+    {
+      "fold": "validate_2022",
+      "year": 2022,
+      "candidate": "logistic_sigmoid",
+      "metrics": {
+        "n": 10824,
+        "accuracy": 0.47403917220990394,
+        "balanced_accuracy": 0.5007594080103147,
+        "mcc": 0.020384505244132118,
+        "roc_auc": 0.48376550094221515,
+        "brier_score": 0.25792263318247227,
+        "log_loss": 0.7091234539351193,
+        "buy_fraction": 0.9986141906873615
+      },
+      "reliability": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 15,
+          "mean_probability": 0.47806827824375975,
+          "observed_up_rate": 0.2
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 10776,
+          "mean_probability": 0.5644252527608283,
+          "observed_up_rate": 0.4733667409057164
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 33,
+          "mean_probability": 0.6091374501906729,
+          "observed_up_rate": 0.5454545454545454
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        }
+      ]
+    },
+    {
+      "fold": "validate_2022",
+      "year": 2022,
+      "candidate": "hist_boost_raw",
+      "metrics": {
+        "n": 10824,
+        "accuracy": 0.4818920916481892,
+        "balanced_accuracy": 0.5051546201138383,
+        "mcc": 0.020709562558281304,
+        "roc_auc": 0.515115776936814,
+        "brier_score": 0.2591149485519034,
+        "log_loss": 0.7117876163073563,
+        "buy_fraction": 0.9338507021433851
+      },
+      "reliability": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 19,
+          "mean_probability": 0.374339976670838,
+          "observed_up_rate": 0.3157894736842105
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 697,
+          "mean_probability": 0.4691846248255635,
+          "observed_up_rate": 0.4375896700143472
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 7702,
+          "mean_probability": 0.5618155368563604,
+          "observed_up_rate": 0.4727343547130615
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 2345,
+          "mean_probability": 0.6250667403993545,
+          "observed_up_rate": 0.4840085287846482
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 55,
+          "mean_probability": 0.737521393929187,
+          "observed_up_rate": 0.5636363636363636
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 6,
+          "mean_probability": 0.8206177440913617,
+          "observed_up_rate": 0.6666666666666666
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        }
+      ]
+    },
+    {
+      "fold": "validate_2022",
+      "year": 2022,
+      "candidate": "hist_boost_sigmoid",
+      "metrics": {
+        "n": 10824,
+        "accuracy": 0.47320768662232077,
+        "balanced_accuracy": 0.5,
+        "mcc": 0.0,
+        "roc_auc": 0.515115776936814,
+        "brier_score": 0.2579518442457836,
+        "log_loss": 0.7091747343403846,
+        "buy_fraction": 1.0
+      },
+      "reliability": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 10814,
+          "mean_probability": 0.5673386882424268,
+          "observed_up_rate": 0.47299796560014795
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 10,
+          "mean_probability": 0.6042156066395616,
+          "observed_up_rate": 0.7
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        }
+      ]
+    },
+    {
+      "fold": "validate_2022",
+      "year": 2022,
+      "candidate": "xgboost_raw",
+      "metrics": {
+        "n": 10824,
+        "accuracy": 0.48152254249815224,
+        "balanced_accuracy": 0.5052606270212703,
+        "mcc": 0.022605797393885137,
+        "roc_auc": 0.5212769661918771,
+        "brier_score": 0.2588794049400236,
+        "log_loss": 0.7112450561954309,
+        "buy_fraction": 0.942719881744272
+      },
+      "reliability": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 19,
+          "mean_probability": 0.38369691371917725,
+          "observed_up_rate": 0.47368421052631576
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 601,
+          "mean_probability": 0.47276613116264343,
+          "observed_up_rate": 0.4259567387687188
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 7741,
+          "mean_probability": 0.5616312623023987,
+          "observed_up_rate": 0.46828575119493604
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 2432,
+          "mean_probability": 0.6231544613838196,
+          "observed_up_rate": 0.4987664473684211
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 31,
+          "mean_probability": 0.7375330924987793,
+          "observed_up_rate": 0.6129032258064516
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        }
+      ]
+    },
+    {
+      "fold": "validate_2022",
+      "year": 2022,
+      "candidate": "xgboost_sigmoid",
+      "metrics": {
+        "n": 10824,
+        "accuracy": 0.47320768662232077,
+        "balanced_accuracy": 0.5,
+        "mcc": 0.0,
+        "roc_auc": 0.5212769661918771,
+        "brier_score": 0.25795379566030574,
+        "log_loss": 0.7091758944679648,
+        "buy_fraction": 1.0
+      },
+      "reliability": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 10824,
+          "mean_probability": 0.5669061665852378,
+          "observed_up_rate": 0.47320768662232077
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        }
+      ]
+    },
+    {
+      "fold": "validate_2023",
+      "year": 2023,
+      "candidate": "fit_prior",
+      "metrics": {
+        "n": 10780,
+        "accuracy": 0.5523191094619666,
+        "balanced_accuracy": 0.5,
+        "mcc": 0.0,
+        "roc_auc": 0.5,
+        "brier_score": 0.247391300230049,
+        "log_loss": 0.6879234967793874,
+        "buy_fraction": 1.0
+      },
+      "reliability": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 10780,
+          "mean_probability": 0.5636588380716935,
+          "observed_up_rate": 0.5523191094619666
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        }
+      ]
+    },
+    {
+      "fold": "validate_2023",
+      "year": 2023,
+      "candidate": "calibration_prior",
+      "metrics": {
+        "n": 10780,
+        "accuracy": 0.4476808905380334,
+        "balanced_accuracy": 0.5,
+        "mcc": 0.0,
+        "roc_auc": 0.5,
+        "brier_score": 0.25352132800882005,
+        "log_loss": 0.7001972773867335,
+        "buy_fraction": 0.0
+      },
+      "reliability": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 10780,
+          "mean_probability": 0.47320768662232077,
+          "observed_up_rate": 0.5523191094619666
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        }
+      ]
+    },
+    {
+      "fold": "validate_2023",
+      "year": 2023,
+      "candidate": "always_up",
+      "metrics": {
+        "n": 10780,
+        "accuracy": 0.5523191094619666,
+        "balanced_accuracy": 0.5,
+        "mcc": 0.0,
+        "roc_auc": 0.5,
+        "brier_score": 0.4476808905380334,
+        "log_loss": 16.13605484748417,
+        "buy_fraction": 1.0
+      },
+      "reliability": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 10780,
+          "mean_probability": 1.0,
+          "observed_up_rate": 0.5523191094619666
+        }
+      ]
+    },
+    {
+      "fold": "validate_2023",
+      "year": 2023,
+      "candidate": "logistic_raw",
+      "metrics": {
+        "n": 10780,
+        "accuracy": 0.5523191094619666,
+        "balanced_accuracy": 0.5006673626132996,
+        "mcc": 0.00838301424982679,
+        "roc_auc": 0.4865948720547265,
+        "brier_score": 0.24779986399761839,
+        "log_loss": 0.6887591296809557,
+        "buy_fraction": 0.9936920222634509
+      },
+      "reliability": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 2,
+          "mean_probability": 0.38532467046375407,
+          "observed_up_rate": 0.0
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 66,
+          "mean_probability": 0.480869623518716,
+          "observed_up_rate": 0.5151515151515151
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 10594,
+          "mean_probability": 0.5613042293941678,
+          "observed_up_rate": 0.5510666414951859
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 118,
+          "mean_probability": 0.6086698436923403,
+          "observed_up_rate": 0.6949152542372882
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        }
+      ]
+    },
+    {
+      "fold": "validate_2023",
+      "year": 2023,
+      "candidate": "logistic_sigmoid",
+      "metrics": {
+        "n": 10780,
+        "accuracy": 0.45166975881261595,
+        "balanced_accuracy": 0.5026688588196758,
+        "mcc": 0.023526376802535602,
+        "roc_auc": 0.4865948720547265,
+        "brier_score": 0.2550883112224529,
+        "log_loss": 0.7033552438557958,
+        "buy_fraction": 0.012894248608534322
+      },
+      "reliability": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 34,
+          "mean_probability": 0.37948294898881574,
+          "observed_up_rate": 0.47058823529411764
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 10607,
+          "mean_probability": 0.4657730037567752,
+          "observed_up_rate": 0.5512397473366645
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 139,
+          "mean_probability": 0.5081189650808401,
+          "observed_up_rate": 0.6546762589928058
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        }
+      ]
+    },
+    {
+      "fold": "validate_2023",
+      "year": 2023,
+      "candidate": "hist_boost_raw",
+      "metrics": {
+        "n": 10780,
+        "accuracy": 0.548051948051948,
+        "balanced_accuracy": 0.4989046427361812,
+        "mcc": -0.006342306701424609,
+        "roc_auc": 0.4779570400282537,
+        "brier_score": 0.24975438381174014,
+        "log_loss": 0.6927886693230242,
+        "buy_fraction": 0.9695732838589981
+      },
+      "reliability": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 328,
+          "mean_probability": 0.4840537853554706,
+          "observed_up_rate": 0.5701219512195121
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 9106,
+          "mean_probability": 0.5574316896728194,
+          "observed_up_rate": 0.5565561168460356
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 1343,
+          "mean_probability": 0.6207197189683376,
+          "observed_up_rate": 0.5197319434102755
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 3,
+          "mean_probability": 0.7069715053997068,
+          "observed_up_rate": 0.3333333333333333
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        }
+      ]
+    },
+    {
+      "fold": "validate_2023",
+      "year": 2023,
+      "candidate": "hist_boost_sigmoid",
+      "metrics": {
+        "n": 10780,
+        "accuracy": 0.4468460111317254,
+        "balanced_accuracy": 0.498086135158887,
+        "mcc": -0.019024950038106038,
+        "roc_auc": 0.4779570400282537,
+        "brier_score": 0.25475796880735785,
+        "log_loss": 0.7026847178736022,
+        "buy_fraction": 0.010111317254174397
+      },
+      "reliability": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 10671,
+          "mean_probability": 0.46857337801326004,
+          "observed_up_rate": 0.5532752319370255
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 109,
+          "mean_probability": 0.5063856442276112,
+          "observed_up_rate": 0.45871559633027525
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        }
+      ]
+    },
+    {
+      "fold": "validate_2023",
+      "year": 2023,
+      "candidate": "xgboost_raw",
+      "metrics": {
+        "n": 10780,
+        "accuracy": 0.5495361781076067,
+        "balanced_accuracy": 0.4992668616597951,
+        "mcc": -0.005251092502249129,
+        "roc_auc": 0.4837267719458798,
+        "brier_score": 0.24937880957323277,
+        "log_loss": 0.6920273306639023,
+        "buy_fraction": 0.9803339517625231
+      },
+      "reliability": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 212,
+          "mean_probability": 0.48595938086509705,
+          "observed_up_rate": 0.5707547169811321
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 9219,
+          "mean_probability": 0.5562462210655212,
+          "observed_up_rate": 0.5584119752684673
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 1348,
+          "mean_probability": 0.6196936368942261,
+          "observed_up_rate": 0.5074183976261127
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 1,
+          "mean_probability": 0.7016986608505249,
+          "observed_up_rate": 1.0
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        }
+      ]
+    },
+    {
+      "fold": "validate_2023",
+      "year": 2023,
+      "candidate": "xgboost_sigmoid",
+      "metrics": {
+        "n": 10780,
+        "accuracy": 0.449165120593692,
+        "balanced_accuracy": 0.49767314015825986,
+        "mcc": -0.012392479714916117,
+        "roc_auc": 0.4837267719458798,
+        "brier_score": 0.25539440535884944,
+        "log_loss": 0.7039697626393505,
+        "buy_fraction": 0.036178107606679034
+      },
+      "reliability": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 1,
+          "mean_probability": 0.39827880875648053,
+          "observed_up_rate": 0.0
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 10389,
+          "mean_probability": 0.4648923930886494,
+          "observed_up_rate": 0.5535662720184811
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 390,
+          "mean_probability": 0.5079719125869588,
+          "observed_up_rate": 0.5205128205128206
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        }
+      ]
+    },
+    {
+      "fold": "validate_2024",
+      "year": 2024,
+      "candidate": "fit_prior",
+      "metrics": {
+        "n": 10868,
+        "accuracy": 0.5460066249539933,
+        "balanced_accuracy": 0.5,
+        "mcc": 0.0,
+        "roc_auc": 0.5,
+        "brier_score": 0.24791499745816994,
+        "log_loss": 0.688971814455369,
+        "buy_fraction": 1.0
+      },
+      "reliability": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 10868,
+          "mean_probability": 0.5516286350773677,
+          "observed_up_rate": 0.5460066249539933
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        }
+      ]
+    },
+    {
+      "fold": "validate_2024",
+      "year": 2024,
+      "candidate": "calibration_prior",
+      "metrics": {
+        "n": 10868,
+        "accuracy": 0.5460066249539933,
+        "balanced_accuracy": 0.5,
+        "mcc": 0.0,
+        "roc_auc": 0.5,
+        "brier_score": 0.24792323792100607,
+        "log_loss": 0.688988475454246,
+        "buy_fraction": 1.0
+      },
+      "reliability": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 10868,
+          "mean_probability": 0.5523191094619665,
+          "observed_up_rate": 0.5460066249539933
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        }
+      ]
+    },
+    {
+      "fold": "validate_2024",
+      "year": 2024,
+      "candidate": "always_up",
+      "metrics": {
+        "n": 10868,
+        "accuracy": 0.5460066249539933,
+        "balanced_accuracy": 0.5,
+        "mcc": 0.0,
+        "roc_auc": 0.5,
+        "brier_score": 0.4539933750460066,
+        "log_loss": 16.36357985111373,
+        "buy_fraction": 1.0
+      },
+      "reliability": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 10868,
+          "mean_probability": 1.0,
+          "observed_up_rate": 0.5460066249539933
+        }
+      ]
+    },
+    {
+      "fold": "validate_2024",
+      "year": 2024,
+      "candidate": "logistic_raw",
+      "metrics": {
+        "n": 10868,
+        "accuracy": 0.548122929701877,
+        "balanced_accuracy": 0.5035261884239676,
+        "mcc": 0.028888282111053216,
+        "roc_auc": 0.4910143861902629,
+        "brier_score": 0.2482615195280337,
+        "log_loss": 0.6896753954021292,
+        "buy_fraction": 0.9850018402649982
+      },
+      "reliability": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 163,
+          "mean_probability": 0.4834262333152033,
+          "observed_up_rate": 0.4294478527607362
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 10681,
+          "mean_probability": 0.550159154885238,
+          "observed_up_rate": 0.5476079018818463
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 24,
+          "mean_probability": 0.6112139400236057,
+          "observed_up_rate": 0.625
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        }
+      ]
+    },
+    {
+      "fold": "validate_2024",
+      "year": 2024,
+      "candidate": "logistic_sigmoid",
+      "metrics": {
+        "n": 10868,
+        "accuracy": 0.5460066249539933,
+        "balanced_accuracy": 0.5,
+        "mcc": 0.0,
+        "roc_auc": 0.5089856138097371,
+        "brier_score": 0.24797318734278442,
+        "log_loss": 0.6890922586733919,
+        "buy_fraction": 1.0
+      },
+      "reliability": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 10857,
+          "mean_probability": 0.5523628094153898,
+          "observed_up_rate": 0.5460071843050567
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 11,
+          "mean_probability": 0.6059430797451457,
+          "observed_up_rate": 0.5454545454545454
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        }
+      ]
+    },
+    {
+      "fold": "validate_2024",
+      "year": 2024,
+      "candidate": "hist_boost_raw",
+      "metrics": {
+        "n": 10868,
+        "accuracy": 0.5449944792050055,
+        "balanced_accuracy": 0.5044183833272606,
+        "mcc": 0.0187300083997925,
+        "roc_auc": 0.5132298411837058,
+        "brier_score": 0.24772470300669633,
+        "log_loss": 0.6885580881595241,
+        "buy_fraction": 0.9413875598086124
+      },
+      "reliability": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 2,
+          "mean_probability": 0.3827503970321828,
+          "observed_up_rate": 0.5
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 635,
+          "mean_probability": 0.4760791702524641,
+          "observed_up_rate": 0.5086614173228347
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 9779,
+          "mean_probability": 0.5519093531230208,
+          "observed_up_rate": 0.5438183863380713
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 441,
+          "mean_probability": 0.6142511109521662,
+          "observed_up_rate": 0.63718820861678
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 11,
+          "mean_probability": 0.7232278239873555,
+          "observed_up_rate": 1.0
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        }
+      ]
+    },
+    {
+      "fold": "validate_2024",
+      "year": 2024,
+      "candidate": "hist_boost_sigmoid",
+      "metrics": {
+        "n": 10868,
+        "accuracy": 0.5451785057048215,
+        "balanced_accuracy": 0.49924165824064715,
+        "mcc": -0.02625138006764164,
+        "roc_auc": 0.48677015881629415,
+        "brier_score": 0.24839260937525862,
+        "log_loss": 0.689938100988927,
+        "buy_fraction": 0.9991718807508281
+      },
+      "reliability": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 9,
+          "mean_probability": 0.4902934442702157,
+          "observed_up_rate": 1.0
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 10858,
+          "mean_probability": 0.5519939401614232,
+          "observed_up_rate": 0.5455885061705655
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 1,
+          "mean_probability": 0.6088785882082947,
+          "observed_up_rate": 1.0
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        }
+      ]
+    },
+    {
+      "fold": "validate_2024",
+      "year": 2024,
+      "candidate": "xgboost_raw",
+      "metrics": {
+        "n": 10868,
+        "accuracy": 0.5449944792050055,
+        "balanced_accuracy": 0.5035645102477748,
+        "mcc": 0.01637739724383738,
+        "roc_auc": 0.5126915937493212,
+        "brier_score": 0.24773849027426909,
+        "log_loss": 0.6885964673677697,
+        "buy_fraction": 0.9505888847994111
+      },
+      "reliability": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 537,
+          "mean_probability": 0.4824342727661133,
+          "observed_up_rate": 0.5102420856610801
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 9969,
+          "mean_probability": 0.5506559610366821,
+          "observed_up_rate": 0.544387601564851
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 362,
+          "mean_probability": 0.6157248616218567,
+          "observed_up_rate": 0.643646408839779
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        }
+      ]
+    },
+    {
+      "fold": "validate_2024",
+      "year": 2024,
+      "candidate": "xgboost_sigmoid",
+      "metrics": {
+        "n": 10868,
+        "accuracy": 0.5447184394552815,
+        "balanced_accuracy": 0.49888866710958774,
+        "mcc": -0.024620754996314016,
+        "roc_auc": 0.4873084062506788,
+        "brier_score": 0.2487281504926769,
+        "log_loss": 0.690618395316934,
+        "buy_fraction": 0.9979757085020243
+      },
+      "reliability": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 22,
+          "mean_probability": 0.4885965280073982,
+          "observed_up_rate": 0.8181818181818182
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 10767,
+          "mean_probability": 0.5521184902974168,
+          "observed_up_rate": 0.546113123432711
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 79,
+          "mean_probability": 0.6074377604169374,
+          "observed_up_rate": 0.45569620253164556
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_up_rate": null
+        }
+      ]
+    }
+  ],
+  "summaries": [
+    {
+      "candidate": "fit_prior",
+      "mean_metrics": {
+        "accuracy": 0.5238444736794269,
+        "balanced_accuracy": 0.5,
+        "mcc": 0.0,
+        "roc_auc": 0.5,
+        "brier_score": 0.25087681630997033,
+        "log_loss": 0.6949299630485442,
+        "buy_fraction": 1.0
+      },
+      "worst_year_brier": 0.25732415124169217,
+      "brier_gain_vs_fit_prior": 0.0,
+      "interval_95": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "candidate": "calibration_prior",
+      "mean_metrics": {
+        "accuracy": 0.4889650673714492,
+        "balanced_accuracy": 0.5,
+        "mcc": 0.0,
+        "roc_auc": 0.5,
+        "brier_score": 0.2531335516581212,
+        "log_loss": 0.699455227913892,
+        "buy_fraction": 0.6666666666666666
+      },
+      "worst_year_brier": 0.25795608904453726,
+      "brier_gain_vs_fit_prior": -0.0022567353481507315,
+      "interval_95": [
+        -0.006273879087309104,
+        0.0019023289380399424
+      ]
+    },
+    {
+      "candidate": "always_up",
+      "mean_metrics": {
+        "accuracy": 0.5238444736794269,
+        "balanced_accuracy": 0.5,
+        "mcc": 0.0,
+        "roc_auc": 0.5,
+        "brier_score": 0.47615552632057306,
+        "log_loss": 17.162384750011384,
+        "buy_fraction": 1.0
+      },
+      "worst_year_brier": 0.5267923133776792,
+      "brier_gain_vs_fit_prior": -0.22527871001060273,
+      "interval_95": [
+        -0.2559851926755986,
+        -0.1946565226530248
+      ]
+    },
+    {
+      "candidate": "logistic_raw",
+      "mean_metrics": {
+        "accuracy": 0.525289006895462,
+        "balanced_accuracy": 0.5018941471117735,
+        "mcc": 0.016691227764304654,
+        "roc_auc": 0.4979479191009248,
+        "brier_score": 0.2512987024608316,
+        "log_loss": 0.6958376798930256,
+        "buy_fraction": 0.9883401813256939
+      },
+      "worst_year_brier": 0.2578347238568426,
+      "brier_gain_vs_fit_prior": -0.00042188615086118797,
+      "interval_95": [
+        -0.0013289442504279298,
+        0.0004889514052439684
+      ]
+    },
+    {
+      "candidate": "logistic_sigmoid",
+      "mean_metrics": {
+        "accuracy": 0.4905718519921711,
+        "balanced_accuracy": 0.5011427556099969,
+        "mcc": 0.014636960682222575,
+        "roc_auc": 0.4931153289355596,
+        "brier_score": 0.2536613772492365,
+        "log_loss": 0.700523652154769,
+        "buy_fraction": 0.6705028130986319
+      },
+      "worst_year_brier": 0.25792263318247227,
+      "brier_gain_vs_fit_prior": -0.002784560939266186,
+      "interval_95": [
+        -0.007080552208828827,
+        0.001619852568886925
+      ]
+    },
+    {
+      "candidate": "hist_boost_raw",
+      "mean_metrics": {
+        "accuracy": 0.5249795063017143,
+        "balanced_accuracy": 0.5028258820590933,
+        "mcc": 0.011032421418883066,
+        "roc_auc": 0.5021008860495911,
+        "brier_score": 0.2521980117901133,
+        "log_loss": 0.6977114579299682,
+        "buy_fraction": 0.9482705152703318
+      },
+      "worst_year_brier": 0.2591149485519034,
+      "brier_gain_vs_fit_prior": -0.001321195480142926,
+      "interval_95": [
+        -0.0024787861735113526,
+        -0.00014289469784917367
+      ]
+    },
+    {
+      "candidate": "hist_boost_sigmoid",
+      "mean_metrics": {
+        "accuracy": 0.4884107344862892,
+        "balanced_accuracy": 0.4991092644665114,
+        "mcc": -0.015092110035249226,
+        "roc_auc": 0.4932809919271206,
+        "brier_score": 0.2537008074761334,
+        "log_loss": 0.7005991844009714,
+        "buy_fraction": 0.6697610660016675
+      },
+      "worst_year_brier": 0.2579518442457836,
+      "brier_gain_vs_fit_prior": -0.0028239911661630045,
+      "interval_95": [
+        -0.00715616382303286,
+        0.0016216129243534292
+      ]
+    },
+    {
+      "candidate": "xgboost_raw",
+      "mean_metrics": {
+        "accuracy": 0.5253510666035881,
+        "balanced_accuracy": 0.50269733297628,
+        "mcc": 0.011244034045157794,
+        "roc_auc": 0.5058984439623594,
+        "brier_score": 0.2519989015958418,
+        "log_loss": 0.697289618075701,
+        "buy_fraction": 0.9578809061020687
+      },
+      "worst_year_brier": 0.2588794049400236,
+      "brier_gain_vs_fit_prior": -0.001122085285871477,
+      "interval_95": [
+        -0.00217623123761806,
+        -3.768482603306887e-05
+      ]
+    },
+    {
+      "candidate": "xgboost_sigmoid",
+      "mean_metrics": {
+        "accuracy": 0.48903041555709814,
+        "balanced_accuracy": 0.4988539357559492,
+        "mcc": -0.012337744903743378,
+        "roc_auc": 0.4974373814628119,
+        "brier_score": 0.25402545050394404,
+        "log_loss": 0.7012546841414165,
+        "buy_fraction": 0.6780512720362344
+      },
+      "worst_year_brier": 0.25795379566030574,
+      "brier_gain_vs_fit_prior": -0.003148634193973658,
+      "interval_95": [
+        -0.007733971042750517,
+        0.0014495698419440548
+      ]
+    }
+  ],
+  "selected_candidate": "fit_prior",
+  "fits": {
+    "predictors": 9,
+    "calibrators": 9
+  },
+  "artifact_hashes": {
+    "validate_2022/logistic.pkl": "98f3e926ece882f9bdb7a7b0c25bac18b4618d366e61b444296af7e49c392730",
+    "validate_2022/hist_boost.pkl": "d0c66e1bcea744a8fb5d21cf1ef307271894c682a6cb8b04eff8def765079b11",
+    "validate_2022/xgboost.pkl": "089a0dc38b0d34face84e18f33585778e1c347980cc4d7c576deb2fe21fe417a",
+    "validate_2022/predictions.csv": "6d1752136bdde8585a7c7089e7167755f7f3a88c115e521f83f7135503a6b40a",
+    "validate_2023/logistic.pkl": "d626224686bf91d04e1cddbfc655702ab5ae1c18b59c75b473265e8f34577413",
+    "validate_2023/hist_boost.pkl": "51bb508ae54abacbdb9f40aef1cc6dc28f0f5a18bb4218729d6811b3047bced9",
+    "validate_2023/xgboost.pkl": "f25f6e0cf2e27ecfe0168d3605c9d4e4a1d2e7086dca7b7adb643f88a96fa0d2",
+    "validate_2023/predictions.csv": "3a07d3180d633635cc40b0e03c0012b57787d3797f1b21a836f4f07c165a50a0",
+    "validate_2024/logistic.pkl": "7d6cc9f38bcfb421231f7e1fe99345d1c415a4603f26631990f8eb42661b487b",
+    "validate_2024/hist_boost.pkl": "b1683518045bd4b6f25129096a6e1f6dd51dc56af42a2f1465be3f12f629f532",
+    "validate_2024/xgboost.pkl": "0381febd59328c11431f62516c0bbda4d1e9dcf4903521d6c42361233e3d89bd",
+    "validate_2024/predictions.csv": "2f929e66d9a788c4614746e43f1333302df49d2337a9aae2f8e5923244b10e6d"
+  },
+  "holdout_files_opened": false,
+  "holdout_scores_computed": false,
+  "serving_models_changed": false
+}

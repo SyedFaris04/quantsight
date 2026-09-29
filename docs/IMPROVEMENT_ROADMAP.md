@@ -89,6 +89,12 @@ Still required:
       Three development folds are prepared; 72 Python tests pass. Model selection and
       a confirmed unused final window remain outstanding.
 - Use shared chronological folds, label-overlap purging and training-only feature selection.
+- [x] Run the first fixed finance-development comparison on 2022/2023/2024 with
+      13 predeclared features, three model families, separate sigmoid calibration,
+      nine predictor fits and nine calibrator fits. All six model outputs failed
+      to beat the training-prior baseline on mean Brier loss; no model was promoted.
+      AI Compare publishes the year results, reliability bins and uncertainty.
+      See [finance development study](research/FINANCE_DEVELOPMENT_STUDY.md).
 - Compare finance, news, social polarity and emotion ablations on matching samples.
 - Tune model/threshold/calibrator on appropriate separate validation windows.
 - Test deadband, excess-return and ranking targets as explicitly separate experiments.
@@ -101,7 +107,9 @@ accuracy percentage and no promise that complexity must outperform simpler model
 
 ## Stage 4 - Explanations and decision support
 
-- Ground local claims in SHAP/sequence attribution, distinguish indicator commentary.
+- [x] Add verified per-prediction native TreeSHAP for both saved XGBoost variants;
+      reconstruct the raw score and match the saved direction/calibrated probability.
+      Distinguish existing rule-based commentary and attention weights.
 - Verify counterfactuals against model outputs and realistic feature constraints.
 - Evaluate explanation fidelity/stability and calibrate confidence terminology.
 - Show missing/stale data, horizon, version, and No Reliable Signal states clearly.

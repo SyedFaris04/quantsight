@@ -69,7 +69,16 @@ These already-studied years are for model selection, not an unbiased final claim
 supports chronological validation for dependent observations. QuantSight adds
 explicit five-session outcome purging and separate calibration periods.
 
-## Required next experiment
+## First development experiment completed
+
+The [fixed finance study](FINANCE_DEVELOPMENT_STUDY.md) was registered locally and
+run on 28 September, using the prepared development folds and 13 fixed inputs.
+Nine predictor fits and nine calibrator fits compared three model families with
+three baselines. None of the six model outputs beat the training-prior baseline
+on equal-year mean Brier loss. No serving model was replaced and no 2025 holdout
+file was opened. Prior external use of 2025 remains unconfirmed.
+
+## Evaluation requirements
 
 1. Register a compact feature set, candidate models, calibration method, selection
    criterion, trial budget and all price/target conventions before fitting.

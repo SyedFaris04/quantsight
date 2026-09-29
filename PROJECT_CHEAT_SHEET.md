@@ -186,6 +186,10 @@
 - The ensemble returned 61.98% versus SPY's 51.69% historically, but its Sharpe was lower and drawdown deeper.
 - Original 2023–2024 text inputs were all zero; legacy sentiment-variant differences cannot establish a sentiment benefit.
 - The controlled 2023 news study did not beat the simple baseline; no new model was promoted to live service.
+- The fixed finance-development study compares three models across 2022–2024 with raw and calibrated outputs. None beats the training-prior baseline on mean Brier loss.
+- Raw XGBoost averages 52.54% accuracy versus 52.38% for that baseline, but its probability loss is worse. Higher accuracy alone is not enough to select it.
+- AI Compare now includes yearly scores, balanced accuracy, MCC, ROC-AUC, Brier loss, UP-prediction frequency, reliability bins and a downloadable study report.
+- The study uses 32,472 validation observations, 13 fixed inputs, nine predictor fits and nine calibration fits. The separate 2025 candidate final-test data remains unopened.
 - The historical test period was reused, news coverage is incomplete, and the fixed instrument universe and retrospectively adjusted prices have limitations.
 - **Prediction success:** consistent baseline-relative improvement on an unused evaluation period, reasonable calibration and reported uncertainty.
 - **Trading-simulation success:** acceptable risk and after-cost performance against matching benchmarks across periods, not just a high best-run return.
