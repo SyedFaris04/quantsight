@@ -44,6 +44,7 @@ _IMPORT_STARTED = time.perf_counter()
 import json
 from fastapi.responses import JSONResponse
 import os
+import sys
 import random
 import numpy as np
 import pandas as pd
@@ -421,6 +422,7 @@ def health_check():
         "models": [name for name, details in _readiness.get("datasets", {}).get("predictions", {}).items()
                    if details["available"]],
         "release": release_id(),
+        "python_version": sys.version.split()[0],
         "scope": "local_saved_data",
         "external_services": "not_checked",
         "startup": _startup_timings,

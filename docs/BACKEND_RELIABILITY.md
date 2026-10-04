@@ -68,7 +68,11 @@ This dashboard setting has not been changed from this workspace.
 No new API keys, Supabase migrations or frontend configuration are required.
 Keep Render's build command `pip install -r requirements.txt` and start command
 `uvicorn main:app --host 0.0.0.0 --port $PORT` with root directory `backend`.
-Use Python 3.12, as used in the clean serving check.
+The repository and backend `.python-version` files select Python 3.12, matching
+the clean serving check. Readiness also exposes the running Python version.
+An existing Render `PYTHON_VERSION` environment variable takes precedence over
+these files; if it is set, it should specify a released 3.12 patch version.
+[Render's Python version selection](https://render.com/docs/python-version).
 
 For a local API run from `backend`:
 
