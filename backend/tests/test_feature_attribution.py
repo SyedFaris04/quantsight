@@ -11,6 +11,8 @@ from fastapi.testclient import TestClient
 from sklearn.preprocessing import StandardScaler
 
 import feature_attribution as attribution
+from attribution_snapshot import artifact_paths, load_attributions, write_attributions
+from serving_snapshot import SnapshotUnavailable, sha256_file
 
 
 class FixedCalibrator:
@@ -19,6 +21,12 @@ class FixedCalibrator:
 
 
 class FeatureAttributionTests(unittest.TestCase):
+    def setUp(self):
+        attribution._latest_evidence.cache_clear()
+        attribution._saved_attributions.cache_clear()
+        self.addCleanup(attribution._latest_evidence.cache_clear)
+        self.addCleanup(attribution._saved_attributions.cache_clear)
+
     @classmethod
     def setUpClass(cls):
         rng = np.random.default_rng(51)
@@ -130,6 +138,101 @@ class FeatureAttributionTests(unittest.TestCase):
                 with self.assertRaisesRegex(attribution.AttributionUnavailable, "Duplicate saved"):
                     attribution.get_attribution("TEST")
             attribution._latest_evidence.cache_clear()
+
+    def make_prepared_fixture(self, root):
+        import pickle
+        row, prediction = self.evidence()
+        for directory in ["models", "processed", "predictions"]:
+            (root / directory).mkdir()
+        (root / "models/xgb_finance.pkl").write_bytes(pickle.dumps(self.bundle))
+        # A newer feature row must not replace the exact historical model input.
+        pd.DataFrame([{**row, "ticker": "TEST", "date": prediction["date"]},
+                      {**{name: value + 10 for name, value in row.items()},
+                       "ticker": "TEST", "date": "2024-12-21"}]).to_csv(
+            root / "processed/features_finance.csv", index=False)
+        pd.DataFrame([prediction]).to_csv(root / "predictions/xgb_finance_predictions.csv", index=False)
+        result = attribution.get_native_attribution("TEST")
+        sources = attribution._paths("xgb_finance")
+        write_attributions("xgb_finance", sources, [result], root / "serving")
+        return result, sources
+
+    def test_prepared_result_preserves_native_evidence_without_model_or_csv_load(self):
+        with tempfile.TemporaryDirectory() as temporary, patch.object(attribution, "DATA", Path(temporary)):
+            expected, _ = self.make_prepared_fixture(Path(temporary))
+            with patch.object(attribution.pickle, "loads", side_effect=AssertionError("model load")), \
+                 patch.object(attribution.pd, "read_csv", side_effect=AssertionError("CSV parse")):
+                result = attribution.get_attribution("test")
+                self.assertEqual(result, expected)
+                self.assertEqual(result["date"], "2024-12-20")
+                result["features"][0]["value"] = 999
+                self.assertEqual(attribution.get_attribution("TEST"), expected)
+                with self.assertRaises(KeyError):
+                    attribution.get_attribution("MISSING")
+
+    def test_changed_prediction_rejects_prepared_result_and_native_fallback_rechecks_it(self):
+        with tempfile.TemporaryDirectory() as temporary, patch.object(attribution, "DATA", Path(temporary)):
+            _, sources = self.make_prepared_fixture(Path(temporary))
+            self.assertTrue(attribution.get_attribution("TEST")["verified"])
+            predictions = pd.read_csv(sources[2])
+            predictions["confidence"] += .2
+            predictions.to_csv(sources[2], index=False)
+            with self.assertRaises(SnapshotUnavailable):
+                load_attributions("xgb_finance", sources, Path(temporary) / "serving")
+            with self.assertRaisesRegex(attribution.AttributionUnavailable, "reproduce"):
+                attribution.get_attribution("TEST")
+
+    def test_source_hashes_cover_model_and_feature_bytes(self):
+        with tempfile.TemporaryDirectory() as temporary, patch.object(attribution, "DATA", Path(temporary)):
+            _, sources = self.make_prepared_fixture(Path(temporary))
+            for source in sources[:2]:
+                original = source.read_bytes()
+                source.write_bytes(original + b" ")
+                with self.assertRaisesRegex(SnapshotUnavailable, "stale"):
+                    load_attributions("xgb_finance", sources, Path(temporary) / "serving")
+                source.write_bytes(original)
+
+    def test_corrupt_artifact_uses_native_fallback(self):
+        with tempfile.TemporaryDirectory() as temporary, patch.object(attribution, "DATA", Path(temporary)):
+            expected, _ = self.make_prepared_fixture(Path(temporary))
+            artifact, _ = artifact_paths("xgb_finance", Path(temporary) / "serving")
+            artifact.write_text("corrupted", encoding="utf-8")
+            self.assertEqual(attribution.get_attribution("TEST"), expected)
+
+    def test_implementation_change_invalidates_prepared_result(self):
+        with tempfile.TemporaryDirectory() as temporary, patch.object(attribution, "DATA", Path(temporary)):
+            _, sources = self.make_prepared_fixture(Path(temporary))
+            with patch("attribution_snapshot.implementation_hash", return_value="new implementation"):
+                with self.assertRaisesRegex(SnapshotUnavailable, "implementation"):
+                    load_attributions("xgb_finance", sources, Path(temporary) / "serving")
+
+    def test_inconsistent_record_is_rejected_even_if_artifact_hash_is_updated(self):
+        import json
+        with tempfile.TemporaryDirectory() as temporary, patch.object(attribution, "DATA", Path(temporary)):
+            _, sources = self.make_prepared_fixture(Path(temporary))
+            artifact, manifest = artifact_paths("xgb_finance", Path(temporary) / "serving")
+            rows = json.loads(artifact.read_text())
+            rows[0]["verified"] = False
+            artifact.write_text(json.dumps(rows), encoding="utf-8")
+            metadata = json.loads(manifest.read_text())
+            metadata["artifact_sha256"] = sha256_file(artifact)
+            manifest.write_text(json.dumps(metadata), encoding="utf-8")
+            with self.assertRaisesRegex(SnapshotUnavailable, "inconsistent"):
+                load_attributions("xgb_finance", sources, Path(temporary) / "serving")
+
+    def test_recomputation_check_rejects_changed_contributions_with_matching_hashes(self):
+        import json
+        from research.build_attribution_snapshots import run
+        with tempfile.TemporaryDirectory() as temporary, patch.object(attribution, "DATA", Path(temporary)):
+            self.make_prepared_fixture(Path(temporary))
+            artifact, manifest = artifact_paths("xgb_finance", Path(temporary) / "serving")
+            rows = json.loads(artifact.read_text())
+            rows[0]["features"][0]["contribution"] += .01
+            artifact.write_text(json.dumps(rows), encoding="utf-8")
+            metadata = json.loads(manifest.read_text())
+            metadata["artifact_sha256"] = sha256_file(artifact)
+            manifest.write_text(json.dumps(metadata), encoding="utf-8")
+            with self.assertRaisesRegex(AssertionError, "native model computation"):
+                run("xgb_finance", check=True)
 
 
 if __name__ == "__main__":

@@ -66,3 +66,7 @@ included in the evaluation environment for the snapshot regression tests.
 
 Next work can apply the same validated-artifact approach to the exact saved
 inputs used by TreeSHAP, reducing its initial historical CSV scan.
+
+The subsequent [XAI serving release](XAI_SERVING_PERFORMANCE.md) prepares and
+verifies all 88 native TreeSHAP results, removing both the historical input scan
+and the initial model-library import from their normal serving path.

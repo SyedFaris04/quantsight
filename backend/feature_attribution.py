@@ -7,6 +7,7 @@ import hashlib
 import json
 import logging
 import pickle
+from copy import deepcopy
 from functools import lru_cache
 from pathlib import Path
 from threading import Lock
@@ -17,6 +18,8 @@ import pandas as pd
 from fastapi import APIRouter, HTTPException
 
 from cv_utils import apply_calibrator
+from attribution_snapshot import artifact_paths, file_signatures, load_attributions
+from serving_snapshot import SnapshotUnavailable
 
 DATA = Path(__file__).resolve().parent / "data"
 VARIANTS = ("xgb_finance", "xgb_sentiment")
@@ -135,7 +138,7 @@ def _signatures(variant):
     return tuple((str(path), path.stat().st_mtime_ns, path.stat().st_size) for path in _paths(variant))
 
 
-def get_attribution(ticker, variant="xgb_finance"):
+def get_native_attribution(ticker, variant="xgb_finance"):
     if variant not in VARIANTS:
         raise AttributionUnavailable("Only the two saved XGBoost models are supported.")
     with _load_lock:
@@ -149,6 +152,32 @@ def get_attribution(ticker, variant="xgb_finance"):
         raise AttributionUnavailable("No exact feature row exists for the saved prediction date.")
     result = explain_row(bundle, row, prediction, digest)
     return {**result, "model": variant}
+
+
+@lru_cache(maxsize=2)
+def _saved_attributions(variant, signatures):
+    try:
+        records = load_attributions(variant, _paths(variant), DATA / "serving")
+    except SnapshotUnavailable as exc:
+        logger.info("Prepared attribution unavailable for %s (%s); using native computation", variant, exc)
+        return None
+    if signatures != file_signatures((*_paths(variant), *artifact_paths(variant, DATA / "serving"))):
+        raise AttributionUnavailable("Attribution files changed while loading. Retry the request.")
+    return records
+
+
+def get_attribution(ticker, variant="xgb_finance"):
+    if variant not in VARIANTS:
+        raise AttributionUnavailable("Only the two saved XGBoost models are supported.")
+    paths = (*_paths(variant), *artifact_paths(variant, DATA / "serving"))
+    with _load_lock:
+        records = _saved_attributions(variant, file_signatures(paths))
+    if records is None:
+        return get_native_attribution(ticker, variant)
+    ticker = ticker.upper()
+    if ticker not in records:
+        raise KeyError(ticker)
+    return deepcopy(records[ticker])
 
 
 @router.get("/feature-attribution/{ticker}")

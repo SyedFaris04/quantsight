@@ -1,2 +1,6 @@
 # Compact serving manifests hash this source byte-for-byte across platforms.
 backend/data/processed/features_sentiment.csv text eol=lf
+backend/data/processed/features_finance.csv text eol=lf
+backend/data/predictions/xgb_finance_predictions.csv text eol=lf
+backend/data/predictions/xgb_sentiment_predictions.csv text eol=lf
+backend/data/serving/*_attributions.json text eol=lf

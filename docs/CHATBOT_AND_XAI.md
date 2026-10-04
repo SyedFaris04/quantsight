@@ -59,6 +59,11 @@ Updated 28 September 2026.
 
 ## Per-prediction XGBoost attribution — implemented 28 September 2026
 
+The [4 October serving update](XAI_SERVING_PERFORMANCE.md) now prepares the same
+native results offline, binds them to source/code hashes and recomputes all 88
+in CI. The native calculation described below remains the preparation and fallback
+path. The public response and explanation method are preserved.
+
 - Open **Stock Detail → Overview → What moved this model's prediction?** and choose Finance or Finance + Sentiment.
 - Endpoint: `GET /feature-attribution/AAPL?model=xgb_finance`; only the two saved XGBoost variants are supported.
 - Scope: latest saved historical prediction per ticker (currently 20 December 2024). This endpoint does not explain a live prediction, LSTM output or the four-model consensus.

@@ -18,6 +18,8 @@ jobs:
       - run: pip check
       - run: python -m research.build_serving_snapshots --check
         working-directory: backend
+      - run: python -m research.build_attribution_snapshots --check
+        working-directory: backend
       - run: python -m research.verify_runtime
         working-directory: backend
   database:

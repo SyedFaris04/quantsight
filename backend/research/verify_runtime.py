@@ -85,6 +85,8 @@ def main():
             response = client.get("/feature-attribution/AAPL", params={"model": variant})
             assert response.status_code == 200, response.text
             assert response.json()["verified"] is True
+        assert not any(name in sys.modules for name in ("xgboost", "sklearn")), \
+            "Prepared attribution serving must not import model libraries"
         assert not any(name in sys.modules for name in ("torch", "transformers", "shap", "datasets"))
         report.update(response_hashes=hashes, final_working_set_mb=working_set_mb(),
                       saved_xai_verified=True)
