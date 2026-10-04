@@ -4,3 +4,6 @@ backend/data/processed/features_finance.csv text eol=lf
 backend/data/predictions/xgb_finance_predictions.csv text eol=lf
 backend/data/predictions/xgb_sentiment_predictions.csv text eol=lf
 backend/data/serving/*_attributions.json text eol=lf
+
+# PDF byte offsets must survive Windows/Linux checkout without newline conversion.
+*.pdf binary
