@@ -201,6 +201,12 @@ add('03 / Model comparison and research', 'Finance development: probability qual
     'Choose an individual validation year or the equal-year mean. Brier is the mean squared probability error; smaller is better. Other columns show balance, MCC, AUC and UP rate.',
     'The training-prior baseline has mean Brier 0.250877, versus 0.251999 for raw XGBoost. A similar accuracy score does not imply a better probability forecast.',
     'backend/data/research_reports/development_models.json')
+add('03 / Model comparison and research', 'Probability reliability and uncertainty', 'compare_method', 1120, 625,
+    'The expanded panel checks whether predicted probabilities match observed outcomes and shows uncertainty in the study comparison.',
+    'It uses the same fixed finance-development predictions. Select a candidate and year to inspect occupied probability bins.',
+    'For the displayed raw logistic model in 2024, the large 50-60% bin predicts 55.02% UP and observes 54.76%. Paired, 20-session block resamples estimate uncertainty in the Brier difference.',
+    'A close match in one bin does not prove overall superiority. Some bins are small. The displayed improvement interval includes zero and does not correct for selecting among several candidates.',
+    'frontend/src/components/DevelopmentComparison.jsx')
 add('03 / Model comparison and research', 'Confidence audit: accuracy versus coverage', 'compare_confidence', 1480, 530,
     'This diagnostic asks what is lost or gained when lower-confidence predictions are removed.',
     'It reuses the fixed development predictions. It compares nine outputs, seven confidence thresholds and four period views, without fitting new models.',
@@ -341,6 +347,12 @@ add('05 / Live evidence and user tools', 'Portfolio: suggested instruments', 'po
     'The list prioritises instruments where all four core models agree on BUY. Users can open Stock Detail to inspect the evidence before drawing conclusions.',
     'The list is based on old model outputs. It is not personalised investment advice, a portfolio optimiser or a verified list of stocks that will rise.',
     'frontend/src/pages/Portfolio.jsx')
+add('05 / Live evidence and user tools', 'Prediction game: player leaderboard', 'game', 108, 510,
+    'The game leaderboard displays public player scores. It is different from the model-performance leaderboard.',
+    'The app reads the public ranking fields from Supabase game_progress. Names shown here are public aliases, not private email addresses.',
+    'Players are ranked by their saved high score. The displayed accuracy measures how often each player\'s answers matched the selected model\'s saved labels.',
+    'A high score measures quiz progress, not profit or future market prediction. Account progress is client-synced; this is an educational leaderboard, not a tamper-proof competition.',
+    'frontend/src/pages/Game.jsx', x=58, width=672)
 add('05 / Live evidence and user tools', 'Prediction game: choose the challenge', 'game', 642, 403,
     'The game teaches users to interpret stock indicators by guessing a model\'s saved BUY/SELL decision.',
     'Questions come from the saved core-model predictions and dated historical indicator rows. A separate public player leaderboard uses game_progress.',

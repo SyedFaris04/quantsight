@@ -2,7 +2,7 @@
 
 The finished guide is `output/pdf/QuantSight_Project_Guide_2026-10-05.pdf`.
 Its editable feature explanations are in `docs/ILLUSTRATED_PROJECT_GUIDE.md`.
-The PDF contains 70 landscape pages, including 58 screenshot-based feature pages.
+The PDF contains 72 landscape pages, including 60 screenshot-based feature pages.
 
 ## Rebuild on this Windows workspace
 

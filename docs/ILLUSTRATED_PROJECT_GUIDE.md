@@ -224,6 +224,14 @@ Prices / news / social posts -> checked daily feature panels -> chronological tr
 - **Interpretation:** The training-prior baseline has mean Brier 0.250877, versus 0.251999 for raw XGBoost. A similar accuracy score does not imply a better probability forecast.
 - **Code / evidence:** `backend/data/research_reports/development_models.json`
 
+## Probability reliability and uncertainty
+
+- **What it is:** The expanded panel checks whether predicted probabilities match observed outcomes and shows uncertainty in the study comparison.
+- **Data:** It uses the same fixed finance-development predictions. Select a candidate and year to inspect occupied probability bins.
+- **Calculation:** For the displayed raw logistic model in 2024, the large 50-60% bin predicts 55.02% UP and observes 54.76%. Paired, 20-session block resamples estimate uncertainty in the Brier difference.
+- **Interpretation:** A close match in one bin does not prove overall superiority. Some bins are small. The displayed improvement interval includes zero and does not correct for selecting among several candidates.
+- **Code / evidence:** `frontend/src/components/DevelopmentComparison.jsx`
+
 ## Confidence audit: accuracy versus coverage
 
 - **What it is:** This diagnostic asks what is lost or gained when lower-confidence predictions are removed.
@@ -407,6 +415,14 @@ Prices / news / social posts -> checked daily feature panels -> chronological tr
 - **Calculation:** The list prioritises instruments where all four core models agree on BUY. Users can open Stock Detail to inspect the evidence before drawing conclusions.
 - **Interpretation:** The list is based on old model outputs. It is not personalised investment advice, a portfolio optimiser or a verified list of stocks that will rise.
 - **Code / evidence:** `frontend/src/pages/Portfolio.jsx`
+
+## Prediction game: player leaderboard
+
+- **What it is:** The game leaderboard displays public player scores. It is different from the model-performance leaderboard.
+- **Data:** The app reads the public ranking fields from Supabase game_progress. Names shown here are public aliases, not private email addresses.
+- **Calculation:** Players are ranked by their saved high score. The displayed accuracy measures how often each player's answers matched the selected model's saved labels.
+- **Interpretation:** A high score measures quiz progress, not profit or future market prediction. Account progress is client-synced; this is an educational leaderboard, not a tamper-proof competition.
+- **Code / evidence:** `frontend/src/pages/Game.jsx`
 
 ## Prediction game: choose the challenge
 
