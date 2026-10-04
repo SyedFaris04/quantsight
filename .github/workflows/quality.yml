@@ -16,6 +16,8 @@ jobs:
           cache-dependency-path: backend/requirements.txt
       - run: pip install -r backend/requirements.txt httpx==0.28.1
       - run: pip check
+      - run: python -m research.build_serving_snapshots --check
+        working-directory: backend
       - run: python -m research.verify_runtime
         working-directory: backend
   database:

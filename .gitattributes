@@ -1,0 +1,2 @@
+# Compact serving manifests hash this source byte-for-byte across platforms.
+backend/data/processed/features_sentiment.csv text eol=lf

@@ -27,6 +27,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 import logging
 from threading import RLock
+from serving_snapshot import load_snapshot, SnapshotUnavailable
 
 logger = logging.getLogger("nuroquant-copilot")
 
@@ -86,8 +87,12 @@ def _latest_features_cached(path: Path) -> pd.DataFrame:
     key = str(path)
     with _cache_lock:
         if key not in _LATEST_FEATURE_CACHE:
-            frame = pd.read_csv(path)
-            latest = frame.sort_values("date").groupby("ticker", sort=False).tail(1)
+            try:
+                latest = load_snapshot(path)
+            except SnapshotUnavailable as exc:
+                logger.info("Compact feature view unavailable for %s (%s); using CSV", path.name, exc)
+                frame = pd.read_csv(path)
+                latest = frame.sort_values("date").groupby("ticker", sort=False).tail(1)
             _LATEST_FEATURE_CACHE[key] = latest.set_index("ticker", drop=False).copy()
         return _LATEST_FEATURE_CACHE[key]
 

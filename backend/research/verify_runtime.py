@@ -63,13 +63,24 @@ def main():
         assert ready.json()["external_services"] == "not_checked"
         assert ready.headers["cache-control"] == "no-store"
         hashes = {}
-        for path in ("/dashboard", "/overview", "/stock/AAPL", "/explain/AAPL",
-                     "/compare/AAPL", "/history/AAPL", "/accuracy-history/AAPL",
-                     "/research/development-models"):
-            response = client.get(path)
-            assert response.status_code == 200, (path, response.text)
-            payload = json.dumps(response.json(), sort_keys=True, separators=(",", ":"))
-            hashes[path] = hashlib.sha256(payload.encode()).hexdigest()
+        import copilot_engine as copilot
+        import pandas as pd
+        original_reader = pd.read_csv
+
+        def serving_reader(path, *args, **kwargs):
+            from pathlib import Path
+            if Path(path) == copilot.FEATURE_FILES["sentiment"] and kwargs.get("usecols") is None:
+                raise AssertionError("Serving must use the compact latest sentiment snapshot")
+            return original_reader(path, *args, **kwargs)
+
+        with patch.object(copilot.pd, "read_csv", side_effect=serving_reader):
+            for path in ("/dashboard", "/overview", "/stock/AAPL", "/explain/AAPL",
+                         "/compare/AAPL", "/history/AAPL", "/accuracy-history/AAPL",
+                         "/research/development-models"):
+                response = client.get(path)
+                assert response.status_code == 200, (path, response.text)
+                payload = json.dumps(response.json(), sort_keys=True, separators=(",", ":"))
+                hashes[path] = hashlib.sha256(payload.encode()).hexdigest()
         for variant in ("xgb_finance", "xgb_sentiment"):
             response = client.get("/feature-attribution/AAPL", params={"model": variant})
             assert response.status_code == 200, response.text
@@ -78,8 +89,6 @@ def main():
         report.update(response_hashes=hashes, final_working_set_mb=working_set_mb(),
                       saved_xai_verified=True)
         # Compare every compact latest row with the original full CSV lookup.
-        import copilot_engine as copilot
-        import pandas as pd
         for sentiment, path in ((False, copilot.FEATURE_FILES["finance"]),
                                 (True, copilot.FEATURE_FILES["sentiment"])):
             reference = pd.read_csv(path)

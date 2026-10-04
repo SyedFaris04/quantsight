@@ -58,3 +58,7 @@ First sentiment access still parses its CSV once, and native TreeSHAP still
 loads model libraries and exact historical inputs on its first request. A next
 step is to prepare and validate compact serving artifacts for these fixed inputs,
 with clear invalidation when models or data change.
+
+The subsequent [compact serving snapshot release](SERVING_SNAPSHOTS.md) removes
+the initial full sentiment CSV parse for latest-feature lookups. TreeSHAP's
+initial input scan remains follow-up work.
