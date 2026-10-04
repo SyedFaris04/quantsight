@@ -17,8 +17,9 @@
  * ─────────────────────────────────────────────────────────────────
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import axios from "axios";
+import { createLatestRequest } from "./latestRequest";
 
 const BASE_URL = import.meta.env.VITE_API_URL || "/api";
 
@@ -34,48 +35,30 @@ const api = axios.create({
  * @param {string|null} endpoint  - e.g. "/overview" or "/explain/AAPL"
  *                                  pass null to skip fetching
  * @param {any[]}       deps      - extra dependencies that trigger a refetch
- * @returns {{ data, loading, error, refetch }}
+ * @returns {{ data, loading, error, isSlow, refetch }}
  */
 export function useApi(endpoint, deps = []) {
-  const [data,    setData]    = useState(null);
-  const [loading, setLoading] = useState(!!endpoint);
-  const [error,   setError]   = useState(null);
-
-  // No cancellation previously meant an out-of-order response could still
-  // win: navigate AAPL -> TSLA fast enough and if AAPL's request resolves
-  // after TSLA's, its (stale) data overwrites what's on screen. `signal` is
-  // supplied by the useEffect below (tied to endpoint/deps changing or
-  // unmount); refetch() (e.g. a manual "retry"/"next" button) calls this
-  // without one, which is fine — axios treats signal: undefined as no-op.
-  const fetchData = useCallback(async (signal) => {
-    if (!endpoint) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await api.get(endpoint, { signal });
-      setData(res.data);
-    } catch (err) {
-      if (axios.isCancel(err) || err.code === "ERR_CANCELED") return;
-      const msg =
-        err.response?.data?.detail ||
-        err.message ||
-        "Unknown error";
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [endpoint, ...deps]);
-
+  const [state, setState] = useState({ endpoint, data: null, loading: !!endpoint, error: null, isSlow: false });
+  const activeFetcher = useRef(null);
+  const runner = useMemo(() => createLatestRequest(
+    (url, options) => api.get(url, options),
+    patch => setState(previous => ({ ...previous, ...patch })),
+  ), []);
+  // Effect changes, unmounts and manual retries all invalidate earlier requests.
+  // A sequence guard also protects against transports that finish after abort.
+  const refetch = useCallback(function fetchCurrent() {
+    // An async callback retained by an old page must not restart its request.
+    if (activeFetcher.current === fetchCurrent) return runner.run(endpoint);
+  }, [runner, endpoint, ...deps]);
   useEffect(() => {
-    const controller = new AbortController();
-    fetchData(controller.signal);
-    return () => controller.abort();
-  }, [fetchData]);
-
-  const refetch = useCallback(() => fetchData(), [fetchData]);
-
-  return { data, loading, error, refetch };
+    activeFetcher.current = refetch;
+    refetch();
+    return () => { activeFetcher.current = null; runner.cancel(); };
+  }, [refetch, runner]);
+  // Do not briefly display a previous ticker's data before the new effect runs.
+  const visible = state.endpoint === endpoint ? state
+    : { data: null, error: null, loading: !!endpoint, isSlow: false };
+  return { data: visible.data, loading: visible.loading, error: visible.error, isSlow: visible.isSlow, refetch };
 }
 
 /**

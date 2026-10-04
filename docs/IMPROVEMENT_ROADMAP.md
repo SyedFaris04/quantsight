@@ -125,7 +125,11 @@ accuracy percentage and no promise that complexity must outperform simpler model
 - Fix portfolio daily P&L and account/guest-state separation.
 - Fix game replay scoring; distinguish model-interpretation from outcome prediction.
 - Add keyboard/focus, chart alternatives, responsive and loading/error-state checks.
-- Split route bundles and large components; test in a connected browser.
+- [x] Split route bundles: initial JavaScript is approximately 57% smaller, with
+      page-level loading/error recovery and seven request-race regression tests.
+      Production-build browser checks cover every route, actual timeout/retry,
+      chat persistence and mobile layouts. See [loading and reliability](LOADING_AND_RELIABILITY.md).
+- Continue splitting oversized page components where it improves maintainability.
 
 ## Stage 6 - Database, deployment and maintainability
 

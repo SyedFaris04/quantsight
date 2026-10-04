@@ -22,13 +22,13 @@ function Unavailable({ message, retry }) {
 }
 
 function NewsSentiment() {
-  const { data, loading, error, refetch } = useApi("/market-sentiment");
+  const { data, loading, error, refetch, isSlow } = useApi("/market-sentiment");
   return <section className="card" aria-labelledby="news-sentiment-title">
     <p className="text-xs font-medium uppercase tracking-wider text-indigo-300">Language analysis</p>
     <h2 id="news-sentiment-title" className="mt-2 text-lg font-semibold text-white">Saved news sentiment</h2>
     <p className="mt-2 text-sm leading-relaxed text-gray-400">VADER scores headline language. These scores are separate from the historical prediction snapshot.</p>
-    {loading ? <p role="status" className="mt-5 text-sm text-gray-400">Loading news analysis...</p>
-      : error ? <div className="mt-4"><Unavailable message="News analysis could not be loaded." retry={refetch} /></div>
+    {loading ? <p role="status" className="mt-5 text-sm text-gray-400">{isSlow ? "Still waiting for news analysis. The server may be starting or busy." : "Loading news analysis..."}</p>
+      : error ? <div className="mt-4"><Unavailable message={error} retry={refetch} /></div>
       : !data?.article_count ? <p className="mt-5 text-sm text-gray-400">No dated headlines are available to score.</p>
       : <>
         <div className="mt-4 rounded-lg border border-gray-700 bg-gray-950/50 p-3 text-xs leading-relaxed text-gray-300">
@@ -64,7 +64,7 @@ function articleUrl(value) {
 }
 
 export default function Dashboard() {
-  const { data, loading, error, refetch } = useApi("/dashboard");
+  const { data, loading, error, refetch, isSlow } = useApi("/dashboard");
   const kpis = data?.kpis;
   const snapshot = data?.snapshot;
   const dates = snapshot?.latest_signal_date
@@ -92,8 +92,13 @@ export default function Dashboard() {
           <p className="mt-1 text-sm text-gray-400">Saved model outputs for research; these are not current trading signals.</p></div>
         <p className="rounded-lg border border-gray-700 px-3 py-2 text-xs text-gray-300">Signal dates: {loading ? "Loading..." : error ? "Unavailable" : dates}</p>
       </div>
-      {loading ? <div role="status" className="grid grid-cols-2 gap-4 lg:grid-cols-4"><span className="sr-only">Loading historical snapshot</span>{[1,2,3,4].map(i => <div key={i} className="h-32 animate-pulse rounded-xl bg-gray-900" />)}</div>
-        : error || !kpis ? <Unavailable message="The historical snapshot could not be loaded." retry={refetch} />
+      {loading ? <div role="status">
+        <p className={isSlow ? "mb-3 text-sm text-gray-400" : "sr-only"}>
+          {isSlow ? "Still waiting for the snapshot. The server may be starting or busy." : "Loading historical snapshot"}
+        </p>
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">{[1,2,3,4].map(i => <div key={i} className="h-32 animate-pulse rounded-xl bg-gray-900" />)}</div>
+      </div>
+        : error || !kpis ? <Unavailable message={error || "The historical snapshot could not be loaded."} retry={refetch} />
         : <>
           {(snapshot?.mixed_signal_dates || snapshot?.undated_signals > 0) && <p className="rounded-lg border border-amber-700/50 bg-amber-950/20 p-3 text-xs text-amber-100">Some saved signals have different or missing dates. This summary does not represent one synchronized market observation.</p>}
           <dl className="grid grid-cols-2 gap-4 lg:grid-cols-4">

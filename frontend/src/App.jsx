@@ -7,25 +7,29 @@
  * at `lg` and above — see Sidebar.jsx for the responsive classes.
  */
 
-import { useState } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { lazy, Suspense, useState } from "react";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import Sidebar     from "./components/Sidebar";
 import Dashboard   from "./pages/Dashboard";
-import Overview    from "./pages/Overview";
-import Detail      from "./pages/Detail";
-import Compare     from "./pages/Compare";
-import Leaderboard from "./pages/Leaderboard";
-import Game        from "./pages/Game";
-import Portfolio   from "./pages/Portfolio";
-import Login       from "./pages/Login";
-import Settings    from "./pages/Settings";
-import TrackRecord from "./pages/TrackRecord";
-import Backtesting from "./pages/Backtesting";
 import ChatWidget  from "./components/ChatWidget";
+import PageBoundary, { PageLoading } from "./components/PageBoundary";
+
+// Keep the landing page and persistent shell ready; defer other pages and charts.
+const Overview = lazy(() => import("./pages/Overview"));
+const Detail = lazy(() => import("./pages/Detail"));
+const Compare = lazy(() => import("./pages/Compare"));
+const Leaderboard = lazy(() => import("./pages/Leaderboard"));
+const Game = lazy(() => import("./pages/Game"));
+const Portfolio = lazy(() => import("./pages/Portfolio"));
+const Login = lazy(() => import("./pages/Login"));
+const Settings = lazy(() => import("./pages/Settings"));
+const TrackRecord = lazy(() => import("./pages/TrackRecord"));
+const Backtesting = lazy(() => import("./pages/Backtesting"));
 
 export default function App() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const { pathname } = useLocation();
 
   return (
     <AuthProvider>
@@ -50,6 +54,8 @@ export default function App() {
         </header>
 
         <main className="flex-1 min-w-0 px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+          <PageBoundary key={pathname}>
+          <Suspense fallback={<PageLoading />}>
           <Routes>
             <Route path="/"               element={<Dashboard />} />
             <Route path="/market"         element={<Overview />}  />
@@ -64,6 +70,8 @@ export default function App() {
             <Route path="/backtesting"    element={<Backtesting />} />
             <Route path="*"               element={<Navigate to="/" replace />} />
           </Routes>
+          </Suspense>
+          </PageBoundary>
         </main>
       </div>
 
