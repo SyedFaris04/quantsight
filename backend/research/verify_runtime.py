@@ -64,7 +64,8 @@ def main():
         assert ready.headers["cache-control"] == "no-store"
         hashes = {}
         for path in ("/dashboard", "/overview", "/stock/AAPL", "/explain/AAPL",
-                     "/compare/AAPL", "/research/development-models"):
+                     "/compare/AAPL", "/history/AAPL", "/accuracy-history/AAPL",
+                     "/research/development-models"):
             response = client.get(path)
             assert response.status_code == 200, (path, response.text)
             payload = json.dumps(response.json(), sort_keys=True, separators=(",", ":"))
@@ -76,6 +77,16 @@ def main():
         assert not any(name in sys.modules for name in ("torch", "transformers", "shap", "datasets"))
         report.update(response_hashes=hashes, final_working_set_mb=working_set_mb(),
                       saved_xai_verified=True)
+        # Compare every compact latest row with the original full CSV lookup.
+        import copilot_engine as copilot
+        import pandas as pd
+        for sentiment, path in ((False, copilot.FEATURE_FILES["finance"]),
+                                (True, copilot.FEATURE_FILES["sentiment"])):
+            reference = pd.read_csv(path)
+            for ticker in api._cache["tickers"]:
+                expected = reference[reference.ticker == ticker].sort_values("date").iloc[-1]
+                pd.testing.assert_series_equal(copilot.get_latest_features(ticker, sentiment),
+                                               expected, check_names=False, check_exact=True)
     # Corrupt optional news does not stop serving required assets.
     predictions, features = api._cache["predictions"], api._cache["features"]
     with patch.object(api, "load_predictions", return_value=predictions), \

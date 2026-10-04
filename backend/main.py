@@ -81,6 +81,7 @@ from research.routes import router as research_router
 from feature_attribution import router as feature_attribution_router
 from dashboard_evidence import snapshot_metadata, news_sentiment
 from service_health import inspect_data, release_id
+from copilot_engine import clear_data_caches, seed_latest_finance_features
 
 # ── Logging ────────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -233,8 +234,10 @@ def load_features() -> pd.DataFrame:
                 if "Target"      in df.columns: col_map["Target"]      = "signal"
                 df = df.rename(columns=col_map)
 
-                df["date"] = pd.to_datetime(df["date"])
                 df["ticker"] = df["ticker"].astype(str).str.upper()
+                df.attrs["source_path"] = str(path)
+                df.attrs["latest_raw_dates"] = df.sort_values("date").groupby("ticker", sort=False).tail(1).set_index("ticker")["date"].to_dict()
+                df["date"] = pd.to_datetime(df["date"])
                 logger.info(f"Loaded features from {path.name}: {len(df):,} rows")
                 return df
             except Exception as e:
@@ -261,6 +264,7 @@ async def startup_event():
     _readiness.clear()
     _readiness.update(ready=False, problems=["startup_incomplete"])
     _cache.clear()
+    clear_data_caches()
     _startup_timings.clear()
     _startup_timings["module_import_seconds"] = round(_IMPORT_SECONDS, 3)
     started = time.perf_counter()
@@ -282,11 +286,17 @@ async def startup_event():
             all_tickers.update(df["ticker"].dropna().unique())
     _cache["tickers"] = sorted(all_tickers)
     _readiness.update(inspect_data(_cache, PREDICTION_FILES))
-    _startup_timings["data_startup_seconds"] = round(time.perf_counter() - started, 3)
-    logger.info("Startup timings: %s", json.dumps(_startup_timings))
     if not _readiness["ready"]:
         logger.error("Required saved data unavailable: %s", _readiness["problems"])
         raise RuntimeError("Required saved data failed readiness checks")
+    _cache["latest_prediction_rows"] = {
+        name: frame.sort_values("date").groupby("ticker", sort=False).tail(1)
+                   .set_index("ticker", drop=False)
+        for name, frame in _cache["predictions"].items()
+    }
+    seed_latest_finance_features(_cache["features"])
+    _startup_timings["data_startup_seconds"] = round(time.perf_counter() - started, 3)
+    logger.info("Startup timings: %s", json.dumps(_startup_timings))
     logger.info("Ready: %s tickers, release %s", len(_cache["tickers"]), release_id())
 
 
@@ -315,10 +325,9 @@ def get_latest_signals_for_ticker(ticker: str) -> dict:
     ticker  = ticker.upper()
     signals = {}
 
-    for model_key, df in _cache.get("predictions", {}).items():
-        ticker_df = df[df["ticker"] == ticker].sort_values("date")
-        if not ticker_df.empty:
-            row = ticker_df.iloc[-1]
+    for model_key, latest in _cache.get("latest_prediction_rows", {}).items():
+        if ticker in latest.index:
+            row = latest.loc[ticker]
 
             # Handle both column naming conventions
             signal_label = str(row.get("signal_label", "N/A"))

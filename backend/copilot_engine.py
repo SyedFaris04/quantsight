@@ -26,6 +26,7 @@ from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Optional
 import logging
+from threading import RLock
 
 logger = logging.getLogger("nuroquant-copilot")
 
@@ -62,18 +63,64 @@ FEATURE_FILES = {
     "sentiment" : PROCESSED_DIR / "features_sentiment.csv",
 }
 
-# In-memory cache of loaded CSVs, keyed by resolved file path. get_latest_features()
-# and get_latest_prediction() are called once per ticker (44x) per /overview request —
-# without this, each call re-read and re-parsed the whole CSV from disk, which is what
-# made /overview and /dashboard take 17-18s per request.
+# Saved files are fixed for the process lifetime. Prediction/label history,
+# latest feature rows and timeline indicators have separate, narrow caches.
 _CSV_CACHE: dict[str, pd.DataFrame] = {}
+_LATEST_FEATURE_CACHE: dict[str, pd.DataFrame] = {}
+_HISTORY_FEATURE_CACHE: dict[str, pd.DataFrame] = {}
+_cache_lock = RLock()
 
 
 def _read_csv_cached(path: Path) -> pd.DataFrame:
     key = str(path)
-    if key not in _CSV_CACHE:
-        _CSV_CACHE[key] = pd.read_csv(path)
-    return _CSV_CACHE[key]
+    with _cache_lock:
+        if key not in _CSV_CACHE:
+            # Only label joins require the complete finance history here.
+            columns = ["ticker", "date", "signal"] if path == FEATURE_FILES["finance"] else None
+            _CSV_CACHE[key] = pd.read_csv(path, usecols=columns)
+        return _CSV_CACHE[key]
+
+
+def _latest_features_cached(path: Path) -> pd.DataFrame:
+    """Retain one full feature row per ticker rather than another full panel."""
+    key = str(path)
+    with _cache_lock:
+        if key not in _LATEST_FEATURE_CACHE:
+            frame = pd.read_csv(path)
+            latest = frame.sort_values("date").groupby("ticker", sort=False).tail(1)
+            _LATEST_FEATURE_CACHE[key] = latest.set_index("ticker", drop=False).copy()
+        return _LATEST_FEATURE_CACHE[key]
+
+
+def _history_features_cached(path: Path) -> pd.DataFrame:
+    key = str(path)
+    with _cache_lock:
+        if key not in _HISTORY_FEATURE_CACHE:
+            columns = {"ticker", "date", "rsi", "macd", "macd_signal", "Close", "bb_upper", "bb_lower"}
+            _HISTORY_FEATURE_CACHE[key] = pd.read_csv(path, usecols=lambda name: name in columns)
+        return _HISTORY_FEATURE_CACHE[key]
+
+
+def clear_data_caches():
+    """Reset process-lifetime caches when the application starts again."""
+    global _reliability_cache
+    with _cache_lock:
+        _CSV_CACHE.clear()
+        _LATEST_FEATURE_CACHE.clear()
+        _HISTORY_FEATURE_CACHE.clear()
+        _JSON_CACHE.clear()
+        _reliability_cache = None
+
+
+def seed_latest_finance_features(frame: pd.DataFrame):
+    """Reuse the API's validated finance data without retaining another panel."""
+    if frame.attrs.get("source_path") != str(FEATURE_FILES["finance"]):
+        return
+    latest = frame.sort_values("date").groupby("ticker", sort=False).tail(1).copy()
+    # Preserve the CSV's original date strings for copilot callers.
+    latest["date"] = latest["ticker"].map(frame.attrs["latest_raw_dates"])
+    with _cache_lock:
+        _LATEST_FEATURE_CACHE[str(FEATURE_FILES["finance"])] = latest.set_index("ticker", drop=False)
 
 
 _JSON_CACHE: dict[str, dict] = {}
@@ -81,10 +128,11 @@ _JSON_CACHE: dict[str, dict] = {}
 
 def _read_json_cached(path: Path) -> dict:
     key = str(path)
-    if key not in _JSON_CACHE:
-        with open(path) as f:
-            _JSON_CACHE[key] = json.load(f)
-    return _JSON_CACHE[key]
+    with _cache_lock:
+        if key not in _JSON_CACHE:
+            with open(path) as f:
+                _JSON_CACHE[key] = json.load(f)
+        return _JSON_CACHE[key]
 
 
 def load_lstm_attention(ticker: str, date: str, model_key: str = "lstm_sentiment") -> Optional[list]:
@@ -822,11 +870,10 @@ def get_latest_features(ticker: str, use_sentiment: bool) -> Optional[pd.Series]
         return None
 
     try:
-        df = _read_csv_cached(feature_file)
-        df = df[df["ticker"] == ticker].sort_values("date")
-        if df.empty:
+        latest = _latest_features_cached(feature_file)
+        if ticker not in latest.index:
             return None
-        return df.iloc[-1]  # most recent row
+        return latest.loc[ticker].copy()
     except Exception as e:
         logger.error(f"Error loading features for {ticker}: {e}")
         return None
@@ -1042,7 +1089,7 @@ def get_prediction_history(ticker: str, model_key: str = "xgb_sentiment", days: 
     pred_df = None
     if pred_file and pred_file.exists():
         try:
-            pred_df = pd.read_csv(pred_file)
+            pred_df = _read_csv_cached(pred_file)
             pred_df = pred_df[pred_df["ticker"] == ticker].sort_values("date")
         except Exception as e:
             logger.warning(f"History: failed to load {pred_file.name}: {e}")
@@ -1052,7 +1099,7 @@ def get_prediction_history(ticker: str, model_key: str = "xgb_sentiment", days: 
         old_file = OLD_PREDICTION_FILES.get(model_key)
         if old_file and old_file.exists():
             try:
-                df = pd.read_csv(old_file)
+                df = _read_csv_cached(old_file).copy()
                 df.columns = df.columns.str.strip()
                 col_map = {}
                 if "Ticker" in df.columns: col_map["Ticker"] = "ticker"
@@ -1083,7 +1130,7 @@ def get_prediction_history(ticker: str, model_key: str = "xgb_sentiment", days: 
     feat_df = None
     if feature_file.exists():
         try:
-            feat_df = pd.read_csv(feature_file)
+            feat_df = _history_features_cached(feature_file)
             feat_df = feat_df[feat_df["ticker"] == ticker].set_index("date")
         except Exception as e:
             logger.warning(f"History: failed to load features for reasons: {e}")

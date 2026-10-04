@@ -90,6 +90,10 @@ delay; this release cannot remove that platform behavior.
 
 ## Next improvement
 
+The subsequent [data cache release](DATA_CACHE_PERFORMANCE.md) reduces retained
+copilot feature data and repeated timeline reads. Compact serving artifacts and
+Render memory/CPU diagnostics remain follow-up work.
+
 The copilot maintains separate full CSV and attention caches. Measure and reduce
 their steady-state memory next, while preserving historical explanations and
 prediction results. Render's actual memory/CPU graphs and build logs are needed
