@@ -6,6 +6,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import FileResponse
+from backtesting import periods
 
 ROOT = Path(__file__).resolve().parents[2]
 OUTPUT = ROOT / "backend/data/backtests"
@@ -55,17 +56,22 @@ def get_backtest():
     report = load_report()
     if report is None:
         return {"available": False, "message": "No backtest report has been generated yet."}
+    report["period_analysis"] = periods.load(OUTPUT, report)
     return {"available": True, "report": report}
 
 
 @router.get("/export")
-def export_backtest(kind: str = Query("metrics", pattern="^(metrics|trades|daily|report)$"), strategy: str = "ensemble"):
+def export_backtest(kind: str = Query("metrics", pattern="^(metrics|trades|daily|report|periods)$"), strategy: str = "ensemble"):
     report = load_report()
     if report is None:
         raise HTTPException(404, "No report available")
     if strategy not in {s["key"] for s in report["strategies"]}:
         raise HTTPException(400, "Unknown strategy")
-    if kind == "report":
+    if kind == "periods":
+        if not periods.load(OUTPUT, report)["available"]:
+            raise HTTPException(409, "Period analysis is unavailable; regenerate it for this run.")
+        relative = periods.FILENAME
+    elif kind == "report":
         relative = f"{report['run_id']}/report.json"
     elif kind == "metrics":
         relative = report["exports"]["metrics"]
@@ -75,4 +81,4 @@ def export_backtest(kind: str = Query("metrics", pattern="^(metrics|trades|daily
     if not path.is_relative_to(OUTPUT.resolve()) or not path.is_file():
         raise HTTPException(404, "Export file unavailable")
     return FileResponse(path, filename=f"quantsight-{path.name}",
-                        media_type="application/json" if kind == "report" else "text/csv")
+                        media_type="application/json" if kind in {"report", "periods"} else "text/csv")

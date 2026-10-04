@@ -6,6 +6,7 @@ only this browser's requests. Downloads and screenshots remain in ignored data.
 import argparse
 import csv
 import json
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
@@ -35,11 +36,22 @@ def verify(base_url, browser_path, output):
         select = page.get_by_role('combobox', name='Strategy', exact=True)
         expect(select).to_have_value('ensemble')
         main = page.locator('main')
+        assert report['period_analysis']['available']
+        analysis = report['period_analysis']['report']
+        period_section = page.get_by_role('region', name='Performance over time', exact=True)
         for strategy in report['strategies']:
             select.select_option(strategy['key'])
-            card = main.get_by_text('Return minus SPY', exact=True).locator('..')
+            card = main.locator('p').filter(has_text=re.compile(r'^Return minus SPY$')).locator('..')
             expect(card.get_by_text(f"{strategy['metrics']['excess_total_return'] * 100:.2f} pp", exact=True)).to_be_visible()
             expect(page.get_by_role('button', name=strategy['name'], exact=True)).to_have_attribute('aria-pressed', 'true')
+            periods = analysis['strategies'][strategy['key']]
+            table = page.get_by_role('region', name='Year performance comparison', exact=True)
+            for row in periods['years']:
+                observed = table.get_by_role('row').filter(has=page.get_by_role('rowheader', name=row['period'], exact=True))
+                expect(observed).to_contain_text(f"{row['start']} to {row['end']}")
+                expect(observed).to_contain_text(f"{row['net_return'] * 100:.2f}%")
+                expect(observed).to_contain_text(f"{row['difference_vs_spy'] * 100:.2f} pp")
+            expect(period_section.get_by_text(f"{periods['summary']['months_beating_spy']} / {periods['summary']['months']}", exact=True)).to_be_visible()
         spy = next(s for s in report['strategies'] if s['key'] == 'spy')
         page.get_by_role('button', name=spy['name'], exact=True).click()
         expect(select).to_have_value('spy')
@@ -53,21 +65,32 @@ def verify(base_url, browser_path, output):
         expect(page.get_by_text(report['warnings'][0], exact=True)).to_be_visible()
         page.get_by_text('Methodology and study limitations', exact=True).click()
         result['strategy_controls_and_units'] = len(report['strategies'])
+        months = analysis['strategies']['ensemble']['months']
+        page.get_by_text(f'Monthly comparison · {len(months)} observed months', exact=True).click()
+        monthly = page.get_by_role('region', name='Monthly performance comparison', exact=True)
+        expect(monthly.locator('tbody tr')).to_have_count(len(months))
+        for row in months:
+            observed = monthly.get_by_role('row').filter(has=page.get_by_role('rowheader', name=row['period'], exact=True))
+            expect(observed).to_contain_text(f"{row['start']} to {row['end']}")
+            expect(observed).to_contain_text(f"{row['net_return'] * 100:.2f}%")
+        result['period_comparisons'] = {'strategies': len(analysis['strategies']), 'months': len(months)}
 
         ensemble = next(s for s in report['strategies'] if s['key'] == 'ensemble')
         exports = [('metrics', 'All metrics CSV'), ('daily', 'Selected daily values CSV'),
-                   ('trades', 'Selected trades CSV'), ('report', 'Full report JSON')]
+                   ('trades', 'Selected trades CSV'), ('report', 'Full report JSON'), ('periods', 'Period report JSON')]
         for kind, label in exports:
             with page.expect_download() as received:
                 page.get_by_role('button', name=label, exact=True).click()
             download = received.value
             assert download.failure() is None
-            suffix = 'json' if kind == 'report' else 'csv'
+            suffix = 'json' if kind in {'report', 'periods'} else 'csv'
             assert download.suggested_filename == f'quantsight-{kind}-ensemble.{suffix}'
             path = output / download.suggested_filename
             download.save_as(path)
-            if kind == 'report':
+            if kind in {'report', 'periods'}:
                 assert json.loads(path.read_text(encoding='utf-8'))['run_id'] == report['run_id']
+                if kind == 'periods':
+                    assert json.loads(path.read_text(encoding='utf-8')) == analysis
             else:
                 with path.open(encoding='utf-8-sig', newline='') as stream:
                     rows = list(csv.DictReader(stream))
@@ -85,13 +108,21 @@ def verify(base_url, browser_path, output):
         for width in [390, 320]:
             page.set_viewport_size({'width': width, 'height': 844})
             page.wait_for_function("document.querySelector('aside').getBoundingClientRect().right <= 0")
-            assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+            # ResponsiveContainer updates its chart widths after the resize event.
+            page.wait_for_function('document.documentElement.scrollWidth <= innerWidth')
             table = page.get_by_role('region', name='All strategy metrics', exact=True)
             table.evaluate('(element) => { element.scrollLeft = 0; }')
             table.focus()
             page.keyboard.press('ArrowRight')
             page.wait_for_function("document.querySelector('[aria-label=\"All strategy metrics\"]').scrollLeft > 0")
             table.screenshot(path=str(output / f'table_{width}.png'), animations='disabled')
+            for name in ['Year performance comparison', 'Monthly performance comparison']:
+                period_table = page.get_by_role('region', name=name, exact=True)
+                period_table.evaluate('(element) => { element.scrollLeft = 0; }')
+                period_table.focus()
+                page.keyboard.press('ArrowRight')
+                page.wait_for_function('(label) => document.querySelector(`[aria-label="${label}"]`).scrollLeft > 0', arg=name)
+            period_section.screenshot(path=str(output / f'periods_{width}.png'), animations='disabled')
             page.evaluate('window.scrollTo(0,0)')
             page.screenshot(path=str(output / f'mobile_{width}.png'), animations='disabled')
         result['mobile_widths_without_overflow'] = [390, 320]
@@ -110,6 +141,15 @@ def verify(base_url, browser_path, output):
         fixture({'available': False})
         expect(page.get_by_text('A historical evaluation has not been published yet.', exact=False)).to_be_visible()
         page.unroute(pattern)
+        original_analysis = payload['report']['period_analysis']
+        for reason in ['missing', 'stale', 'invalid']:
+            payload['report']['period_analysis'] = {'available': False, 'reason': reason}
+            fixture(payload)
+            expect(page.get_by_text('The year and month breakdown is unavailable for this saved run.', exact=False)).to_be_visible()
+            expect(page.get_by_role('button', name='Period report JSON', exact=True)).to_have_count(0)
+            expect(main.locator('p').filter(has_text=re.compile(r'^Net total return$'))).to_be_visible()
+            page.unroute(pattern)
+        payload['report']['period_analysis'] = original_analysis
         payload['report']['freshness']['matches_current_files'] = False
         fixture(payload)
         expect(page.get_by_role('alert')).to_contain_text('Results need refreshing.')

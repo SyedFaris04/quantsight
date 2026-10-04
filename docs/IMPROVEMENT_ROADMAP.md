@@ -143,6 +143,11 @@ accuracy percentage and no promise that complexity must outperform simpler model
 ## Stage 7 - FYP evidence and final validation
 
 - Present historical simulation and forward tracking separately.
+- [x] Add year/month backtest consistency for all 15 portfolios, paired benchmark
+  returns, exact partial-period dates and checked exports. The ensemble beats SPY
+  in 9 of 23 observed months; its advantage differs across the two study windows.
+  This is descriptive historical evidence, not fresh-window validation.
+  See [period consistency](BACKTEST_PERIOD_CONSISTENCY.md).
 - Add fresh-window robustness, start-date/regime/sector sensitivity, and hypothesis-aware
   statistical comparisons. Compute deflated Sharpe only with a defensible trial history.
 - Conduct novice/expert task and comprehension evaluation under university requirements.

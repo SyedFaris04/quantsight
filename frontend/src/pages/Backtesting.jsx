@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer, ReferenceLine } from "recharts";
 import api, { useApi } from "../hooks/useApi";
+import PeriodPerformance from "../components/PeriodPerformance";
 
 const pct = value => value == null ? "—" : `${(value * 100).toFixed(2)}%`;
 const points = value => value == null ? "—" : `${(value * 100).toFixed(2)} pp`;
@@ -39,7 +40,7 @@ export default function Backtesting() {
       const url = URL.createObjectURL(response.data);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `quantsight-${kind}-${selected}.${kind === "report" ? "json" : "csv"}`;
+      link.download = `quantsight-${kind}-${selected}.${["report", "periods"].includes(kind) ? "json" : "csv"}`;
       link.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch {
@@ -138,6 +139,8 @@ export default function Backtesting() {
       <Metric label="Positive-return days" value={pct(m.daily_win_rate)} note="Daily portfolio hit rate, not the percentage of winning trades" />
     </div>
 
+    <PeriodPerformance analysis={report.period_analysis} strategy={strategy} />
+
     <section className="card !p-0 overflow-hidden"><h2 className="text-lg font-semibold px-5 pt-5 pb-3">All strategies · same evaluation period</h2>
       <p className="px-5 pb-3 text-xs text-gray-400">Select a strategy to update the charts. Scroll horizontally to see all metrics.</p>
       <div className="overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-400" role="region" aria-label="All strategy metrics" tabIndex={0}><table className="data-table"><caption className="sr-only">Net performance after costs on the same evaluation dates. Strategy buttons update the selected portfolio.</caption><thead><tr>
@@ -179,7 +182,8 @@ export default function Backtesting() {
     </details>
     <section className="card"><h2 className="text-lg font-semibold">Download the evidence</h2>
       <p className="text-sm text-gray-400 mt-2">Daily values and executions allow the portfolio calculations to be checked independently.</p>
-      <div className="flex flex-wrap gap-3 mt-4">{[["metrics", "All metrics CSV"], ["daily", "Selected daily values CSV"], ["trades", "Selected trades CSV"], ["report", "Full report JSON"]].map(([kind, label]) =>
+      <div className="flex flex-wrap gap-3 mt-4">{[["metrics", "All metrics CSV"], ["daily", "Selected daily values CSV"], ["trades", "Selected trades CSV"], ["report", "Full report JSON"],
+        ...(report.period_analysis?.available ? [["periods", "Period report JSON"]] : [])].map(([kind, label]) =>
         <button key={kind} onClick={() => download(kind)} className="px-4 py-2 text-sm rounded-lg border border-gray-700 bg-gray-800 hover:bg-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-400">{label}</button>)}</div>
       {downloadError && <p role="alert" className="mt-3 text-sm text-red-300">{downloadError}</p>}
       <p className="text-xs text-gray-400 mt-5 break-all">Generated {report.generated_at.slice(0, 19).replace("T", " ")} UTC · Run {report.run_id}</p>

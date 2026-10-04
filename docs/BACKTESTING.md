@@ -129,6 +129,11 @@ daily effective risk-free return rf and 252 sessions per year:
 
 ## Audit and reproducibility
 
+The interface also includes year/month consistency comparisons derived from the
+saved daily returns. See [period performance](BACKTEST_PERIOD_CONSISTENCY.md) for
+partial-period interpretation, current findings and the required offline builder
+command after generating a new backtest.
+
 `backend/data/backtests/report.json` points to a uniquely named run folder containing:
 
 - `report.json`: assumptions, source SHA-256 hashes, data diagnostics, metrics and curves.
