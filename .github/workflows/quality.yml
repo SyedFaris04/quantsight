@@ -22,6 +22,8 @@ jobs:
         working-directory: backend
       - run: python -m backtesting.periods --check
         working-directory: backend
+      - run: python -m research.confidence_audit --check
+        working-directory: backend
       - run: python -m research.verify_runtime
         working-directory: backend
   database:

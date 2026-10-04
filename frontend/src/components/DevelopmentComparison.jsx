@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import api, { useApi } from '../hooks/useApi';
+import ConfidenceAudit from './ConfidenceAudit';
 
 const names = {
   fit_prior: 'Training-prior baseline', calibration_prior: 'Recent-prior baseline', always_up: 'Always UP (P=100%)',
@@ -114,6 +115,7 @@ export default function DevelopmentComparison() {
           <p className="text-xs text-gray-500 break-all">Run {report.run_id} · Protocol SHA-256 {report.registration.protocol_sha256}</p>
         </div>
       </details>
+      <ConfidenceAudit names={names} parentRunId={report.run_id} />
     </div>
   </section>;
 }

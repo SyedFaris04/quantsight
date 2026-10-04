@@ -101,6 +101,11 @@ Still required:
 - Compare multiple seeds, regimes/sectors and error patterns; measure consensus correlation.
 - Version every trial and model artifact; refresh explanations/calibration/evaluation together.
 - Add abstention/coverage curves and risk/position-sizing strategy ablations.
+- [x] Add a fixed confidence/coverage audit for nine development candidates across
+  seven cutoffs and four period views, with matching baseline scores and small-sample
+  disclosure. No reliable raw-XGBoost improvement or live cutoff change is established;
+  risk/position-sizing ablations remain separate work. See
+  [confidence audit](research/CONFIDENCE_COVERAGE_AUDIT.md).
 
 Gate: performance relative to baselines, with uncertainty, on untouched data; no required
 accuracy percentage and no promise that complexity must outperform simpler models.

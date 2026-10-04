@@ -5,6 +5,10 @@ This is model-selection evidence, not an unused final test or a trading-performa
 
 ## Main finding
 
+Follow-up: the [confidence/coverage audit](CONFIDENCE_COVERAGE_AUDIT.md) checks seven
+fixed cutoffs using the same exported predictions, without new fits or holdout access.
+It shows why stronger confidence and a smaller retained sample do not establish a gain.
+
 - No tested predictor beat the training-prior baseline on the predeclared primary measure: **equal-year mean Brier loss**.
 - Raw XGBoost had slightly higher average accuracy (52.54% versus 52.38%), but worse probability loss and balanced accuracy close to 50%.
 - The rule therefore selected the **training-prior baseline**, not a new machine-learning model. Selection here is a research result, not deployment.

@@ -76,7 +76,7 @@ def main():
         with patch.object(copilot.pd, "read_csv", side_effect=serving_reader):
             for path in ("/dashboard", "/overview", "/stock/AAPL", "/explain/AAPL",
                          "/compare/AAPL", "/history/AAPL", "/accuracy-history/AAPL",
-                         "/research/development-models"):
+                         "/research/development-models", "/research/development-confidence"):
                 response = client.get(path)
                 assert response.status_code == 200, (path, response.text)
                 payload = json.dumps(response.json(), sort_keys=True, separators=(",", ":"))
