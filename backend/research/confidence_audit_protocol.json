@@ -1,0 +1,17 @@
+{
+  "protocol_id": "development_confidence_audit_v1",
+  "status": "exploratory_diagnostic",
+  "parent_run_id": "99c94ee337b258ff",
+  "years": [2022, 2023, 2024],
+  "candidates": ["fit_prior", "calibration_prior", "always_up", "logistic_raw", "logistic_sigmoid", "hist_boost_raw", "hist_boost_sigmoid", "xgboost_raw", "xgboost_sigmoid"],
+  "thresholds": [0.5, 0.55, 0.6, 0.65, 0.7, 0.8, 0.9],
+  "confidence": "max(P(up), 1-P(up)); retain rows with confidence >= the stated threshold; P(up) >= 0.5 predicts UP",
+  "comparison": "Evaluate candidate, original training-prior probability and always-UP direction on exactly the same candidate-selected rows",
+  "aggregation": "Individual years and all years pooled by observation count, not equal-year mean",
+  "empty_selection": "Coverage is zero; all conditional scores are null, never zero error or perfect accuracy",
+  "small_sample_policy": "Flag fewer than 200 retained ticker-days or fewer than 20 distinct signal dates; heuristic disclosure, not a statistical validity threshold",
+  "fit_budget": 0,
+  "selection_policy": "Show every fixed threshold; do not select a winning threshold, tune, refit, or change serving behavior",
+  "holdout_policy": "Read only the three completed development prediction exports; do not open price files or 2025 holdout files",
+  "limitations": ["Previously examined development data", "Conditional samples differ across candidates and thresholds", "Overlapping five-session outcomes and cross-stock dependence", "No confidence intervals or significance guarantees in this descriptive audit", "Confidence filtering is not evidence of profitable trading", "No live model promotion"]
+}
