@@ -1,0 +1,9 @@
+# Local/offline training and data collection, not required by the API.
+# For the reproducible FinBERT study use requirements-finbert-research.txt.
+-r requirements.txt
+shap
+transformers
+datasets
+gdeltdoc
+# Install a suitable PyTorch build separately before running LSTM/NLP scripts:
+# python -m pip install torch --index-url https://download.pytorch.org/whl/cpu

@@ -14,7 +14,6 @@ from typing import Literal
 
 import numpy as np
 import pandas as pd
-import xgboost as xgb
 from fastapi import APIRouter, HTTPException
 
 from cv_utils import apply_calibrator
@@ -32,6 +31,8 @@ class AttributionUnavailable(ValueError):
 
 def explain_row(bundle, row, prediction, model_sha256):
     """Reconstruct one output and refuse mismatched or incomplete evidence."""
+    import xgboost as xgb
+
     features = list(bundle["features"])
     if not features or len(set(features)) != len(features):
         raise AttributionUnavailable("Invalid model feature list.")

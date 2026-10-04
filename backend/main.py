@@ -28,22 +28,23 @@ ALL ENDPOINTS:
     POST /admin/run-daily-predictions  daily job — logs + resolves live predictions (GitHub Actions only)
 
 HOW TO RUN LOCALLY:
-    pip install fastapi uvicorn pandas numpy
+    pip install -r requirements.txt
     uvicorn main:app --reload --port 8000
 
 HOW TO DEPLOY ON RENDER:
     Start command: uvicorn main:app --host 0.0.0.0 --port $PORT
 
-CORS is enabled for all origins during development.
-Restrict to your Vercel domain before final submission.
+CORS allows the deployed frontend and local development origins.
 ─────────────────────────────────────────────────────────────────────────────
 """
+
+import time
+_IMPORT_STARTED = time.perf_counter()
 
 import json
 from fastapi.responses import JSONResponse
 import os
 import random
-import time
 import numpy as np
 import pandas as pd
 from pathlib import Path
@@ -78,6 +79,7 @@ from backtesting.routes import router as backtesting_router
 from research.routes import router as research_router
 from feature_attribution import router as feature_attribution_router
 from dashboard_evidence import snapshot_metadata, news_sentiment
+from service_health import inspect_data, release_id
 
 # ── Logging ────────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -132,6 +134,8 @@ app.add_middleware(
 
 # ── In-memory cache — loaded once at startup ───────────────────────────────────
 _cache: dict = {}
+_readiness: dict = {"ready": False, "problems": ["startup_incomplete"]}
+_startup_timings: dict = {}
 _vader = SentimentIntensityAnalyzer()
 
 
@@ -252,19 +256,37 @@ def load_news() -> pd.DataFrame:
 
 @app.on_event("startup")
 async def startup_event():
-    """Load all data files into memory when the server starts."""
-    logger.info("Starting NuroQuant API ...")
-    _cache["predictions"] = load_predictions()
-    _cache["features"]    = load_features()
-    _cache["news"]        = load_news()
-
-    # Get list of available tickers from predictions
+    """Load and validate required assets before accepting traffic."""
+    _readiness.clear()
+    _readiness.update(ready=False, problems=["startup_incomplete"])
+    _cache.clear()
+    _startup_timings.clear()
+    _startup_timings["module_import_seconds"] = round(_IMPORT_SECONDS, 3)
+    started = time.perf_counter()
+    for name, loader in (("predictions", load_predictions), ("features", load_features),
+                         ("news", load_news)):
+        stage = time.perf_counter()
+        try:
+            _cache[name] = loader()
+        except Exception:
+            logger.exception("Startup asset loading failed: %s", name)
+            if name != "news":
+                raise
+            # News is optional: its failure must not disable saved stock data.
+            _cache[name] = pd.DataFrame()
+        _startup_timings[f"{name}_seconds"] = round(time.perf_counter() - stage, 3)
     all_tickers = set()
     for df in _cache["predictions"].values():
-        all_tickers.update(df["ticker"].unique())
+        if "ticker" in df:
+            all_tickers.update(df["ticker"].dropna().unique())
     _cache["tickers"] = sorted(all_tickers)
-
-    logger.info(f"Ready — {len(_cache['tickers'])} tickers available")
+    _readiness.update(inspect_data(_cache, PREDICTION_FILES))
+    _startup_timings["data_startup_seconds"] = round(time.perf_counter() - started, 3)
+    logger.info("Startup timings: %s", json.dumps(_startup_timings))
+    if not _readiness["ready"]:
+        logger.error("Required saved data unavailable: %s", _readiness["problems"])
+        raise RuntimeError("Required saved data failed readiness checks")
+    logger.info("Ready: %s tickers, release %s", len(_cache["tickers"]), release_id())
 
 
 # ── Pydantic Models (request/response shapes) ─────────────────────────────────
@@ -388,14 +410,29 @@ def get_market_news(limit: int = 8) -> list[dict]:
 # ── Endpoints ──────────────────────────────────────────────────────────────────
 
 @app.get("/")
+@app.get("/health/ready")
 def health_check():
-    """Health check — Render pings this to keep the server alive."""
-    return {
-        "status"  : "ok",
-        "service" : "NuroQuant API",
-        "tickers" : len(_cache.get("tickers", [])),
-        "models"  : list(PREDICTION_FILES.keys()),
-    }
+    """Readiness of local saved datasets; external providers are not probed."""
+    ready = _readiness.get("ready", False)
+    return JSONResponse(status_code=200 if ready else 503, content={
+        "status": "ok" if ready else "unavailable",
+        "service": "NuroQuant API",
+        "tickers": len(_cache.get("tickers", [])),
+        "models": [name for name, details in _readiness.get("datasets", {}).get("predictions", {}).items()
+                   if details["available"]],
+        "release": release_id(),
+        "scope": "local_saved_data",
+        "external_services": "not_checked",
+        "startup": _startup_timings,
+        **_readiness,
+    }, headers={"Cache-Control": "no-store"})
+
+
+@app.get("/health/live")
+def liveness_check():
+    """Only confirms that this API process can respond."""
+    return JSONResponse({"status": "alive", "release": release_id()},
+                        headers={"Cache-Control": "no-store"})
 
 
 @app.get("/tickers")
@@ -1211,3 +1248,7 @@ def run_daily_predictions(request: Request):
     if result.get("errors"):
         return JSONResponse(status_code=503, content=result)
     return result
+
+
+# Captured after route registration; excludes dataset loading and platform wakeup.
+_IMPORT_SECONDS = time.perf_counter() - _IMPORT_STARTED

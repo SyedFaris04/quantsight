@@ -76,6 +76,10 @@ To reproduce with the existing developer API origin `http://127.0.0.1:8001`:
 
 ## Remaining backend work
 
+The subsequent [backend reliability release](BACKEND_RELIABILITY.md) adds serving
+dependency separation, startup measurements and accurate saved-data readiness.
+Steady-state memory and production hosting diagnostics remain follow-up work.
+
 The frontend improvements do not eliminate hosting startup, external-provider or
 network delays. Separate backend work should measure startup and representative
 production latency, audit which training dependencies are actually needed for serving,

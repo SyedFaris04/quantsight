@@ -1,51 +1,18 @@
-# backend/requirements.txt
-# ─────────────────────────────────────────────────────
-# Install: pip install -r requirements.txt
-# ─────────────────────────────────────────────────────
-
-# API server
-fastapi
-uvicorn[standard]
-pydantic
-
-# Data
-pandas
-numpy
-pyarrow
-
-# Machine learning
-xgboost
-scikit-learn
-shap
-
-# Sentiment & Emotion
-vaderSentiment
-transformers
-datasets
-
-# PyTorch — CPU-only build. Plain "torch" on Linux pulls the CUDA build
-# (1-2GB+) by default, which is wasted weight with no GPU on Render's free
-# tier and can blow past its build time/memory limits. --extra-index-url
-# applies file-wide (not just to this line) but is harmless for every other
-# package here since PyPI is still checked first/normally for those.
---extra-index-url https://download.pytorch.org/whl/cpu
-torch
-
-# News fetching
-gdeltdoc
-
-# Live prices — Market page Live Mode, Portfolio real-time prices, /live/{ticker}
-yfinance
-
-# Utilities
-python-multipart
-python-dotenv
-
-# AI Assistant — Groq chat completions (model configurable with GROQ_MODEL)
-groq
-
-# Live prediction track record — writes via the Supabase service role key
-supabase
-
-# NYSE holidays, early closes and DST for live evaluation
+# Serving environment used by Render and local API runs (Python 3.12).
+# Direct versions match the tested environment; transitive packages are resolved
+# by pip. Offline training extras are in requirements-training.txt.
+fastapi==0.139.0
+uvicorn[standard]==0.50.2
+pydantic==2.13.4
+pandas==3.0.3
+numpy==2.4.6
+pyarrow==24.0.0
+xgboost==3.3.0
+scikit-learn==1.9.0
+vaderSentiment==3.3.2
+yfinance==1.5.1
+python-multipart==0.0.32
+python-dotenv==1.2.2
+groq==1.5.0
+supabase==2.31.0
 pandas-market-calendars==5.4.0

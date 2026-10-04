@@ -41,8 +41,6 @@ EMBARGO IS IN TRADING DAYS, NOT CALENDAR DAYS:
 import numpy as np
 import pandas as pd
 from prediction_contract import LABEL_HORIZON_TRADING_DAYS
-from sklearn.isotonic import IsotonicRegression
-from sklearn.linear_model import LogisticRegression
 
 # The label's forward-return horizon (see docstring above). Embargo widths
 # default to this + 1 trading day so a training row's label window
@@ -93,10 +91,14 @@ def fit_calibrator(probs, labels, method: str = "isotonic"):
     probs  = np.asarray(probs, dtype=np.float64).reshape(-1)
     labels = np.asarray(labels, dtype=np.float64).reshape(-1)
     if method == "isotonic":
+        from sklearn.isotonic import IsotonicRegression
+
         cal = IsotonicRegression(out_of_bounds="clip", y_min=0.0, y_max=1.0)
         cal.fit(probs, labels)
         return cal
     elif method == "platt":
+        from sklearn.linear_model import LogisticRegression
+
         cal = LogisticRegression()
         cal.fit(probs.reshape(-1, 1), labels)
         return cal
