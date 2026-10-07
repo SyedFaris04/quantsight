@@ -78,6 +78,9 @@ def outcome_for(row, prices):
 
 
 def run_daily_job(tickers, now=None):
+    tickers = sorted(set(tickers))
+    if not tickers:
+        raise RuntimeError("Live tracker has no configured ticker universe.")
     sb = get_admin_client()
     if sb is None:
         raise RuntimeError("Live tracker requires backend Supabase configuration.")
@@ -88,11 +91,34 @@ def run_daily_job(tickers, now=None):
     try:
         pending = read_pages(sb.table(TABLE).select("*").eq("resolved", False)
                              .lte("target_date", completed).order("id"))
+        existing = _recorded_tickers(sb, completed)
     except Exception as exc:
         logger.warning("Tracker schema/read unavailable: %s", type(exc).__name__)
         raise RuntimeError("Live tracker v2 unavailable. Apply 002_live_predictions_v2.sql and check database connectivity.") from exc
     counts = {"logged": 0, "resolved": 0, "duplicates": 0, "skipped": 0,
-              "tickers_processed": len(tickers), "errors": [], "protocol_version": PROTOCOL}
+              "tickers_processed": len(tickers), "errors": [], "error_details": [],
+              "protocol_version": PROTOCOL, "forecast_date": completed,
+              "record_before": forecast_window(completed)["record_before"]}
+    requested = set(tickers)
+    counts["duplicates"] = len(existing & requested)
+
+    def error(ticker, stage, code, message):
+        counts["errors"].append(f"{ticker}: {message}")
+        counts["error_details"].append({"ticker": ticker, "stage": stage, "code": code})
+
+    def finish(status):
+        # Read the database again: insert counts alone do not prove coverage.
+        try:
+            recorded = _recorded_tickers(sb, completed) & requested
+            counts["cohort_logged"] = len(recorded)
+            counts["missing_tickers"] = sorted(requested - recorded)
+        except Exception as exc:
+            logger.warning("Tracker coverage read failed: %s", type(exc).__name__)
+            counts["cohort_logged"] = None
+            counts["missing_tickers"] = None
+            error("ALL", "coverage", "database_read_failed", "forecast coverage could not be verified")
+        counts["status"] = "partial_failure" if counts["errors"] else status
+        return counts
     # Resolution is independent of whether new inference is available today.
     for ticker in sorted({r["ticker"] for r in pending}):
         rows = [r for r in pending if r["ticker"] == ticker]
@@ -102,30 +128,34 @@ def run_daily_job(tickers, now=None):
             for row in rows:
                 update = outcome_for(row, prices)
                 if update is None:
-                    counts["errors"].append(f"{ticker}: missing exact outcome prices for {row['target_date']}")
+                    error(ticker, "resolution", "exact_prices_missing", f"missing exact outcome prices for {row['target_date']}")
                     continue
                 update["resolved_at"] = utc_now().isoformat()
                 result = sb.table(TABLE).update(update).eq("id", row["id"]).eq("resolved", False).execute()
                 counts["resolved"] += len(result.data or [])
         except Exception as exc:
             logger.warning("Outcome resolution failed for %s: %s", ticker, type(exc).__name__)
-            counts["errors"].append(f"{ticker}: outcome resolution failed")
+            error(ticker, "resolution", "resolution_failed", "outcome resolution failed")
     if not eligible_to_record(completed, now):
-        counts["skipped"] = len(tickers)
+        counts["skipped"] = len(requested - existing)
         counts["skip_reason"] = "Outside the after-close, before-next-open recording window."
-        counts["status"] = "partial_failure" if counts["errors"] else "skipped"
-        return counts
+        return finish("skipped")
+    window_closed = False
     for ticker in tickers:
+        if ticker in existing:
+            continue
         try:
             sig = get_live_signal(ticker)
             if sig.get("source") != "live" or sig.get("date") != completed or sig.get("signal_label") not in ("BUY", "SELL"):
                 counts["skipped"] += 1
-                counts["errors"].append(f"{ticker}: current complete signal unavailable")
+                code = _signal_failure_code(sig)
+                error(ticker, "inference", code, f"current complete signal unavailable ({code})")
                 continue
             # Inference may have taken long enough to cross the next open.
             record_time = utc_now(supplied_now)
             if not eligible_to_record(completed, record_time):
                 counts["skipped"] += 1
+                window_closed = True
                 continue
             window = forecast_window(completed, LABEL_HORIZON_TRADING_DAYS)
             row = {"ticker": ticker, "predicted_date": completed,
@@ -147,9 +177,42 @@ def run_daily_job(tickers, now=None):
             counts["duplicates"] += int(not inserted)
         except Exception as exc:
             logger.warning("Forecast recording failed for %s: %s", ticker, type(exc).__name__)
-            counts["errors"].append(f"{ticker}: forecast recording failed")
-    counts["status"] = "partial_failure" if counts["errors"] else "ok"
-    return counts
+            error(ticker, "recording", "recording_failed", "forecast recording failed")
+    return finish("skipped" if window_closed else "ok")
+
+
+def _recorded_tickers(sb, completed):
+    rows = read_pages(sb.table(TABLE).select("id,ticker").eq("predicted_date", completed)
+                      .eq("protocol_version", PROTOCOL).order("id"))
+    return {r["ticker"] for r in rows}
+
+
+def _signal_failure_code(sig):
+    """Expose known categories, never arbitrary provider or credential text."""
+    reason = sig.get("error", "")
+    if not isinstance(reason, str):
+        return "signal_unavailable"
+    known = {
+        "Complete market panel unavailable": "market_panel_unavailable",
+        "Ticker unavailable in trained universe": "ticker_unavailable",
+        "Latest completed session is missing": "stale_session",
+        "Live inference unavailable": "inference_failed",
+        "Model prediction failed": "inference_failed",
+        "Invalid model probability": "invalid_probability",
+        "Invalid calibrated probability": "invalid_probability",
+        "Invalid closing price": "invalid_price",
+    }
+    if reason in known:
+        return known[reason]
+    if reason.startswith("Required model features unavailable:"):
+        return "required_features_missing"
+    if reason.startswith("Model not loaded"):
+        return "model_unavailable"
+    if reason.startswith("Saved probability calibrator unavailable"):
+        return "calibrator_unavailable"
+    if sig.get("source") == "live":
+        return "signal_contract_failed"
+    return "signal_unavailable"
 
 
 def get_summary(days=30):

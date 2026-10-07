@@ -16,6 +16,7 @@ from technical_indicators import compute_rsi, compute_macd, compute_bollinger, c
 from market_calendar import latest_completed_session, forecast_window, utc_now, schedule
 from prediction_contract import LABEL_HORIZON_TRADING_DAYS
 import logging
+from threading import Lock
 
 from build_features import add_normalized_indicators, add_cross_sectional_features, orderflow_columns, SECTOR_MAP
 
@@ -117,6 +118,7 @@ def get_ticker_universe() -> list:
 # ── Market panel (batched fetch + cross-sectional features) ───────────────────
 
 _panel_cache = {"data": None, "fetched_at": None}
+_panel_lock = Lock()
 PANEL_TTL = timedelta(minutes=15)
 
 
@@ -153,7 +155,7 @@ def _fetch_market_panel(tickers: list) -> pd.DataFrame:
     sector_etfs = sorted(set(SECTOR_MAP.values()))
     raw = yf.download(
         list(tickers) + sector_etfs, period="2y", interval="1d",
-        group_by="ticker", progress=False, threads=True, auto_adjust=True,
+        group_by="ticker", progress=False, threads=8, timeout=15, auto_adjust=True,
     )
 
     # Yahoo can return today's unfinished daily candle. Exclude it before features.
@@ -173,6 +175,13 @@ def _fetch_market_panel(tickers: list) -> pd.DataFrame:
             sector_ret5[etf] = r
         except Exception as e:
             logger.debug(f"Sector ETF {etf} fetch skipped: {e}")
+
+    # An incomplete sector snapshot must use the short failure cache, so the
+    # collector can retry it instead of retaining missing features for 15 min.
+    if len(sector_ret5) != len(sector_etfs):
+        logger.warning("Market panel missing validated sector quotes: %s",
+                       ",".join(sorted(set(sector_etfs) - set(sector_ret5))))
+        return pd.DataFrame()
 
     frames = []
 
@@ -215,6 +224,7 @@ def _fetch_market_panel(tickers: list) -> pd.DataFrame:
     complete_dates = panel.groupby("date")["ticker"].nunique()
     panel = panel[panel["date"].isin(complete_dates[complete_dates == len(tickers)].index)].copy()
     if panel.empty:
+        logger.warning("Market panel has no complete trained-universe session")
         return panel
     panel = add_cross_sectional_features(panel)
 
@@ -238,10 +248,19 @@ def _get_cached_panel() -> pd.DataFrame:
     PANEL_TTL — these are daily-bar indicators, they don't need to be
     recomputed on every request, and refetching 44+ tickers per request
     would be needlessly slow and hammer Yahoo Finance."""
+    # Concurrent requests wait for the same fetch instead of observing an
+    # empty placeholder or starting competing full-universe downloads.
+    with _panel_lock:
+        return _load_cached_panel()
+
+
+def _load_cached_panel() -> pd.DataFrame:
     now = datetime.now(timezone.utc)
     cached, fetched_at = _panel_cache["data"], _panel_cache["fetched_at"]
     ttl = timedelta(seconds=60) if cached is not None and cached.empty else PANEL_TTL
-    if cached is not None and fetched_at is not None and (now - fetched_at) < ttl:
+    same_session = cached is not None and (cached.empty or
+        ("date" in cached and cached["date"].max() == latest_completed_session()))
+    if same_session and fetched_at is not None and (now - fetched_at) < ttl:
         return cached
 
     # Cache failures briefly to avoid one failed full-universe download per ticker.
@@ -253,10 +272,12 @@ def _get_cached_panel() -> pd.DataFrame:
     try:
         panel = _fetch_market_panel(tickers)
     except Exception as e:
-        logger.warning(f"Market panel fetch failed: {e}")
+        logger.warning("Market panel fetch failed: %s", type(e).__name__)
+        _panel_cache["fetched_at"] = datetime.now(timezone.utc)
         return pd.DataFrame()
 
     if panel.empty:
+        _panel_cache["fetched_at"] = datetime.now(timezone.utc)
         return pd.DataFrame()
 
     _panel_cache["data"], _panel_cache["fetched_at"] = panel, now

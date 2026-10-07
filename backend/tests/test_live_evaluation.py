@@ -3,6 +3,8 @@ import sys
 from unittest.mock import patch, Mock
 from types import SimpleNamespace
 from datetime import datetime, timezone, timedelta
+from concurrent.futures import ThreadPoolExecutor
+from threading import Event
 import numpy as np
 import pandas as pd
 
@@ -76,6 +78,43 @@ class InferenceTests(unittest.TestCase):
         with patch.object(live, "_get_cached_panel", return_value=panel), patch.object(live, "latest_completed_session", return_value="2024-07-03"):
             self.assertEqual(live.get_live_signal("TEST")["source"], "fallback")
 
+    def test_slow_failed_fetch_cache_starts_when_fetch_finishes(self):
+        start = datetime(2024, 7, 3, 22, tzinfo=timezone.utc)
+        cache = {"data": None, "fetched_at": None}
+        with patch.object(live, "_panel_cache", cache), patch.object(live, "get_ticker_universe", return_value=["TEST"]), patch.object(live, "datetime") as clock, patch.object(live, "_fetch_market_panel", side_effect=RuntimeError("offline")) as fetch:
+            clock.now.side_effect = [start, start + timedelta(seconds=90), start + timedelta(seconds=91)]
+            self.assertTrue(live._get_cached_panel().empty)
+            self.assertTrue(live._get_cached_panel().empty)
+            self.assertEqual(fetch.call_count, 1)
+
+    def test_cache_refreshes_when_completed_session_changes(self):
+        new = pd.DataFrame([{"ticker": "TEST", "date": "2024-07-03"}])
+        cache = {"data": pd.DataFrame([{"ticker": "TEST", "date": "2024-07-02"}]), "fetched_at": datetime.now(timezone.utc)}
+        with patch.object(live, "_panel_cache", cache), patch.object(live, "get_ticker_universe", return_value=["TEST"]), patch.object(live, "latest_completed_session", return_value="2024-07-03"), patch.object(live, "_fetch_market_panel", return_value=new) as fetch:
+            self.assertEqual(live._get_cached_panel().date.max(), "2024-07-03")
+            fetch.assert_called_once()
+
+    def test_concurrent_requests_share_completed_fetch(self):
+        entered, release, second_started = Event(), Event(), Event()
+        panel = pd.DataFrame([{"ticker": "TEST", "date": "2024-07-03"}])
+        def download(tickers):
+            entered.set()
+            if not release.wait(3):
+                raise RuntimeError("Fixture wait expired")
+            return panel
+        def second():
+            second_started.set()
+            return live._get_cached_panel()
+        with patch.object(live, "_panel_cache", {"data": None, "fetched_at": None}), patch.object(live, "get_ticker_universe", return_value=["TEST"]), patch.object(live, "latest_completed_session", return_value="2024-07-03"), patch.object(live, "_fetch_market_panel", side_effect=download) as fetch, ThreadPoolExecutor(max_workers=2) as pool:
+            first = pool.submit(live._get_cached_panel)
+            self.assertTrue(entered.wait(2))
+            other = pool.submit(second)
+            self.assertTrue(second_started.wait(2))
+            release.set()
+            self.assertFalse(first.result(timeout=3).empty)
+            self.assertFalse(other.result(timeout=3).empty)
+            self.assertEqual(fetch.call_count, 1)
+
     def test_gap_validation(self):
         dates = schedule("2023-01-01", "2024-12-20").index
         frame = pd.DataFrame(100., index=dates, columns=["Open", "High", "Low", "Close", "Volume"])
@@ -98,6 +137,10 @@ class InferenceTests(unittest.TestCase):
             complete = live._fetch_market_panel(["AAPL", "MSFT"])
             self.assertEqual(complete.date.max(), "2024-12-20")
             self.assertEqual(set(complete.ticker), {"AAPL", "MSFT"})
+            self.assertEqual(yf.download.call_args.kwargs["threads"], 8)
+            self.assertEqual(yf.download.call_args.kwargs["timeout"], 15)
+            yf.download.return_value = raw.drop(columns="XLK", level=0)
+            self.assertTrue(live._fetch_market_panel(["AAPL", "MSFT"]).empty)
             yf.download.return_value = raw.drop(columns="MSFT", level=0)
             self.assertTrue(live._fetch_market_panel(["AAPL", "MSFT"]).empty)
 
@@ -181,6 +224,46 @@ class TrackerTests(unittest.TestCase):
         self.assertEqual(second["logged"], 0)
         self.assertEqual(second["duplicates"], 1)
         self.assertEqual(db.rows[0]["target_date"], "2024-07-11")
+        self.assertEqual(first["cohort_logged"], 1)
+        self.assertEqual(second["missing_tickers"], [])
+        # A recovery attempt must succeed even if inference is now unavailable.
+        with patch.object(tracker, "get_admin_client", return_value=db), patch.object(tracker, "get_live_signal") as infer:
+            recovery = tracker.run_daily_job(["TEST"], now="2024-07-05T14:00Z")
+        infer.assert_not_called()
+        self.assertEqual(recovery["duplicates"], 1)
+        self.assertEqual(recovery["cohort_logged"], 1)
+        self.assertEqual(recovery["status"], "skipped")
+
+    def test_known_inference_failure_has_safe_stage_code(self):
+        with patch.object(tracker, "get_admin_client", return_value=Database([])), patch.object(tracker, "get_live_signal", return_value={"source": "fallback", "error": "Complete market panel unavailable"}):
+            result = tracker.run_daily_job(["TEST"], now="2024-07-03T22:00Z")
+        self.assertEqual(result["cohort_logged"], 0)
+        self.assertEqual(result["missing_tickers"], ["TEST"])
+        self.assertEqual(result["error_details"], [{"ticker": "TEST", "stage": "inference", "code": "market_panel_unavailable"}])
+        self.assertEqual(tracker._signal_failure_code({"error": "secret-provider-text"}), "signal_unavailable")
+
+    def test_final_coverage_read_failure_is_not_success(self):
+        db = Database([])
+        original = db.table
+        db.table = Mock(side_effect=[original(tracker.TABLE), original(tracker.TABLE), RuntimeError("offline")])
+        with patch.object(tracker, "get_admin_client", return_value=db):
+            result = tracker.run_daily_job(["TEST"], now="2024-07-05T14:00Z")
+        self.assertEqual(result["status"], "partial_failure")
+        self.assertIsNone(result["cohort_logged"])
+        self.assertEqual(result["error_details"][0]["code"], "database_read_failed")
+
+    def test_recording_deadline_is_rechecked_after_inference(self):
+        db = Database([])
+        sig = {"source": "live", "date": "2024-07-03", "signal_label": "BUY"}
+        with patch.object(tracker, "get_admin_client", return_value=db), patch.object(tracker, "utc_now", side_effect=[pd.Timestamp("2024-07-05T13:29Z"), pd.Timestamp("2024-07-05T13:30Z")]), patch.object(tracker, "get_live_signal", return_value=sig):
+            result = tracker.run_daily_job(["TEST"])
+        self.assertEqual(db.rows, [])
+        self.assertEqual(result["status"], "skipped")
+        self.assertEqual(result["missing_tickers"], ["TEST"])
+
+    def test_empty_universe_is_an_explicit_failure(self):
+        with self.assertRaisesRegex(RuntimeError, "no configured ticker"):
+            tracker.run_daily_job([])
 
     def test_summary_reads_beyond_500_rows(self):
         rows = [{"id": str(i), "ticker": f"TEST{i}", "predicted_date": "2024-07-03", "protocol_version": tracker.PROTOCOL,

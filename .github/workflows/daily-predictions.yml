@@ -1,20 +1,12 @@
 name: Daily live prediction tracker
 
-# Render's free tier doesn't run background/cron processes on its own —
-# this is the scheduler. It just wakes the backend up and asks it to log
-# new predictions and resolves due five-session outcomes.
-#
-# Needs two repo secrets (Settings → Secrets and variables → Actions):
-#   RENDER_BACKEND_URL  — e.g. https://your-app-name.onrender.com
-#   ADMIN_JOB_SECRET     — must match backend/.env's ADMIN_JOB_SECRET
-#                          (and Render's env var of the same name)
-
+# Uses existing GitHub secrets: RENDER_BACKEND_URL and ADMIN_JOB_SECRET.
+# The admin key must match Render's environment. Forecasts stay immutable.
 on:
   schedule:
-    # 22:00 UTC, Mon–Fri — after US market close (4pm ET) year-round,
-    # including during EDT (UTC-4) with margin to spare.
-    - cron: '0 22 * * 1-5'
-  workflow_dispatch: {}  # manual "Run workflow" button, for testing
+    - cron: '17 22 * * 1-5'  # after the US close; avoid the busy top of the hour
+    - cron: '17 4 * * 2-6'   # recovery for the same session, before the next open
+  workflow_dispatch: {}
 
 permissions:
   contents: read
@@ -28,17 +20,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - name: Trigger backend prediction job
         env:
           BACKEND_URL: ${{ secrets.RENDER_BACKEND_URL }}
           ADMIN_KEY: ${{ secrets.ADMIN_JOB_SECRET }}
-        run: |
-          set -euo pipefail
-          test -n "$BACKEND_URL" || { echo "Missing RENDER_BACKEND_URL"; exit 1; }
-          test -n "$ADMIN_KEY" || { echo "Missing ADMIN_JOB_SECRET"; exit 1; }
-          # Inserts and outcome updates are idempotent, so a transient failure
-          # can be retried without replacing an already-recorded forecast.
-          curl --fail-with-body --silent --show-error -X POST "${BACKEND_URL%/}/admin/run-daily-predictions" \
-            -H "X-Admin-Key: $ADMIN_KEY" \
-            --connect-timeout 20 --max-time 300 \
-            --retry 2 --retry-delay 15 --retry-max-time 900
+        run: python backend/research/run_daily_collector.py

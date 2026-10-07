@@ -50,6 +50,9 @@ were inspected. The page includes metric explanations and visible SPY reference 
       Eleven isolated PostgreSQL migration tests pass. See [rollout status](LIVE_ROLLOUT.md).
 - [ ] Verify actual hosted recording and fifth-session resolution through the scheduler;
       read-only readiness checks do not establish hosted write/trigger behavior.
+      The 7 October reliability update adds coverage verification, safe stage reports,
+      cache fixes and a recovery schedule. The next eligible scheduled collection still
+      needs observation. See [daily collection reliability](DAILY_COLLECTION_RELIABILITY_2026-10-07.md).
 - [x] Acquire and audit an overlapping historical news dataset; run a versioned
       timestamp-aware exploratory pilot. Coverage is limited to 26 of 44 tickers.
 - [ ] Acquire/freeze a genuinely unused evaluation window before further tuning.
