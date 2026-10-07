@@ -13,6 +13,8 @@
       "license_declared": "CC-BY-NC-SA-4.0",
       "usage": "Local noncommercial academic research; retain attribution and source license; do not publish raw articles through QuantSight",
       "audit": "news_candidate_audit.json",
+      "quality_reviewed_on": "2026-10-07",
+      "quality_audit": "news_quality_audit_2026-10-07.json",
       "blocks_confirmatory_claim": ["Previously examined market period", "Only 26 of 44 tickers covered", "Publication time lacks explicit UTC suffix; repository documents UTC", "Article-version and archive provenance require further review"],
       "excluded_input_fields": ["next_day_price_*", "curr_day_price_*", "prev_day_price_*", "sentiment", "emotion", "related_companies"]
     },
@@ -29,6 +31,8 @@
       "other_news_bytes": 5731397037,
       "license_declared": "Repository LICENSE says CC-BY-NC-4.0; July 2025 README announcement grants broader use but older restrictions remain",
       "audit": "fnspid_probe.json",
+      "followup_reviewed_on": "2026-10-07",
+      "followup_findings": ["Hugging Face viewer reports dataset-generation/type-parsing failure", "Claimed period ends in 2023, so this source alone does not supply the missing 2024 news panel", "Full coverage and article availability still unverified"],
       "limitations": ["Resolve inconsistent usage statements before redistribution", "Source maintenance stopped July 2025", "Midnight timestamps may only have day precision", "Paper price-regression R-squared is not five-day directional accuracy", "Full 44-ticker coverage not yet verified"]
     },
     {

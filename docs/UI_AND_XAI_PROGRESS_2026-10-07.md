@@ -118,6 +118,6 @@ python -m research.xai_comparison
 ## Next recommended work
 
 - Run a small user-comprehension pilot: can users distinguish old signals, P(UP), accuracy, drawdown and XAI limitations?
-- Audit a suitable dated news dataset before a new prediction experiment.
+- Completed follow-up: [news integrity, duplication and yearly coverage audit](research/NEWS_DATA_QUALITY_2026-10-07.md). The existing archive has very limited 2024 coverage; choose verified data before another prediction experiment.
 - Register a fixed, chronological experiment with baselines, calibration and transaction costs before changing serving models.
 - Continue forward evaluation with resolved forecasts and clearly stated sample sizes.

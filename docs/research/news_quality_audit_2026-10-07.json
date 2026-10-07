@@ -1,0 +1,3052 @@
+{
+  "integrity": "passed",
+  "ticker_article_links": 67434,
+  "unique_articles": 50059,
+  "unique_casefolded_headlines": 48633,
+  "covered_tickers": [
+    "AAPL",
+    "ADBE",
+    "AMZN",
+    "BAC",
+    "C",
+    "COST",
+    "CRM",
+    "CVX",
+    "GOOGL",
+    "GS",
+    "INTC",
+    "JNJ",
+    "JPM",
+    "META",
+    "MRNA",
+    "MSFT",
+    "NFLX",
+    "NVDA",
+    "ORCL",
+    "PFE",
+    "PYPL",
+    "TSLA",
+    "UNH",
+    "WFC",
+    "WMT",
+    "XOM"
+  ],
+  "missing_tickers": [
+    "ABBV",
+    "AMD",
+    "COP",
+    "CVS",
+    "DIA",
+    "GLD",
+    "IWM",
+    "MCD",
+    "MS",
+    "NKE",
+    "OXY",
+    "QQQ",
+    "SLB",
+    "SNAP",
+    "SPY",
+    "TGT",
+    "TLT",
+    "UBER"
+  ],
+  "duplication": {
+    "headlines_with_multiple_article_ids": 1052,
+    "excess_article_ids_for_identical_headlines": 1426,
+    "urls_with_multiple_headlines": 0,
+    "ticker_session_headline_groups_with_repeats": 1083,
+    "excess_links_within_same_ticker_session_headline": 1084
+  },
+  "timing": {
+    "date_only_articles": 567,
+    "availability_delay_days_median": 0.03494212962962963,
+    "availability_delay_days_p95": 0.10727430555555546,
+    "availability_delay_over_one_day_articles": 574
+  },
+  "segment_unique_counts": {
+    "fit": {
+      "unique_articles": 17755,
+      "unique_headlines": 17344
+    },
+    "calibration": {
+      "unique_articles": 14490,
+      "unique_headlines": 14209
+    },
+    "evaluation": {
+      "unique_articles": 17769,
+      "unique_headlines": 17123
+    }
+  },
+  "cross_segment_overlap": [
+    {
+      "segments": [
+        "fit",
+        "calibration"
+      ],
+      "headline_key": 34,
+      "url": 0,
+      "article_id": 0
+    },
+    {
+      "segments": [
+        "fit",
+        "evaluation"
+      ],
+      "headline_key": 17,
+      "url": 0,
+      "article_id": 0
+    },
+    {
+      "segments": [
+        "calibration",
+        "evaluation"
+      ],
+      "headline_key": 50,
+      "url": 0,
+      "article_id": 0
+    }
+  ],
+  "coverage": {
+    "finance_sessions": 104076,
+    "news_sessions": 11972,
+    "coverage_pct": 11.503,
+    "by_year": [
+      {
+        "year": "2015",
+        "finance_sessions": 6843,
+        "news_sessions": 0,
+        "coverage_pct": 0.0,
+        "by_ticker": [
+          {
+            "ticker": "AAPL",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "ABBV",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "ADBE",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "AMD",
+            "finance_sessions": 169,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "AMZN",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "BAC",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "C",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "COP",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "COST",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "CRM",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "CVS",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "CVX",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "DIA",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "GLD",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "GOOGL",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "GS",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "INTC",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "IWM",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "JNJ",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "JPM",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "MCD",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "META",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "MS",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "MSFT",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "NFLX",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "NKE",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "NVDA",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "ORCL",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "OXY",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "PFE",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "PYPL",
+            "finance_sessions": 44,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "QQQ",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "SLB",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "SPY",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "TGT",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "TLT",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "TSLA",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "UNH",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "WFC",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "WMT",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "XOM",
+            "finance_sessions": 170,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          }
+        ]
+      },
+      {
+        "year": "2016",
+        "finance_sessions": 10332,
+        "news_sessions": 0,
+        "coverage_pct": 0.0,
+        "by_ticker": [
+          {
+            "ticker": "AAPL",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "ABBV",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "ADBE",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "AMD",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "AMZN",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "BAC",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "C",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "COP",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "COST",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "CRM",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "CVS",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "CVX",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "DIA",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "GLD",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "GOOGL",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "GS",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "INTC",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "IWM",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "JNJ",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "JPM",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "MCD",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "META",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "MS",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "MSFT",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "NFLX",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "NKE",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "NVDA",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "ORCL",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "OXY",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "PFE",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "PYPL",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "QQQ",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "SLB",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "SPY",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "TGT",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "TLT",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "TSLA",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "UNH",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "WFC",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "WMT",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "XOM",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          }
+        ]
+      },
+      {
+        "year": "2017",
+        "finance_sessions": 10420,
+        "news_sessions": 473,
+        "coverage_pct": 4.539,
+        "by_ticker": [
+          {
+            "ticker": "AAPL",
+            "finance_sessions": 251,
+            "news_sessions": 85,
+            "coverage_pct": 33.865
+          },
+          {
+            "ticker": "ABBV",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "ADBE",
+            "finance_sessions": 251,
+            "news_sessions": 2,
+            "coverage_pct": 0.797
+          },
+          {
+            "ticker": "AMD",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "AMZN",
+            "finance_sessions": 251,
+            "news_sessions": 78,
+            "coverage_pct": 31.076
+          },
+          {
+            "ticker": "BAC",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "C",
+            "finance_sessions": 251,
+            "news_sessions": 34,
+            "coverage_pct": 13.546
+          },
+          {
+            "ticker": "COP",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "COST",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "CRM",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "CVS",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "CVX",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "DIA",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "GLD",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "GOOGL",
+            "finance_sessions": 251,
+            "news_sessions": 89,
+            "coverage_pct": 35.458
+          },
+          {
+            "ticker": "GS",
+            "finance_sessions": 251,
+            "news_sessions": 6,
+            "coverage_pct": 2.39
+          },
+          {
+            "ticker": "INTC",
+            "finance_sessions": 251,
+            "news_sessions": 9,
+            "coverage_pct": 3.586
+          },
+          {
+            "ticker": "IWM",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "JNJ",
+            "finance_sessions": 251,
+            "news_sessions": 3,
+            "coverage_pct": 1.195
+          },
+          {
+            "ticker": "JPM",
+            "finance_sessions": 251,
+            "news_sessions": 4,
+            "coverage_pct": 1.594
+          },
+          {
+            "ticker": "MCD",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "META",
+            "finance_sessions": 251,
+            "news_sessions": 46,
+            "coverage_pct": 18.327
+          },
+          {
+            "ticker": "MS",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "MSFT",
+            "finance_sessions": 251,
+            "news_sessions": 27,
+            "coverage_pct": 10.757
+          },
+          {
+            "ticker": "NFLX",
+            "finance_sessions": 251,
+            "news_sessions": 52,
+            "coverage_pct": 20.717
+          },
+          {
+            "ticker": "NKE",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "NVDA",
+            "finance_sessions": 251,
+            "news_sessions": 1,
+            "coverage_pct": 0.398
+          },
+          {
+            "ticker": "ORCL",
+            "finance_sessions": 251,
+            "news_sessions": 2,
+            "coverage_pct": 0.797
+          },
+          {
+            "ticker": "OXY",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "PFE",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "PYPL",
+            "finance_sessions": 251,
+            "news_sessions": 4,
+            "coverage_pct": 1.594
+          },
+          {
+            "ticker": "QQQ",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "SLB",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "SNAP",
+            "finance_sessions": 129,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "SPY",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "TGT",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "TLT",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "TSLA",
+            "finance_sessions": 251,
+            "news_sessions": 17,
+            "coverage_pct": 6.773
+          },
+          {
+            "ticker": "UNH",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "WFC",
+            "finance_sessions": 251,
+            "news_sessions": 10,
+            "coverage_pct": 3.984
+          },
+          {
+            "ticker": "WMT",
+            "finance_sessions": 251,
+            "news_sessions": 1,
+            "coverage_pct": 0.398
+          },
+          {
+            "ticker": "XOM",
+            "finance_sessions": 251,
+            "news_sessions": 3,
+            "coverage_pct": 1.195
+          }
+        ]
+      },
+      {
+        "year": "2018",
+        "finance_sessions": 10542,
+        "news_sessions": 355,
+        "coverage_pct": 3.367,
+        "by_ticker": [
+          {
+            "ticker": "AAPL",
+            "finance_sessions": 251,
+            "news_sessions": 65,
+            "coverage_pct": 25.896
+          },
+          {
+            "ticker": "ABBV",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "ADBE",
+            "finance_sessions": 251,
+            "news_sessions": 2,
+            "coverage_pct": 0.797
+          },
+          {
+            "ticker": "AMD",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "AMZN",
+            "finance_sessions": 251,
+            "news_sessions": 46,
+            "coverage_pct": 18.327
+          },
+          {
+            "ticker": "BAC",
+            "finance_sessions": 251,
+            "news_sessions": 4,
+            "coverage_pct": 1.594
+          },
+          {
+            "ticker": "C",
+            "finance_sessions": 251,
+            "news_sessions": 20,
+            "coverage_pct": 7.968
+          },
+          {
+            "ticker": "COP",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "COST",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "CRM",
+            "finance_sessions": 251,
+            "news_sessions": 2,
+            "coverage_pct": 0.797
+          },
+          {
+            "ticker": "CVS",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "CVX",
+            "finance_sessions": 251,
+            "news_sessions": 1,
+            "coverage_pct": 0.398
+          },
+          {
+            "ticker": "DIA",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "GLD",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "GOOGL",
+            "finance_sessions": 251,
+            "news_sessions": 60,
+            "coverage_pct": 23.904
+          },
+          {
+            "ticker": "GS",
+            "finance_sessions": 251,
+            "news_sessions": 11,
+            "coverage_pct": 4.382
+          },
+          {
+            "ticker": "INTC",
+            "finance_sessions": 251,
+            "news_sessions": 4,
+            "coverage_pct": 1.594
+          },
+          {
+            "ticker": "IWM",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "JNJ",
+            "finance_sessions": 251,
+            "news_sessions": 3,
+            "coverage_pct": 1.195
+          },
+          {
+            "ticker": "JPM",
+            "finance_sessions": 251,
+            "news_sessions": 5,
+            "coverage_pct": 1.992
+          },
+          {
+            "ticker": "MCD",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "META",
+            "finance_sessions": 251,
+            "news_sessions": 43,
+            "coverage_pct": 17.131
+          },
+          {
+            "ticker": "MS",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "MSFT",
+            "finance_sessions": 251,
+            "news_sessions": 29,
+            "coverage_pct": 11.554
+          },
+          {
+            "ticker": "NFLX",
+            "finance_sessions": 251,
+            "news_sessions": 14,
+            "coverage_pct": 5.578
+          },
+          {
+            "ticker": "NKE",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "NVDA",
+            "finance_sessions": 251,
+            "news_sessions": 2,
+            "coverage_pct": 0.797
+          },
+          {
+            "ticker": "ORCL",
+            "finance_sessions": 251,
+            "news_sessions": 1,
+            "coverage_pct": 0.398
+          },
+          {
+            "ticker": "OXY",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "PFE",
+            "finance_sessions": 251,
+            "news_sessions": 2,
+            "coverage_pct": 0.797
+          },
+          {
+            "ticker": "PYPL",
+            "finance_sessions": 251,
+            "news_sessions": 3,
+            "coverage_pct": 1.195
+          },
+          {
+            "ticker": "QQQ",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "SLB",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "SNAP",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "SPY",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "TGT",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "TLT",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "TSLA",
+            "finance_sessions": 251,
+            "news_sessions": 24,
+            "coverage_pct": 9.562
+          },
+          {
+            "ticker": "UNH",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "WFC",
+            "finance_sessions": 251,
+            "news_sessions": 6,
+            "coverage_pct": 2.39
+          },
+          {
+            "ticker": "WMT",
+            "finance_sessions": 251,
+            "news_sessions": 3,
+            "coverage_pct": 1.195
+          },
+          {
+            "ticker": "XOM",
+            "finance_sessions": 251,
+            "news_sessions": 5,
+            "coverage_pct": 1.992
+          }
+        ]
+      },
+      {
+        "year": "2019",
+        "finance_sessions": 10851,
+        "news_sessions": 856,
+        "coverage_pct": 7.889,
+        "by_ticker": [
+          {
+            "ticker": "AAPL",
+            "finance_sessions": 252,
+            "news_sessions": 110,
+            "coverage_pct": 43.651
+          },
+          {
+            "ticker": "ABBV",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "ADBE",
+            "finance_sessions": 252,
+            "news_sessions": 3,
+            "coverage_pct": 1.19
+          },
+          {
+            "ticker": "AMD",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "AMZN",
+            "finance_sessions": 252,
+            "news_sessions": 97,
+            "coverage_pct": 38.492
+          },
+          {
+            "ticker": "BAC",
+            "finance_sessions": 252,
+            "news_sessions": 22,
+            "coverage_pct": 8.73
+          },
+          {
+            "ticker": "C",
+            "finance_sessions": 252,
+            "news_sessions": 84,
+            "coverage_pct": 33.333
+          },
+          {
+            "ticker": "COP",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "COST",
+            "finance_sessions": 252,
+            "news_sessions": 2,
+            "coverage_pct": 0.794
+          },
+          {
+            "ticker": "CRM",
+            "finance_sessions": 252,
+            "news_sessions": 2,
+            "coverage_pct": 0.794
+          },
+          {
+            "ticker": "CVS",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "CVX",
+            "finance_sessions": 252,
+            "news_sessions": 10,
+            "coverage_pct": 3.968
+          },
+          {
+            "ticker": "DIA",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "GLD",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "GOOGL",
+            "finance_sessions": 252,
+            "news_sessions": 98,
+            "coverage_pct": 38.889
+          },
+          {
+            "ticker": "GS",
+            "finance_sessions": 252,
+            "news_sessions": 52,
+            "coverage_pct": 20.635
+          },
+          {
+            "ticker": "INTC",
+            "finance_sessions": 252,
+            "news_sessions": 19,
+            "coverage_pct": 7.54
+          },
+          {
+            "ticker": "IWM",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "JNJ",
+            "finance_sessions": 252,
+            "news_sessions": 3,
+            "coverage_pct": 1.19
+          },
+          {
+            "ticker": "JPM",
+            "finance_sessions": 252,
+            "news_sessions": 50,
+            "coverage_pct": 19.841
+          },
+          {
+            "ticker": "MCD",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "META",
+            "finance_sessions": 252,
+            "news_sessions": 98,
+            "coverage_pct": 38.889
+          },
+          {
+            "ticker": "MRNA",
+            "finance_sessions": 186,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "MS",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "MSFT",
+            "finance_sessions": 252,
+            "news_sessions": 47,
+            "coverage_pct": 18.651
+          },
+          {
+            "ticker": "NFLX",
+            "finance_sessions": 252,
+            "news_sessions": 40,
+            "coverage_pct": 15.873
+          },
+          {
+            "ticker": "NKE",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "NVDA",
+            "finance_sessions": 252,
+            "news_sessions": 13,
+            "coverage_pct": 5.159
+          },
+          {
+            "ticker": "ORCL",
+            "finance_sessions": 252,
+            "news_sessions": 5,
+            "coverage_pct": 1.984
+          },
+          {
+            "ticker": "OXY",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "PFE",
+            "finance_sessions": 252,
+            "news_sessions": 4,
+            "coverage_pct": 1.587
+          },
+          {
+            "ticker": "PYPL",
+            "finance_sessions": 252,
+            "news_sessions": 5,
+            "coverage_pct": 1.984
+          },
+          {
+            "ticker": "QQQ",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "SLB",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "SNAP",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "SPY",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "TGT",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "TLT",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "TSLA",
+            "finance_sessions": 252,
+            "news_sessions": 49,
+            "coverage_pct": 19.444
+          },
+          {
+            "ticker": "UBER",
+            "finance_sessions": 81,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "UNH",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "WFC",
+            "finance_sessions": 252,
+            "news_sessions": 17,
+            "coverage_pct": 6.746
+          },
+          {
+            "ticker": "WMT",
+            "finance_sessions": 252,
+            "news_sessions": 18,
+            "coverage_pct": 7.143
+          },
+          {
+            "ticker": "XOM",
+            "finance_sessions": 252,
+            "news_sessions": 8,
+            "coverage_pct": 3.175
+          }
+        ]
+      },
+      {
+        "year": "2020",
+        "finance_sessions": 11132,
+        "news_sessions": 683,
+        "coverage_pct": 6.135,
+        "by_ticker": [
+          {
+            "ticker": "AAPL",
+            "finance_sessions": 253,
+            "news_sessions": 82,
+            "coverage_pct": 32.411
+          },
+          {
+            "ticker": "ABBV",
+            "finance_sessions": 253,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "ADBE",
+            "finance_sessions": 253,
+            "news_sessions": 12,
+            "coverage_pct": 4.743
+          },
+          {
+            "ticker": "AMD",
+            "finance_sessions": 253,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "AMZN",
+            "finance_sessions": 253,
+            "news_sessions": 64,
+            "coverage_pct": 25.296
+          },
+          {
+            "ticker": "BAC",
+            "finance_sessions": 253,
+            "news_sessions": 16,
+            "coverage_pct": 6.324
+          },
+          {
+            "ticker": "C",
+            "finance_sessions": 253,
+            "news_sessions": 62,
+            "coverage_pct": 24.506
+          },
+          {
+            "ticker": "COP",
+            "finance_sessions": 253,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "COST",
+            "finance_sessions": 253,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "CRM",
+            "finance_sessions": 253,
+            "news_sessions": 14,
+            "coverage_pct": 5.534
+          },
+          {
+            "ticker": "CVS",
+            "finance_sessions": 253,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "CVX",
+            "finance_sessions": 253,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "DIA",
+            "finance_sessions": 253,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "GLD",
+            "finance_sessions": 253,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "GOOGL",
+            "finance_sessions": 253,
+            "news_sessions": 80,
+            "coverage_pct": 31.621
+          },
+          {
+            "ticker": "GS",
+            "finance_sessions": 253,
+            "news_sessions": 32,
+            "coverage_pct": 12.648
+          },
+          {
+            "ticker": "INTC",
+            "finance_sessions": 253,
+            "news_sessions": 27,
+            "coverage_pct": 10.672
+          },
+          {
+            "ticker": "IWM",
+            "finance_sessions": 253,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "JNJ",
+            "finance_sessions": 253,
+            "news_sessions": 4,
+            "coverage_pct": 1.581
+          },
+          {
+            "ticker": "JPM",
+            "finance_sessions": 253,
+            "news_sessions": 23,
+            "coverage_pct": 9.091
+          },
+          {
+            "ticker": "MCD",
+            "finance_sessions": 253,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "META",
+            "finance_sessions": 253,
+            "news_sessions": 70,
+            "coverage_pct": 27.668
+          },
+          {
+            "ticker": "MRNA",
+            "finance_sessions": 253,
+            "news_sessions": 3,
+            "coverage_pct": 1.186
+          },
+          {
+            "ticker": "MS",
+            "finance_sessions": 253,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "MSFT",
+            "finance_sessions": 253,
+            "news_sessions": 66,
+            "coverage_pct": 26.087
+          },
+          {
+            "ticker": "NFLX",
+            "finance_sessions": 253,
+            "news_sessions": 33,
+            "coverage_pct": 13.043
+          },
+          {
+            "ticker": "NKE",
+            "finance_sessions": 253,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "NVDA",
+            "finance_sessions": 253,
+            "news_sessions": 9,
+            "coverage_pct": 3.557
+          },
+          {
+            "ticker": "ORCL",
+            "finance_sessions": 253,
+            "news_sessions": 12,
+            "coverage_pct": 4.743
+          },
+          {
+            "ticker": "OXY",
+            "finance_sessions": 253,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "PFE",
+            "finance_sessions": 253,
+            "news_sessions": 4,
+            "coverage_pct": 1.581
+          },
+          {
+            "ticker": "PYPL",
+            "finance_sessions": 253,
+            "news_sessions": 6,
+            "coverage_pct": 2.372
+          },
+          {
+            "ticker": "QQQ",
+            "finance_sessions": 253,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "SLB",
+            "finance_sessions": 253,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "SNAP",
+            "finance_sessions": 253,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "SPY",
+            "finance_sessions": 253,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "TGT",
+            "finance_sessions": 253,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "TLT",
+            "finance_sessions": 253,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "TSLA",
+            "finance_sessions": 253,
+            "news_sessions": 39,
+            "coverage_pct": 15.415
+          },
+          {
+            "ticker": "UBER",
+            "finance_sessions": 253,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "UNH",
+            "finance_sessions": 253,
+            "news_sessions": 1,
+            "coverage_pct": 0.395
+          },
+          {
+            "ticker": "WFC",
+            "finance_sessions": 253,
+            "news_sessions": 15,
+            "coverage_pct": 5.929
+          },
+          {
+            "ticker": "WMT",
+            "finance_sessions": 253,
+            "news_sessions": 8,
+            "coverage_pct": 3.162
+          },
+          {
+            "ticker": "XOM",
+            "finance_sessions": 253,
+            "news_sessions": 1,
+            "coverage_pct": 0.395
+          }
+        ]
+      },
+      {
+        "year": "2021",
+        "finance_sessions": 11088,
+        "news_sessions": 2717,
+        "coverage_pct": 24.504,
+        "by_ticker": [
+          {
+            "ticker": "AAPL",
+            "finance_sessions": 252,
+            "news_sessions": 218,
+            "coverage_pct": 86.508
+          },
+          {
+            "ticker": "ABBV",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "ADBE",
+            "finance_sessions": 252,
+            "news_sessions": 52,
+            "coverage_pct": 20.635
+          },
+          {
+            "ticker": "AMD",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "AMZN",
+            "finance_sessions": 252,
+            "news_sessions": 208,
+            "coverage_pct": 82.54
+          },
+          {
+            "ticker": "BAC",
+            "finance_sessions": 252,
+            "news_sessions": 71,
+            "coverage_pct": 28.175
+          },
+          {
+            "ticker": "C",
+            "finance_sessions": 252,
+            "news_sessions": 209,
+            "coverage_pct": 82.937
+          },
+          {
+            "ticker": "COP",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "COST",
+            "finance_sessions": 252,
+            "news_sessions": 16,
+            "coverage_pct": 6.349
+          },
+          {
+            "ticker": "CRM",
+            "finance_sessions": 252,
+            "news_sessions": 68,
+            "coverage_pct": 26.984
+          },
+          {
+            "ticker": "CVS",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "CVX",
+            "finance_sessions": 252,
+            "news_sessions": 15,
+            "coverage_pct": 5.952
+          },
+          {
+            "ticker": "DIA",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "GLD",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "GOOGL",
+            "finance_sessions": 252,
+            "news_sessions": 211,
+            "coverage_pct": 83.73
+          },
+          {
+            "ticker": "GS",
+            "finance_sessions": 252,
+            "news_sessions": 120,
+            "coverage_pct": 47.619
+          },
+          {
+            "ticker": "INTC",
+            "finance_sessions": 252,
+            "news_sessions": 128,
+            "coverage_pct": 50.794
+          },
+          {
+            "ticker": "IWM",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "JNJ",
+            "finance_sessions": 252,
+            "news_sessions": 63,
+            "coverage_pct": 25.0
+          },
+          {
+            "ticker": "JPM",
+            "finance_sessions": 252,
+            "news_sessions": 97,
+            "coverage_pct": 38.492
+          },
+          {
+            "ticker": "MCD",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "META",
+            "finance_sessions": 252,
+            "news_sessions": 215,
+            "coverage_pct": 85.317
+          },
+          {
+            "ticker": "MRNA",
+            "finance_sessions": 252,
+            "news_sessions": 42,
+            "coverage_pct": 16.667
+          },
+          {
+            "ticker": "MS",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "MSFT",
+            "finance_sessions": 252,
+            "news_sessions": 191,
+            "coverage_pct": 75.794
+          },
+          {
+            "ticker": "NFLX",
+            "finance_sessions": 252,
+            "news_sessions": 144,
+            "coverage_pct": 57.143
+          },
+          {
+            "ticker": "NKE",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "NVDA",
+            "finance_sessions": 252,
+            "news_sessions": 91,
+            "coverage_pct": 36.111
+          },
+          {
+            "ticker": "ORCL",
+            "finance_sessions": 252,
+            "news_sessions": 71,
+            "coverage_pct": 28.175
+          },
+          {
+            "ticker": "OXY",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "PFE",
+            "finance_sessions": 252,
+            "news_sessions": 63,
+            "coverage_pct": 25.0
+          },
+          {
+            "ticker": "PYPL",
+            "finance_sessions": 252,
+            "news_sessions": 81,
+            "coverage_pct": 32.143
+          },
+          {
+            "ticker": "QQQ",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "SLB",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "SNAP",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "SPY",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "TGT",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "TLT",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "TSLA",
+            "finance_sessions": 252,
+            "news_sessions": 178,
+            "coverage_pct": 70.635
+          },
+          {
+            "ticker": "UBER",
+            "finance_sessions": 252,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "UNH",
+            "finance_sessions": 252,
+            "news_sessions": 2,
+            "coverage_pct": 0.794
+          },
+          {
+            "ticker": "WFC",
+            "finance_sessions": 252,
+            "news_sessions": 53,
+            "coverage_pct": 21.032
+          },
+          {
+            "ticker": "WMT",
+            "finance_sessions": 252,
+            "news_sessions": 79,
+            "coverage_pct": 31.349
+          },
+          {
+            "ticker": "XOM",
+            "finance_sessions": 252,
+            "news_sessions": 31,
+            "coverage_pct": 12.302
+          }
+        ]
+      },
+      {
+        "year": "2022",
+        "finance_sessions": 11044,
+        "news_sessions": 3171,
+        "coverage_pct": 28.712,
+        "by_ticker": [
+          {
+            "ticker": "AAPL",
+            "finance_sessions": 251,
+            "news_sessions": 203,
+            "coverage_pct": 80.876
+          },
+          {
+            "ticker": "ABBV",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "ADBE",
+            "finance_sessions": 251,
+            "news_sessions": 64,
+            "coverage_pct": 25.498
+          },
+          {
+            "ticker": "AMD",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "AMZN",
+            "finance_sessions": 251,
+            "news_sessions": 212,
+            "coverage_pct": 84.462
+          },
+          {
+            "ticker": "BAC",
+            "finance_sessions": 251,
+            "news_sessions": 94,
+            "coverage_pct": 37.45
+          },
+          {
+            "ticker": "C",
+            "finance_sessions": 251,
+            "news_sessions": 216,
+            "coverage_pct": 86.056
+          },
+          {
+            "ticker": "COP",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "COST",
+            "finance_sessions": 251,
+            "news_sessions": 51,
+            "coverage_pct": 20.319
+          },
+          {
+            "ticker": "CRM",
+            "finance_sessions": 251,
+            "news_sessions": 92,
+            "coverage_pct": 36.653
+          },
+          {
+            "ticker": "CVS",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "CVX",
+            "finance_sessions": 251,
+            "news_sessions": 29,
+            "coverage_pct": 11.554
+          },
+          {
+            "ticker": "DIA",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "GLD",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "GOOGL",
+            "finance_sessions": 251,
+            "news_sessions": 211,
+            "coverage_pct": 84.064
+          },
+          {
+            "ticker": "GS",
+            "finance_sessions": 251,
+            "news_sessions": 147,
+            "coverage_pct": 58.566
+          },
+          {
+            "ticker": "INTC",
+            "finance_sessions": 251,
+            "news_sessions": 169,
+            "coverage_pct": 67.331
+          },
+          {
+            "ticker": "IWM",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "JNJ",
+            "finance_sessions": 251,
+            "news_sessions": 87,
+            "coverage_pct": 34.661
+          },
+          {
+            "ticker": "JPM",
+            "finance_sessions": 251,
+            "news_sessions": 94,
+            "coverage_pct": 37.45
+          },
+          {
+            "ticker": "MCD",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "META",
+            "finance_sessions": 251,
+            "news_sessions": 212,
+            "coverage_pct": 84.462
+          },
+          {
+            "ticker": "MRNA",
+            "finance_sessions": 251,
+            "news_sessions": 45,
+            "coverage_pct": 17.928
+          },
+          {
+            "ticker": "MS",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "MSFT",
+            "finance_sessions": 251,
+            "news_sessions": 198,
+            "coverage_pct": 78.884
+          },
+          {
+            "ticker": "NFLX",
+            "finance_sessions": 251,
+            "news_sessions": 175,
+            "coverage_pct": 69.721
+          },
+          {
+            "ticker": "NKE",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "NVDA",
+            "finance_sessions": 251,
+            "news_sessions": 115,
+            "coverage_pct": 45.817
+          },
+          {
+            "ticker": "ORCL",
+            "finance_sessions": 251,
+            "news_sessions": 149,
+            "coverage_pct": 59.363
+          },
+          {
+            "ticker": "OXY",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "PFE",
+            "finance_sessions": 251,
+            "news_sessions": 84,
+            "coverage_pct": 33.466
+          },
+          {
+            "ticker": "PYPL",
+            "finance_sessions": 251,
+            "news_sessions": 91,
+            "coverage_pct": 36.255
+          },
+          {
+            "ticker": "QQQ",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "SLB",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "SNAP",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "SPY",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "TGT",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "TLT",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "TSLA",
+            "finance_sessions": 251,
+            "news_sessions": 192,
+            "coverage_pct": 76.494
+          },
+          {
+            "ticker": "UBER",
+            "finance_sessions": 251,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "UNH",
+            "finance_sessions": 251,
+            "news_sessions": 12,
+            "coverage_pct": 4.781
+          },
+          {
+            "ticker": "WFC",
+            "finance_sessions": 251,
+            "news_sessions": 85,
+            "coverage_pct": 33.865
+          },
+          {
+            "ticker": "WMT",
+            "finance_sessions": 251,
+            "news_sessions": 112,
+            "coverage_pct": 44.622
+          },
+          {
+            "ticker": "XOM",
+            "finance_sessions": 251,
+            "news_sessions": 32,
+            "coverage_pct": 12.749
+          }
+        ]
+      },
+      {
+        "year": "2023",
+        "finance_sessions": 11000,
+        "news_sessions": 3698,
+        "coverage_pct": 33.618,
+        "by_ticker": [
+          {
+            "ticker": "AAPL",
+            "finance_sessions": 250,
+            "news_sessions": 207,
+            "coverage_pct": 82.8
+          },
+          {
+            "ticker": "ABBV",
+            "finance_sessions": 250,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "ADBE",
+            "finance_sessions": 250,
+            "news_sessions": 79,
+            "coverage_pct": 31.6
+          },
+          {
+            "ticker": "AMD",
+            "finance_sessions": 250,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "AMZN",
+            "finance_sessions": 250,
+            "news_sessions": 210,
+            "coverage_pct": 84.0
+          },
+          {
+            "ticker": "BAC",
+            "finance_sessions": 250,
+            "news_sessions": 167,
+            "coverage_pct": 66.8
+          },
+          {
+            "ticker": "C",
+            "finance_sessions": 250,
+            "news_sessions": 215,
+            "coverage_pct": 86.0
+          },
+          {
+            "ticker": "COP",
+            "finance_sessions": 250,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "COST",
+            "finance_sessions": 250,
+            "news_sessions": 128,
+            "coverage_pct": 51.2
+          },
+          {
+            "ticker": "CRM",
+            "finance_sessions": 250,
+            "news_sessions": 101,
+            "coverage_pct": 40.4
+          },
+          {
+            "ticker": "CVS",
+            "finance_sessions": 250,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "CVX",
+            "finance_sessions": 250,
+            "news_sessions": 84,
+            "coverage_pct": 33.6
+          },
+          {
+            "ticker": "DIA",
+            "finance_sessions": 250,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "GLD",
+            "finance_sessions": 250,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "GOOGL",
+            "finance_sessions": 250,
+            "news_sessions": 212,
+            "coverage_pct": 84.8
+          },
+          {
+            "ticker": "GS",
+            "finance_sessions": 250,
+            "news_sessions": 184,
+            "coverage_pct": 73.6
+          },
+          {
+            "ticker": "INTC",
+            "finance_sessions": 250,
+            "news_sessions": 177,
+            "coverage_pct": 70.8
+          },
+          {
+            "ticker": "IWM",
+            "finance_sessions": 250,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "JNJ",
+            "finance_sessions": 250,
+            "news_sessions": 89,
+            "coverage_pct": 35.6
+          },
+          {
+            "ticker": "JPM",
+            "finance_sessions": 250,
+            "news_sessions": 188,
+            "coverage_pct": 75.2
+          },
+          {
+            "ticker": "MCD",
+            "finance_sessions": 250,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "META",
+            "finance_sessions": 250,
+            "news_sessions": 211,
+            "coverage_pct": 84.4
+          },
+          {
+            "ticker": "MRNA",
+            "finance_sessions": 250,
+            "news_sessions": 46,
+            "coverage_pct": 18.4
+          },
+          {
+            "ticker": "MS",
+            "finance_sessions": 250,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "MSFT",
+            "finance_sessions": 250,
+            "news_sessions": 208,
+            "coverage_pct": 83.2
+          },
+          {
+            "ticker": "NFLX",
+            "finance_sessions": 250,
+            "news_sessions": 131,
+            "coverage_pct": 52.4
+          },
+          {
+            "ticker": "NKE",
+            "finance_sessions": 250,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "NVDA",
+            "finance_sessions": 250,
+            "news_sessions": 158,
+            "coverage_pct": 63.2
+          },
+          {
+            "ticker": "ORCL",
+            "finance_sessions": 250,
+            "news_sessions": 133,
+            "coverage_pct": 53.2
+          },
+          {
+            "ticker": "OXY",
+            "finance_sessions": 250,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "PFE",
+            "finance_sessions": 250,
+            "news_sessions": 83,
+            "coverage_pct": 33.2
+          },
+          {
+            "ticker": "PYPL",
+            "finance_sessions": 250,
+            "news_sessions": 88,
+            "coverage_pct": 35.2
+          },
+          {
+            "ticker": "QQQ",
+            "finance_sessions": 250,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "SLB",
+            "finance_sessions": 250,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "SNAP",
+            "finance_sessions": 250,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "SPY",
+            "finance_sessions": 250,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "TGT",
+            "finance_sessions": 250,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "TLT",
+            "finance_sessions": 250,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "TSLA",
+            "finance_sessions": 250,
+            "news_sessions": 199,
+            "coverage_pct": 79.6
+          },
+          {
+            "ticker": "UBER",
+            "finance_sessions": 250,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "UNH",
+            "finance_sessions": 250,
+            "news_sessions": 45,
+            "coverage_pct": 18.0
+          },
+          {
+            "ticker": "WFC",
+            "finance_sessions": 250,
+            "news_sessions": 143,
+            "coverage_pct": 57.2
+          },
+          {
+            "ticker": "WMT",
+            "finance_sessions": 250,
+            "news_sessions": 146,
+            "coverage_pct": 58.4
+          },
+          {
+            "ticker": "XOM",
+            "finance_sessions": 250,
+            "news_sessions": 66,
+            "coverage_pct": 26.4
+          }
+        ]
+      },
+      {
+        "year": "2024",
+        "finance_sessions": 10824,
+        "news_sessions": 19,
+        "coverage_pct": 0.176,
+        "by_ticker": [
+          {
+            "ticker": "AAPL",
+            "finance_sessions": 246,
+            "news_sessions": 1,
+            "coverage_pct": 0.407
+          },
+          {
+            "ticker": "ABBV",
+            "finance_sessions": 246,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "ADBE",
+            "finance_sessions": 246,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "AMD",
+            "finance_sessions": 246,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "AMZN",
+            "finance_sessions": 246,
+            "news_sessions": 1,
+            "coverage_pct": 0.407
+          },
+          {
+            "ticker": "BAC",
+            "finance_sessions": 246,
+            "news_sessions": 1,
+            "coverage_pct": 0.407
+          },
+          {
+            "ticker": "C",
+            "finance_sessions": 246,
+            "news_sessions": 1,
+            "coverage_pct": 0.407
+          },
+          {
+            "ticker": "COP",
+            "finance_sessions": 246,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "COST",
+            "finance_sessions": 246,
+            "news_sessions": 1,
+            "coverage_pct": 0.407
+          },
+          {
+            "ticker": "CRM",
+            "finance_sessions": 246,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "CVS",
+            "finance_sessions": 246,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "CVX",
+            "finance_sessions": 246,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "DIA",
+            "finance_sessions": 246,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "GLD",
+            "finance_sessions": 246,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "GOOGL",
+            "finance_sessions": 246,
+            "news_sessions": 1,
+            "coverage_pct": 0.407
+          },
+          {
+            "ticker": "GS",
+            "finance_sessions": 246,
+            "news_sessions": 1,
+            "coverage_pct": 0.407
+          },
+          {
+            "ticker": "INTC",
+            "finance_sessions": 246,
+            "news_sessions": 1,
+            "coverage_pct": 0.407
+          },
+          {
+            "ticker": "IWM",
+            "finance_sessions": 246,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "JNJ",
+            "finance_sessions": 246,
+            "news_sessions": 1,
+            "coverage_pct": 0.407
+          },
+          {
+            "ticker": "JPM",
+            "finance_sessions": 246,
+            "news_sessions": 1,
+            "coverage_pct": 0.407
+          },
+          {
+            "ticker": "MCD",
+            "finance_sessions": 246,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "META",
+            "finance_sessions": 246,
+            "news_sessions": 1,
+            "coverage_pct": 0.407
+          },
+          {
+            "ticker": "MRNA",
+            "finance_sessions": 246,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "MS",
+            "finance_sessions": 246,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "MSFT",
+            "finance_sessions": 246,
+            "news_sessions": 1,
+            "coverage_pct": 0.407
+          },
+          {
+            "ticker": "NFLX",
+            "finance_sessions": 246,
+            "news_sessions": 1,
+            "coverage_pct": 0.407
+          },
+          {
+            "ticker": "NKE",
+            "finance_sessions": 246,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "NVDA",
+            "finance_sessions": 246,
+            "news_sessions": 1,
+            "coverage_pct": 0.407
+          },
+          {
+            "ticker": "ORCL",
+            "finance_sessions": 246,
+            "news_sessions": 1,
+            "coverage_pct": 0.407
+          },
+          {
+            "ticker": "OXY",
+            "finance_sessions": 246,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "PFE",
+            "finance_sessions": 246,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "PYPL",
+            "finance_sessions": 246,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "QQQ",
+            "finance_sessions": 246,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "SLB",
+            "finance_sessions": 246,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "SNAP",
+            "finance_sessions": 246,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "SPY",
+            "finance_sessions": 246,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "TGT",
+            "finance_sessions": 246,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "TLT",
+            "finance_sessions": 246,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "TSLA",
+            "finance_sessions": 246,
+            "news_sessions": 1,
+            "coverage_pct": 0.407
+          },
+          {
+            "ticker": "UBER",
+            "finance_sessions": 246,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          },
+          {
+            "ticker": "UNH",
+            "finance_sessions": 246,
+            "news_sessions": 1,
+            "coverage_pct": 0.407
+          },
+          {
+            "ticker": "WFC",
+            "finance_sessions": 246,
+            "news_sessions": 1,
+            "coverage_pct": 0.407
+          },
+          {
+            "ticker": "WMT",
+            "finance_sessions": 246,
+            "news_sessions": 1,
+            "coverage_pct": 0.407
+          },
+          {
+            "ticker": "XOM",
+            "finance_sessions": 246,
+            "news_sessions": 0,
+            "coverage_pct": 0.0
+          }
+        ]
+      }
+    ]
+  },
+  "lag_coverage": [
+    {
+      "additional_sessions": 0,
+      "finance_sessions": 104076,
+      "news_sessions": 11972,
+      "coverage_pct": 11.503,
+      "by_year": [
+        {
+          "year": "2015",
+          "finance_sessions": 6843,
+          "news_sessions": 0,
+          "coverage_pct": 0.0
+        },
+        {
+          "year": "2016",
+          "finance_sessions": 10332,
+          "news_sessions": 0,
+          "coverage_pct": 0.0
+        },
+        {
+          "year": "2017",
+          "finance_sessions": 10420,
+          "news_sessions": 473,
+          "coverage_pct": 4.539
+        },
+        {
+          "year": "2018",
+          "finance_sessions": 10542,
+          "news_sessions": 355,
+          "coverage_pct": 3.367
+        },
+        {
+          "year": "2019",
+          "finance_sessions": 10851,
+          "news_sessions": 856,
+          "coverage_pct": 7.889
+        },
+        {
+          "year": "2020",
+          "finance_sessions": 11132,
+          "news_sessions": 683,
+          "coverage_pct": 6.135
+        },
+        {
+          "year": "2021",
+          "finance_sessions": 11088,
+          "news_sessions": 2717,
+          "coverage_pct": 24.504
+        },
+        {
+          "year": "2022",
+          "finance_sessions": 11044,
+          "news_sessions": 3171,
+          "coverage_pct": 28.712
+        },
+        {
+          "year": "2023",
+          "finance_sessions": 11000,
+          "news_sessions": 3698,
+          "coverage_pct": 33.618
+        },
+        {
+          "year": "2024",
+          "finance_sessions": 10824,
+          "news_sessions": 19,
+          "coverage_pct": 0.176
+        }
+      ]
+    },
+    {
+      "additional_sessions": 1,
+      "finance_sessions": 104076,
+      "news_sessions": 11972,
+      "coverage_pct": 11.503,
+      "by_year": [
+        {
+          "year": "2015",
+          "finance_sessions": 6843,
+          "news_sessions": 0,
+          "coverage_pct": 0.0
+        },
+        {
+          "year": "2016",
+          "finance_sessions": 10332,
+          "news_sessions": 0,
+          "coverage_pct": 0.0
+        },
+        {
+          "year": "2017",
+          "finance_sessions": 10420,
+          "news_sessions": 472,
+          "coverage_pct": 4.53
+        },
+        {
+          "year": "2018",
+          "finance_sessions": 10542,
+          "news_sessions": 346,
+          "coverage_pct": 3.282
+        },
+        {
+          "year": "2019",
+          "finance_sessions": 10851,
+          "news_sessions": 863,
+          "coverage_pct": 7.953
+        },
+        {
+          "year": "2020",
+          "finance_sessions": 11132,
+          "news_sessions": 686,
+          "coverage_pct": 6.162
+        },
+        {
+          "year": "2021",
+          "finance_sessions": 11088,
+          "news_sessions": 2714,
+          "coverage_pct": 24.477
+        },
+        {
+          "year": "2022",
+          "finance_sessions": 11044,
+          "news_sessions": 3170,
+          "coverage_pct": 28.703
+        },
+        {
+          "year": "2023",
+          "finance_sessions": 11000,
+          "news_sessions": 3702,
+          "coverage_pct": 33.655
+        },
+        {
+          "year": "2024",
+          "finance_sessions": 10824,
+          "news_sessions": 19,
+          "coverage_pct": 0.176
+        }
+      ]
+    },
+    {
+      "additional_sessions": 2,
+      "finance_sessions": 104076,
+      "news_sessions": 11972,
+      "coverage_pct": 11.503,
+      "by_year": [
+        {
+          "year": "2015",
+          "finance_sessions": 6843,
+          "news_sessions": 0,
+          "coverage_pct": 0.0
+        },
+        {
+          "year": "2016",
+          "finance_sessions": 10332,
+          "news_sessions": 0,
+          "coverage_pct": 0.0
+        },
+        {
+          "year": "2017",
+          "finance_sessions": 10420,
+          "news_sessions": 472,
+          "coverage_pct": 4.53
+        },
+        {
+          "year": "2018",
+          "finance_sessions": 10542,
+          "news_sessions": 337,
+          "coverage_pct": 3.197
+        },
+        {
+          "year": "2019",
+          "finance_sessions": 10851,
+          "news_sessions": 864,
+          "coverage_pct": 7.962
+        },
+        {
+          "year": "2020",
+          "finance_sessions": 11132,
+          "news_sessions": 694,
+          "coverage_pct": 6.234
+        },
+        {
+          "year": "2021",
+          "finance_sessions": 11088,
+          "news_sessions": 2706,
+          "coverage_pct": 24.405
+        },
+        {
+          "year": "2022",
+          "finance_sessions": 11044,
+          "news_sessions": 3178,
+          "coverage_pct": 28.776
+        },
+        {
+          "year": "2023",
+          "finance_sessions": 11000,
+          "news_sessions": 3702,
+          "coverage_pct": 33.655
+        },
+        {
+          "year": "2024",
+          "finance_sessions": 10824,
+          "news_sessions": 19,
+          "coverage_pct": 0.176
+        }
+      ]
+    }
+  ],
+  "interpretation": "Coverage/duplication audit only. Overlap does not prove outcome leakage; article versions remain unverified. No model performance measured.",
+  "audit_id": "news_quality_v1",
+  "audited_at": "2026-10-07T08:39:11.308179+00:00",
+  "protocol": {
+    "audit_id": "news_quality_v1",
+    "registered_on": "2026-10-07",
+    "purpose": "Assess the already acquired Drinkall archive before any new prediction experiment.",
+    "source_audit": "docs/research/news_candidate_audit.json",
+    "source_revision": "3d87f0a8140d6517619d56ad9014f7f6c68abdcb",
+    "finance_input": "backend/data/processed/features_finance.csv",
+    "finance_columns": [
+      "ticker",
+      "date"
+    ],
+    "maximum_finance_date": "2024-12-31",
+    "headline_identity": "Unicode casefold plus collapsed whitespace; exact identity only, no fuzzy semantic match.",
+    "url_identity": "Exact stored URL; no inferred canonicalization.",
+    "segments": {
+      "fit": [
+        "2017-01-01",
+        "2022-01-01"
+      ],
+      "calibration": [
+        "2022-01-01",
+        "2023-01-01"
+      ],
+      "evaluation": [
+        "2023-01-01",
+        "2024-01-01"
+      ]
+    },
+    "segments_scope": "Unpurged article availability segments; these are not model evaluation rows.",
+    "lag_sensitivity_sessions": [
+      0,
+      1,
+      2
+    ],
+    "lag_scope": "Coverage only, not prediction performance.",
+    "checks": [
+      "Pinned normalized input hash",
+      "Duplicate ticker/article keys",
+      "Unique article identity consistency",
+      "Archive/publication/availability order",
+      "First eligible NYSE close assignment",
+      "Repeated headlines and URL versions",
+      "Exact headline overlap across chronological segments",
+      "Year and ticker coverage with within-year denominators",
+      "Coverage under additional availability lag"
+    ],
+    "model_fits": 0,
+    "price_values_or_labels_read": false,
+    "candidate_holdout_read": false,
+    "raw_text_published": false,
+    "decision_rule": "Any integrity failure stops reporting. Duplicate/version findings guide a separately registered cleaning experiment; do not rewrite completed pilot inputs or results.",
+    "limitations": [
+      "Archive metadata cannot prove that article content is the original historical version.",
+      "Repeated headlines may be genuine recurring stories; overlap is a diagnostic, not proof of outcome leakage.",
+      "No NLP training-corpus contamination audit or semantic near-duplicate detection.",
+      "No accuracy, return or model-promotion claim from a data-quality audit."
+    ]
+  },
+  "source": "https://github.com/FelixDrinkall/financial-news-dataset/tree/3d87f0a8140d6517619d56ad9014f7f6c68abdcb",
+  "input_sha256": {
+    "news": "132c535ca0688d097077119be84250ad4215449c76288be45b12e58a3c1e386c",
+    "finance": "a7e232caba7517fad5e42e4581c4c0eb4cdcec5e1d5856bb6661180346c64e47",
+    "source_audit": "77b9318f14e08da77d0758b2b4cc85e65495401ec7eccd99eb2beb964a781460",
+    "protocol": "d7068187bf65b8d0ae77453ebaf7728e58682b6a4f325ac595f16ee00bb3fb42",
+    "audit_code": "41208a07c08c6055fdf8ba8f820b8ddefdb90d92bc26b36ae273f79bcf6b6561"
+  }
+}
