@@ -1,0 +1,33 @@
+{
+  "protocol_id": "xai_comparison_v1",
+  "registered_date": "2026-10-07",
+  "status": "exploratory_explanation_evaluation",
+  "model_variants": ["xgb_finance", "lstm_finance"],
+  "sample_rule": "All tickers on the latest common saved prediction date, no label-based selection; require 44 matched predictions per model.",
+  "reference_rule": "Finance features dated before 2023-01-01 only; fixed 1024-row sample with seed 42 for tabular LIME; standardized reference mean and median as sequence baselines.",
+  "seeds": [42, 43, 44],
+  "output_scale": "raw_log_odds_before_calibration",
+  "xgb_methods": ["native_treeshap", "lime_historical_neighborhood"],
+  "lime": {"sample_rows": 1024, "feature_selection": "none", "ridge_alpha": 1, "kernel_width_factor": 0.75, "reference_centred": true},
+  "sequence_methods": ["integrated_gradients", "day_window_occlusion"],
+  "integrated_gradients": {"steps": 128, "method": "gausslegendre"},
+  "occlusion": {"window_sessions": 1, "features": "all features in a day", "replacement": "same pre-2023 mean baseline"},
+  "evaluation": {
+    "primary": "Mean cumulative absolute raw-logit change after removal of top 1..N ranked features/days; higher means stronger model response, not better trading performance.",
+    "random_control": "Mean of 20 random removal orders with seed 42 per input.",
+    "reference_sensitivity": "Top-3 Jaccard overlap between reference mean and median replacement scores.",
+    "lime_seed_stability": "Mean pairwise top-3 Jaccard across seeds 42,43,44.",
+    "completeness": "TreeSHAP reconstruction error and Integrated Gradients convergence delta; not applicable to LIME/occlusion.",
+    "lime_fidelity": "Weighted neighborhood R-squared and absolute error at original input.",
+    "runtime": "Measured explanation time on local CPU; no production latency claim."
+  },
+  "constraints": [
+    "No training, calibration fitting, prediction promotion, holdout reading or database writes.",
+    "Exact saved prediction must reproduce within percentage-CSV rounding; refuse mismatch.",
+    "LSTM input follows the original export: ten sessions preceding the saved label date, excluding that date.",
+    "LIME fits actual historical rows rather than independently sampled synthetic indicators. This is a documented LimeBase neighborhood adaptation, not default LimeTabular.",
+    "Deletion, occlusion and IG interpolation can break indicator relationships or temporal continuity. They are synthetic sensitivity diagnostics, not feasible market scenarios or causal effects.",
+    "TreeSHAP and LIME have different reference conventions. Do not rank magnitudes or completeness across them.",
+    "The protocol defines no universal winner or model-accuracy gain. Report all results and limitations, not a post-selected best case."
+  ]
+}
