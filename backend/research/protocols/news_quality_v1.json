@@ -1,0 +1,23 @@
+{
+  "audit_id": "news_quality_v1",
+  "registered_on": "2026-10-07",
+  "purpose": "Assess the already acquired Drinkall archive before any new prediction experiment.",
+  "source_audit": "docs/research/news_candidate_audit.json",
+  "source_revision": "3d87f0a8140d6517619d56ad9014f7f6c68abdcb",
+  "finance_input": "backend/data/processed/features_finance.csv",
+  "finance_columns": ["ticker", "date"],
+  "maximum_finance_date": "2024-12-31",
+  "headline_identity": "Unicode casefold plus collapsed whitespace; exact identity only, no fuzzy semantic match.",
+  "url_identity": "Exact stored URL; no inferred canonicalization.",
+  "segments": {"fit": ["2017-01-01", "2022-01-01"], "calibration": ["2022-01-01", "2023-01-01"], "evaluation": ["2023-01-01", "2024-01-01"]},
+  "segments_scope": "Unpurged article availability segments; these are not model evaluation rows.",
+  "lag_sensitivity_sessions": [0, 1, 2],
+  "lag_scope": "Coverage only, not prediction performance.",
+  "checks": ["Pinned normalized input hash", "Duplicate ticker/article keys", "Unique article identity consistency", "Archive/publication/availability order", "First eligible NYSE close assignment", "Repeated headlines and URL versions", "Exact headline overlap across chronological segments", "Year and ticker coverage with within-year denominators", "Coverage under additional availability lag"],
+  "model_fits": 0,
+  "price_values_or_labels_read": false,
+  "candidate_holdout_read": false,
+  "raw_text_published": false,
+  "decision_rule": "Any integrity failure stops reporting. Duplicate/version findings guide a separately registered cleaning experiment; do not rewrite completed pilot inputs or results.",
+  "limitations": ["Archive metadata cannot prove that article content is the original historical version.", "Repeated headlines may be genuine recurring stories; overlap is a diagnostic, not proof of outcome leakage.", "No NLP training-corpus contamination audit or semantic near-duplicate detection.", "No accuracy, return or model-promotion claim from a data-quality audit."]
+}
