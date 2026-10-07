@@ -14,6 +14,7 @@
 - Collection gaps are visible: expected NYSE sessions since the first logged date in the chosen window, after 23:00 UTC. This allows one hour beyond the existing 22:00 UTC job schedule.
 - The gap indicator identifies missing data, not its cause. It does not count absent forecasts as incorrect predictions or backdate new records.
 - The summary query reads only the fields required for reporting, avoiding the large saved feature JSON for every database row. The original snapshots remain in Supabase.
+- The public forward-results route is isolated in `forward_routes.py`, so its API contract tests do not require the full app's serving-only dependencies or dataset startup.
 
 ## What the current data says
 
@@ -79,12 +80,14 @@ The export does not include raw feature snapshots, account information or indivi
 ## Technical validation
 
 - **168 backend tests passed**, including 11 new forward-evidence regression tests.
+- The same 168 tests also passed in a new isolated environment containing only `requirements-evaluation.txt`, matching the CI dependency scope. Serving runtime smoke checks passed after the route extraction.
 - **11 frontend tests passed**; the production build passed.
 - Tests cover hand-computable scores, calibration/raw-direction separation, all-UP identity, date-block replay, input ordering, missing calendar sessions, mixed/unknown versions, partial cohorts, duplicate keys, invalid probabilities and wrong stored correctness.
 - Tests cover date-window query bounds, early-close/holiday collection deadlines and exact overdue cutoffs.
 - Browser checks used the real read-only local API and isolated fixtures for error/retry, unavailability, empty samples, older backend responses, eligible intervals, mixed versions and export failure.
 - Desktop, 390 px and 320 px layouts passed without page overflow. Tables can scroll with the keyboard; no uncaught page errors were observed. Screenshots were visually inspected.
 - The downloaded real-data export matched the API evidence. Window changes were reflected in the export.
+- Older backends that return a different window now show an explicit notice; exports identify the returned window.
 - No Supabase migration, new cloud secrets, model fitting or reserved historical holdout access was needed. QA did not trigger the administrator collection job or write database records.
 - Local QA files are ignored under `backend/data/research/forward_evidence_20261007`.
 

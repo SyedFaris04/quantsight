@@ -98,12 +98,12 @@ def verify(base, api, executable, output):
         page.unroute(pattern)
 
         old = copy.deepcopy(real)
-        old["days"] = 90
+        old["days"] = 30
         for key in ["evidence", "recent_resolved", "recent_pending"]:
             old.pop(key)
         fixture(old)
         expect(assessment).to_contain_text("Detailed date-level evidence is not available")
-        expect(page.get_by_text("This backend returned a 90-day window", exact=False)).to_be_visible()
+        expect(page.get_by_text("This backend returned a 30-day window", exact=False)).to_be_visible()
         page.set_viewport_size({"width": 320, "height": 844})
         page.wait_for_function("document.documentElement.scrollWidth <= innerWidth")
         page.unroute(pattern)

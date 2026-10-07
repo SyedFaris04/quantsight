@@ -76,6 +76,7 @@ from live_signals import get_live_signal, get_live_signals_batch
 import chatbot_engine
 from chat_http import chat_response
 import prediction_tracker
+from forward_routes import router as forward_router
 from backtesting.routes import router as backtesting_router
 from research.routes import router as research_router
 from feature_attribution import router as feature_attribution_router
@@ -1235,10 +1236,7 @@ def chat(req: ChatRequest, request: Request):
 # ── Live prediction track record ────────────────────────────────────────────
 # Forward evaluation uses five NYSE sessions and excludes legacy horizon-unknown records.
 
-@app.get("/live-track-record")
-def live_track_record(days: int = Query(30, ge=7, le=365)):
-    """Aggregate live accuracy + recent predictions. Public, no auth needed."""
-    return prediction_tracker.get_summary(days=days)
+app.include_router(forward_router)
 
 
 @app.post("/admin/run-daily-predictions")

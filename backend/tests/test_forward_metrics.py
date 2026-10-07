@@ -5,10 +5,11 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 from fastapi.testclient import TestClient
+from fastapi import FastAPI
 
-import main
 import prediction_tracker as tracker
-from forward_metrics import build_evidence, PROTOCOL
+from forward_metrics import build_evidence
+from forward_routes import router
 from market_calendar import schedule
 
 
@@ -134,7 +135,9 @@ class ForwardEvidenceTests(unittest.TestCase):
             build_evidence([row(), row()])
 
     def test_window_query_validation_and_forwarding(self):
-        with TestClient(main.app) as client, patch.object(tracker, "get_summary", return_value={"available": False}) as summary:
+        app = FastAPI()
+        app.include_router(router)
+        with TestClient(app) as client, patch.object(tracker, "get_summary", return_value={"available": False}) as summary:
             self.assertEqual(client.get("/live-track-record?days=90").status_code, 200)
             summary.assert_called_once_with(days=90)
             for days in [0, 366, "invalid"]:
