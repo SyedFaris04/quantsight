@@ -1,0 +1,32 @@
+{
+  "protocol_id": "model-health-v1",
+  "scope": "read_only_recorded_forecasts",
+  "reference": {
+    "source": "data/processed/features_finance.csv",
+    "start": "2015-01-01",
+    "end": "2022-12-30",
+    "description": "Historical development inputs, not a verified reconstruction of the original training sample",
+    "stratification": "ticker",
+    "quantiles": [0.01, 0.25, 0.5, 0.75, 0.99],
+    "quantile_method": "linear",
+    "minimum_rows_per_ticker": 300
+  },
+  "range_flag": {
+    "minimum_finite_forecasts": 20,
+    "minimum_outside_fraction": 0.2,
+    "outside_rule": "strictly below p01 or above p99 for the same ticker and feature",
+    "interpretation": "descriptive review flag; not a significance test or proof of accuracy loss"
+  },
+  "probability_flag": {
+    "minimum_forecasts": 20,
+    "maximum_flat_span": 0.005,
+    "histogram_edges": [0, 0.2, 0.4, 0.6, 0.8, 1],
+    "direction_rule": "BUY when raw_probability_up >= 0.5, otherwise SELL",
+    "interpretation": "limited ranking information; not a calibration accuracy test"
+  },
+  "grouping": ["predicted_date", "model_version", "feature_version", "calibration_method"],
+  "default_days": 30,
+  "maximum_days": 90,
+  "holdout_files_accessed": false,
+  "changes_predictions": false
+}
