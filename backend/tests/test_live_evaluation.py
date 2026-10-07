@@ -183,8 +183,9 @@ class TrackerTests(unittest.TestCase):
         self.assertEqual(db.rows[0]["target_date"], "2024-07-11")
 
     def test_summary_reads_beyond_500_rows(self):
-        rows = [{"id": str(i), "ticker": "TEST", "predicted_date": "2024-07-03", "protocol_version": tracker.PROTOCOL,
-                 "resolved": True, "correct": i < 600, "actual_signal": "BUY", "probability_up": .6} for i in range(1100)]
+        rows = [{"id": str(i), "ticker": f"TEST{i}", "predicted_date": "2024-07-03", "protocol_version": tracker.PROTOCOL,
+                 "resolved": True, "correct": i < 600, "predicted_signal": "BUY" if i < 600 else "SELL",
+                 "actual_signal": "BUY", "probability_up": .6} for i in range(1100)]
         with patch.object(tracker, "get_admin_client", return_value=Database(rows)), patch.object(tracker, "utc_now", return_value=pd.Timestamp("2024-07-20T22:00Z")):
             summary = tracker.get_summary()
         self.assertEqual(summary["total_logged"], 1100)
@@ -192,6 +193,8 @@ class TrackerTests(unittest.TestCase):
         self.assertEqual(summary["always_up_accuracy_pct"], 100.)
         self.assertEqual(summary["brier_score"], .16)
         self.assertEqual(len(summary["recent"]), 20)
+        self.assertEqual(summary["evidence"]["resolved_forecast_dates"], 1)
+        self.assertFalse(summary["evidence"]["intervals"]["available"])
 
     def test_outside_window_does_not_create_backdated_forecast(self):
         with patch.object(tracker, "get_admin_client", return_value=Database([])), patch.object(tracker, "get_live_signal") as infer:

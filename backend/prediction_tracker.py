@@ -12,10 +12,18 @@ import pandas as pd
 from live_signals import get_live_signal
 from market_calendar import utc_now, latest_completed_session, forecast_window, eligible_to_record
 from prediction_contract import LABEL_HORIZON_TRADING_DAYS
+from forward_metrics import build_evidence
 
 logger = logging.getLogger("nuroquant-api")
 TABLE = "live_predictions_v2"
 PROTOCOL = "nyse-close-5-v2"
+SUMMARY_FIELDS = ",".join([
+    "id", "ticker", "predicted_date", "target_date", "target_close_at", "horizon_sessions",
+    "protocol_version", "model_version", "feature_version", "calibration_method",
+    "predicted_signal", "confidence", "probability_up", "raw_probability_up",
+    "created_at", "data_cutoff_at", "generated_at", "record_before", "price_basis",
+    "resolved", "actual_signal", "correct", "actual_return", "resolved_at",
+])
 _admin_client = None
 
 
@@ -151,13 +159,18 @@ def get_summary(days=30):
     now = utc_now()
     since = str((now - timedelta(days=days)).date())
     try:
-        rows = read_pages(sb.table(TABLE).select("*").gte("predicted_date", since)
+        rows = read_pages(sb.table(TABLE).select(SUMMARY_FIELDS).gte("predicted_date", since)
                           .lte("predicted_date", str(now.date()))
                           .eq("protocol_version", PROTOCOL).order("predicted_date", desc=True).order("id"))
     except Exception as exc:
         logger.warning("Live tracker read failed: %s", type(exc).__name__)
         return {"available": False, "reason": "Live tracker v2 unavailable. Database migration or connectivity needs attention."}
     resolved = [r for r in rows if r["resolved"]]
+    try:
+        evidence = build_evidence(rows, now)
+    except (ValueError, TypeError, KeyError) as exc:
+        logger.warning("Forward evidence integrity failure: %s", type(exc).__name__)
+        return {"available": False, "reason": "Forward records could not be verified. Check recorded directions, probabilities and forecast dates."}
     correct = sum(bool(r["correct"]) for r in resolved)
     accuracy = correct / len(resolved) if resolved else None
     always_up = sum(r["actual_signal"] == "BUY" for r in resolved) / len(resolved) if resolved else None
@@ -169,4 +182,7 @@ def get_summary(days=30):
             "accuracy_pct": round(accuracy * 100, 1) if accuracy is not None else None,
             "always_up_accuracy_pct": round(always_up * 100, 1) if always_up is not None else None,
             "brier_score": round(brier, 4) if brier is not None else None,
+            "evidence": evidence,
+            "recent_resolved": resolved[:20],
+            "recent_pending": [r for r in rows if not r["resolved"]][:20],
             "recent": rows[:20]}

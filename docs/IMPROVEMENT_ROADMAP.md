@@ -148,6 +148,10 @@ accuracy percentage and no promise that complexity must outperform simpler model
 ## Stage 7 - FYP evidence and final validation
 
 - Present historical simulation and forward tracking separately.
+- [x] Add date-level forward evidence, paired baselines, guarded uncertainty,
+  version separation, collection-gap warnings and an aggregate export. See
+  [forward evidence](FORWARD_EVIDENCE_2026-10-07.md). Daily collection has recent
+  failures; reporting improvements do not resolve that operational issue.
 - [x] Add year/month backtest consistency for all 15 portfolios, paired benchmark
   returns, exact partial-period dates and checked exports. The ensemble beats SPY
   in 9 of 23 observed months; its advantage differs across the two study windows.

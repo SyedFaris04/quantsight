@@ -1236,9 +1236,9 @@ def chat(req: ChatRequest, request: Request):
 # Forward evaluation uses five NYSE sessions and excludes legacy horizon-unknown records.
 
 @app.get("/live-track-record")
-def live_track_record():
+def live_track_record(days: int = Query(30, ge=7, le=365)):
     """Aggregate live accuracy + recent predictions. Public, no auth needed."""
-    return prediction_tracker.get_summary()
+    return prediction_tracker.get_summary(days=days)
 
 
 @app.post("/admin/run-daily-predictions")
