@@ -1,0 +1,22 @@
+{
+  "version": "forward-evidence-v1",
+  "registered_on": "2026-10-07",
+  "direction": "Recorded raw-model BUY/SELL decision; BUY outcome means target close strictly exceeds entry close. Ties are SELL.",
+  "probability": "Recorded calibrated P(UP), scored against the actual five-NYSE-session direction.",
+  "baselines": ["Always UP on identical resolved rows", "Fixed P(UP)=0.5 probability forecast"],
+  "primary_comparison": "Row-weighted recorded direction accuracy minus always-UP accuracy on identical resolved rows.",
+  "intervals": {
+    "method": "Circular moving-block bootstrap on the complete NYSE session grid between first and last resolved forecast date. Keep all stocks within a date together; empty dates have zero weight.",
+    "block_sessions": 20,
+    "repetitions": 1000,
+    "seed": 42,
+    "minimum_resolved_forecast_dates": 60,
+    "minimum_valid_repetitions": 950,
+    "level": 0.95,
+    "eligibility": "At least 60 distinct resolved forecast dates, no partially resolved date cohorts, and one known model/feature/calibration signature. Wholly pending dates do not enter metrics.",
+    "scope": "Exploratory percentile intervals for accuracy, paired accuracy difference and Brier loss. Eligibility is a display guard, not a guarantee of precision or statistical power. No hypothesis test or promotion rule."
+  },
+  "versions": "Pooled descriptive metrics are labelled; each model/feature/calibration signature also receives separate descriptive metrics. Suppress pooled intervals across signatures.",
+  "sample": "Rows in the selected rolling forecast-date window with protocol nyse-close-5-v2. No retrospective forecasts, model fitting, database writes or reserved historical holdout access.",
+  "limitations": ["Five-session outcomes overlap and stocks share market events.", "Bootstrap assumes reasonably stable dependence within the selected period and does not correct all previous selection trials or monitoring decisions.", "Forecast-date cohorts can have missing instruments; the observed panel is not a fixed full-universe sample.", "Direction and probability metrics are not portfolio returns or Sharpe ratios.", "Changing the rolling window can change conclusions; report it with each export."]
+}
