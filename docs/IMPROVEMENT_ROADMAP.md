@@ -146,6 +146,10 @@ accuracy percentage and no promise that complexity must outperform simpler model
 - Refactor backend routers/services/repositories and add a shared model registry.
 - Separate serving/training dependencies, pin environments and version deployment artifacts.
 - Add readiness, latency/error monitoring, scheduler heartbeat and data/model drift reports.
+- [x] Add read-only model-health monitoring with verified historical input ranges,
+      record quality checks, separate implementation versions, probability concentration,
+      latest-session coverage and exports. Flags are descriptive; they do not establish
+      drift significance or lost skill. See [model-health progress](MODEL_HEALTH_PROGRESS_2026-10-07.md).
 - Verify GitHub -> Render/Vercel release and Supabase settings on the actual deployments.
 
 ## Stage 7 - FYP evidence and final validation

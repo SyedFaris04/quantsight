@@ -77,6 +77,7 @@ import chatbot_engine
 from chat_http import chat_response
 import prediction_tracker
 from forward_routes import router as forward_router
+from model_health_routes import router as model_health_router
 from backtesting.routes import router as backtesting_router
 from research.routes import router as research_router
 from feature_attribution import router as feature_attribution_router
@@ -1237,6 +1238,7 @@ def chat(req: ChatRequest, request: Request):
 # Forward evaluation uses five NYSE sessions and excludes legacy horizon-unknown records.
 
 app.include_router(forward_router)
+app.include_router(model_health_router)
 
 
 @app.post("/admin/run-daily-predictions")

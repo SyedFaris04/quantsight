@@ -16,6 +16,7 @@ const GROUPS = [
     [
       ["/backtesting", "Backtesting", "backtest"],
       ["/track-record", "Forward results", "track"],
+      ["/model-health", "Model health", "track"],
       ["/compare", "Model comparison", "compare"],
       ["/leaderboard", "Model results", "results"],
     ],

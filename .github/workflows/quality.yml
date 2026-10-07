@@ -20,6 +20,8 @@ jobs:
         working-directory: backend
       - run: python -m research.build_attribution_snapshots --check
         working-directory: backend
+      - run: python -m research.build_model_health_reference --check
+        working-directory: backend
       - run: python -m backtesting.periods --check
         working-directory: backend
       - run: python -m research.confidence_audit --check

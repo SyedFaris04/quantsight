@@ -7,6 +7,7 @@
 - Historical reference: saved finance inputs dated 2015–2022. The saved model has no training-date manifest, so call this a historical development reference, not its proven training distribution.
 - Review a feature when at least 20 finite recorded values are available and at least 20% fall outside that band's limits. These fixed thresholds are practical flags, not statistical tests.
 - Flag a raw or calibrated probability span of at most 0.005 when at least 20 forecasts are available. Distinguish a flat raw model from compression by the calibrator.
+- Also display exact distinct probability values and the largest tied group as descriptive counts. These were added after the first range results; they do not change the registered flag thresholds or introduce another performance claim.
 - Check missing/non-finite inputs, probabilities, raw decision agreement, timestamp provenance and latest-session saved coverage.
 - Display unsupported model versions and missing reference data explicitly. Never silently compare another model with this reference.
 - Show sample size, dates and simple explanations. A stock snapshot is not a sample of independent market dates.

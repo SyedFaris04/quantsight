@@ -26,6 +26,7 @@ const Portfolio = lazy(() => import("./pages/Portfolio"));
 const Login = lazy(() => import("./pages/Login"));
 const Settings = lazy(() => import("./pages/Settings"));
 const TrackRecord = lazy(() => import("./pages/TrackRecord"));
+const ModelHealth = lazy(() => import("./pages/ModelHealth"));
 const Backtesting = lazy(() => import("./pages/Backtesting"));
 
 export default function App() {
@@ -70,6 +71,7 @@ export default function App() {
             <Route path="/login"          element={<Login />}     />
             <Route path="/settings"       element={<Settings />}  />
             <Route path="/track-record"   element={<TrackRecord />} />
+            <Route path="/model-health"   element={<ModelHealth />} />
             <Route path="/backtesting"    element={<Backtesting />} />
             <Route path="*"               element={<Navigate to="/" replace />} />
           </Routes>
