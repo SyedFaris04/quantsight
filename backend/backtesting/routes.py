@@ -60,6 +60,29 @@ def get_backtest():
     return {"available": True, "report": report}
 
 
+@router.get("/summary")
+def get_summary():
+    """Small, provenance-checked comparison for the home screen."""
+    report = load_report()
+    if report is None:
+        return {"available": False, "message": "No backtest report has been generated yet."}
+    if not report["freshness"]["matches_current_files"]:
+        return {"available": False, "message": "The saved backtest does not match current source files."}
+    try:
+        strategies = [{"key": s["key"], "name": s["name"], "metrics": s["metrics"]}
+                      for s in report["strategies"] if s["key"] in {"ensemble", "spy"}]
+        if len(strategies) != 2 or {s["key"] for s in strategies} != {"ensemble", "spy"}:
+            raise ValueError("Missing paired benchmark.")
+        return {
+            "available": True, "run_id": report["run_id"],
+            "evaluation": report["evaluation"], "config": report["config"],
+            "strategies": strategies,
+            "limitation": "Exploratory simulation on reused historical data; not an independent test or a live result.",
+        }
+    except (ValueError, KeyError, TypeError) as exc:
+        raise HTTPException(503, "Backtest summary is invalid or incomplete; regenerate it.") from exc
+
+
 @router.get("/export")
 def export_backtest(kind: str = Query("metrics", pattern="^(metrics|trades|daily|report|periods)$"), strategy: str = "ensemble"):
     report = load_report()

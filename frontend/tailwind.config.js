@@ -7,6 +7,8 @@ export default {
   theme: {
     extend: {
       colors: {
+        gray: { 400: "#a1aab8", 500: "#939dab", 600: "#7f8a99", 700: "#343d49", 800: "#252d38", 900: "#151b23", 950: "#0c1118" },
+        indigo: { 200: "#99f6e4", 300: "#5eead4", 400: "#2dd4bf", 500: "#14b8a6", 600: "#0d9488", 700: "#0f766e", 800: "#115e59", 900: "#134e4a", 950: "#042f2e" },
         // NuroQuant brand colours
         brand: {
           50:  "#eef2ff",

@@ -26,7 +26,7 @@ const METRICS_KEY_MAP = {
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
-function SignalBadge({ signal, confidence }) {
+function SignalBadge({ signal, confidence, live = false }) {
   if (!signal || signal === "N/A") return <span className="text-gray-600 text-xs">—</span>;
 
   if (signal === "HOLD") {
@@ -34,7 +34,7 @@ function SignalBadge({ signal, confidence }) {
       <div className="flex flex-col items-center gap-0.5">
         <span className="badge-hold">◆ HOLD</span>
         {confidence != null && (
-          <span className="text-xs text-gray-500">{confidence}%</span>
+          <span className="text-xs text-gray-500">{confidence}% {live ? "direction P" : "P(UP)"}</span>
         )}
       </div>
     );
@@ -47,7 +47,7 @@ function SignalBadge({ signal, confidence }) {
         {isBuy ? "▲" : "▼"} {signal}
       </span>
       {confidence != null && (
-        <span className="text-xs text-gray-500">{confidence}%</span>
+        <span className="text-xs text-gray-500">{confidence}% {live ? "direction P" : "P(UP)"}</span>
       )}
     </div>
   );
@@ -123,7 +123,7 @@ function TickerCard({ row, onClick }) {
             <div className="text-xs text-gray-500 truncate">{companyName(row.ticker)}</div>
           )}
         </div>
-        <SignalBadge signal={row.overall_signal} confidence={row.overall_confidence} />
+        <SignalBadge signal={row.overall_signal} confidence={row.overall_confidence} live={row.live_mode} />
       </div>
 
       {row.live_mode ? (
@@ -292,7 +292,7 @@ export default function Overview() {
           <p className="text-sm text-gray-500 mt-1">
             {liveMode
               ? `XGBoost / latest completed daily session · ${liveGenerated ? `Updated ${liveGenerated}` : "Loading..."}`
-              : `Scan all ${loading ? "..." : rows.length} stocks and find opportunities · cached signals from Dec 2024 dataset`
+              : `Scan all ${loading ? "..." : rows.length} stocks and inspect historical votes · saved Dec 2024 outputs`
             }
           </p>
         </div>
@@ -342,7 +342,7 @@ export default function Overview() {
       {liveMode && !liveLoading && !liveError && (
         <div className="bg-green-900/10 border border-green-800/50 rounded-lg px-4 py-2.5 text-xs text-green-600">
           Live mode shows one XGBoost finance model using the latest completed session.
-          The target is five trading sessions ahead. Confidence is the calibrated probability
+          The target is five trading sessions ahead. Direction probability is the calibrated probability
           of the selected direction. Historical agreement and risk scores do not apply.
         </div>
       )}
@@ -367,10 +367,10 @@ export default function Overview() {
 
       {/* ── Metric cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard label="Total Tickers"     value={loading ? "—" : metrics?.total ?? 0}          sub="tickers analysed"             accent="indigo" />
-        <MetricCard label="BUY Signals"       value={loading ? "—" : metrics?.buyCount ?? 0}       sub={`${metrics?.sellCount ?? 0} SELL · ${metrics?.holdCount ?? 0} HOLD`} accent="green" />
-        <MetricCard label={liveMode ? "Live Model" : "Strong Agreement"} value={liveMode ? "XGBoost" : loading ? "N/A" : metrics?.strongCount ?? 0} sub={liveMode ? "finance features / five sessions" : "all 4 models agree"} accent="amber" />
-        <MetricCard label="Avg Confidence"    value={loading ? "—" : `${metrics?.avgConf ?? 0}%`}  sub={liveMode ? "selected direction / available signals" : "across all models"}            accent="blue"  />
+        <MetricCard label="Instruments" value={loading || error ? "Unavailable" : metrics?.total} sub="covered universe" accent="indigo" />
+        <MetricCard label={liveMode ? "UP forecasts" : "Historical BUY votes"} value={loading || error || liveLoading || liveError ? "Unavailable" : metrics?.buyCount} sub={loading || error || liveLoading || liveError ? "Votes unavailable" : `${metrics?.sellCount} SELL · ${metrics?.holdCount} HOLD`} accent="green" />
+        <MetricCard label={liveMode ? "Daily forecast model" : "Unanimous votes"} value={liveMode ? "XGBoost" : loading || error ? "Unavailable" : metrics?.strongCount} sub={liveMode ? "finance features / five sessions" : "agreement is not accuracy"} accent="amber" />
+        <MetricCard label={liveMode ? "Mean direction probability" : "Mean P(UP)"} value={loading || error || liveLoading || liveError || metrics?.avgConf === "N/A" ? "Unavailable" : `${metrics?.avgConf}%`} sub={liveMode ? "selected direction / available signals" : "descriptive average; not accuracy"} accent="blue" />
       </div>
 
       {/* ── Filters ── */}
@@ -412,7 +412,7 @@ export default function Overview() {
         {[
           { key: "ticker",     label: "Ticker" },
           { key: "signal",     label: "Signal" },
-          { key: "confidence", label: "Confidence" },
+          { key: "confidence", label: liveMode ? "Direction probability" : "Mean P(UP)" },
         ].map(c => (
           <button
             key={c.key}

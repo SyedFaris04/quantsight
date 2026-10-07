@@ -24,6 +24,8 @@ jobs:
         working-directory: backend
       - run: python -m research.confidence_audit --check
         working-directory: backend
+      - run: python -c "from research.xai_report import load; assert load() is not None"
+        working-directory: backend
       - run: python -m research.verify_runtime
         working-directory: backend
   database:

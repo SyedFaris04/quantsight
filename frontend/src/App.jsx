@@ -11,6 +11,7 @@ import { lazy, Suspense, useState } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import Sidebar     from "./components/Sidebar";
+import Icon from "./components/Icon";
 import Dashboard   from "./pages/Dashboard";
 import ChatWidget  from "./components/ChatWidget";
 import PageBoundary, { PageLoading } from "./components/PageBoundary";
@@ -43,10 +44,12 @@ export default function App() {
           <button
             onClick={() => setMobileNavOpen(true)}
             aria-label="Open navigation menu"
+            aria-expanded={mobileNavOpen}
+            aria-controls="primary-navigation"
             className="w-9 h-9 flex items-center justify-center rounded-lg text-gray-300
                        hover:bg-gray-800 hover:text-white transition-colors"
           >
-            <span className="text-xl leading-none">☰</span>
+            <Icon name="menu" />
           </button>
           <span className="font-bold text-base tracking-tight text-white">
             Quant<span className="text-indigo-400">Sight</span>

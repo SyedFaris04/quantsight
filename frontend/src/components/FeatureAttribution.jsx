@@ -45,7 +45,7 @@ export default function FeatureAttribution({ ticker }) {
           </select>
         </label>
       </div>
-      {loading ? <p role="status" className="text-sm text-gray-400 py-6">Computing verified model contributions…</p>
+      {loading ? <p role="status" className="text-sm text-gray-400 py-6">Loading verified model contributions…</p>
         : error ? <div role="alert" className="text-sm text-amber-300">
           <p>Could not load a verified explanation. {String(error)}</p>
           <button onClick={refetch} className="mt-2 underline">Retry explanation</button>

@@ -1,5 +1,7 @@
 # Dashboard dates and interface - 27 September 2026
 
+For the current interface and XAI study, see [the 7 October update](UI_AND_XAI_PROGRESS_2026-10-07.md). The description below records the earlier release.
+
 The previous Dashboard described saved predictions as "today" and "Live signals",
 and a loaded news file as real-time news. The redesigned page shows those sources
 as historical research inputs, with direct paths to Backtesting, AI Compare and

@@ -1,8 +1,7 @@
 /**
  * frontend/src/pages/Portfolio.jsx
  * ─────────────────────────────────────────────────────────────────
- * Portfolio Tracker — enter your holdings, get model-based
- * recommendations (HOLD / SELL / BUY MORE) and see what to buy next.
+ * Portfolio tracker with quotes and dated historical model votes.
  *
  * Guest mode: data stays in the browser (localStorage), no account needed.
  * Signed in: holdings sync to Supabase (portfolio_holdings table, RLS-scoped
@@ -15,6 +14,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApi } from "../hooks/useApi";
+import { dailyQuoteProfit } from "../data/portfolioMath";
 import { companyName } from "../data/companyNames";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabaseClient";
@@ -34,27 +34,7 @@ function savePortfolio(holdings) {
 }
 
 // ── Recommendation logic ───────────────────────────────────────────────────────
-function getRecommendation(signal, confidence, plPct) {
-  if (!signal) return { label: "LOADING", color: "text-gray-400", bg: "bg-gray-800 border-gray-700", icon: "⏳" };
 
-  if (signal === "SELL") {
-    return { label: "SELL", color: "text-red-400", bg: "bg-red-900/20 border-red-800", icon: "▼" };
-  }
-
-  if (signal === "HOLD") {
-    // Model itself is undecided (2-2 split) — keep position, no strong signal either way
-    return { label: "HOLD", color: "text-amber-400", bg: "bg-amber-900/20 border-amber-800", icon: "◆" };
-  }
-
-  // BUY signal
-  if (confidence >= 65 && plPct >= 0) {
-    return { label: "BUY MORE", color: "text-green-400", bg: "bg-green-900/20 border-green-800", icon: "▲▲" };
-  }
-  if (confidence >= 65 && plPct < -10) {
-    return { label: "HOLD", color: "text-amber-400", bg: "bg-amber-900/20 border-amber-800", icon: "◆" };
-  }
-  return { label: "HOLD", color: "text-amber-400", bg: "bg-amber-900/20 border-amber-800", icon: "◆" };
-}
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
@@ -78,23 +58,21 @@ function HoldingRow({ holding, onRemove, onStats }) {
   const currentPrice = priceData?.price ?? null;
   const isLive       = priceData?.source === "live";
   const signal       = explanation?.overall_signal    ?? null;
-  const confidence   = explanation?.overall_confidence ?? 50;
+  const confidence   = explanation?.overall_confidence ?? null;
 
   const plAmt  = currentPrice != null ? (currentPrice - buyPrice) * shares : null;
   const plPct  = currentPrice != null ? ((currentPrice - buyPrice) / buyPrice) * 100 : null;
   const value  = currentPrice != null ? currentPrice * shares : null;
 
-  const rec = getRecommendation(signal, confidence, plPct);
+
 
   // Report this row's real numbers up to the parent so it can show
   // portfolio-wide totals (Total Value / Total Return / Today's P&L)
   useEffect(() => {
     if (currentPrice == null) return;
-    const todaysPlAmt = priceData?.change_pct != null
-      ? value * (priceData.change_pct / 100)
-      : 0;
+    const todaysPlAmt = dailyQuoteProfit(value, priceData?.change_pct, isLive);
     onStats(ticker, { value, costBasis: buyPrice * shares, plAmt, todaysPlAmt });
-  }, [ticker, currentPrice, value, plAmt, priceData?.change_pct, buyPrice, shares, onStats]);
+  }, [ticker, currentPrice, value, plAmt, priceData?.change_pct, isLive, buyPrice, shares, onStats]);
 
   return (
     <tr className="hover:bg-gray-800/30 transition-colors">
@@ -174,7 +152,7 @@ function HoldingRow({ holding, onRemove, onStats }) {
             signal === "BUY" ? "text-green-400" : signal === "SELL" ? "text-red-400" : "text-amber-400"
           }`}>
             {signal === "BUY" ? "▲" : signal === "SELL" ? "▼" : "◆"} {signal}
-            <span className="text-gray-500 font-normal ml-1">({confidence}%)</span>
+            <span className="text-gray-500 font-normal ml-1">({confidence == null ? "P(UP) unavailable" : `${confidence}% mean P(UP)`})</span>
           </span>
         ) : explError ? (
           <span className="text-red-500 text-xs" title={explError}>Signal unavailable</span>
@@ -183,8 +161,8 @@ function HoldingRow({ holding, onRemove, onStats }) {
 
       {/* Recommendation */}
       <td className="py-3 px-4 border-b border-gray-800/50">
-        <span className={`text-xs font-bold px-2 py-1 rounded-lg border ${rec.bg} ${rec.color}`}>
-          {rec.icon} {rec.label}
+        <span className="text-xs text-gray-400 font-mono">
+          {explanation?.date || "Date unavailable"}
         </span>
       </td>
 
@@ -213,7 +191,7 @@ function WhatToBuyNext({ portfolioTickers }) {
         !portfolioTickers.includes(row.ticker) &&
         row.agreement_level === "Strong"
       )
-      .sort((a, b) => b.overall_confidence - a.overall_confidence)
+      .sort((a, b) => a.ticker.localeCompare(b.ticker))
       .slice(0, 5);
   }, [overviewData, portfolioTickers]);
 
@@ -221,12 +199,12 @@ function WhatToBuyNext({ portfolioTickers }) {
 
   return (
     <div className="card">
-      <SectionTitle sub="Top BUY signals from tickers not in your portfolio — all 4 models agree">
-        What to Consider Buying Next
+      <SectionTitle sub="Saved votes outside your portfolio. Agreement and mean P(UP) are not measured accuracy.">
+        Other historical BUY votes
       </SectionTitle>
 
       <div className="text-xs text-amber-500 bg-amber-900/20 border border-amber-800 rounded-lg px-3 py-2 mb-4">
-        ⚠️ These are model signals only — not financial advice. Always do your own research before investing.
+        ⚠️ These votes come from a historical snapshot and are not current trading instructions.
       </div>
 
       {loading ? (
@@ -239,7 +217,7 @@ function WhatToBuyNext({ portfolioTickers }) {
         </p>
       ) : suggestions.length === 0 ? (
         <p className="text-gray-600 text-sm">
-          No strong BUY signals found for tickers outside your portfolio right now.
+          No matching BUY votes in the historical snapshot.
         </p>
       ) : (
         <div className="space-y-2">
@@ -265,7 +243,7 @@ function WhatToBuyNext({ portfolioTickers }) {
               <div className="flex items-center gap-4">
                 <div className="text-right">
                   <div className="text-green-400 font-semibold text-sm">▲ BUY</div>
-                  <div className="text-xs text-gray-500">{row.overall_confidence}% confidence</div>
+                  <div className="text-xs text-gray-500">{row.overall_confidence}% mean P(UP)</div>
                 </div>
                 <span className="text-gray-600 text-xs">View →</span>
               </div>
@@ -359,7 +337,7 @@ export default function Portfolio() {
     const totalValue     = rows.reduce((s, r) => s + r.value, 0);
     const totalCostBasis = rows.reduce((s, r) => s + r.costBasis, 0);
     const totalPlAmt     = rows.reduce((s, r) => s + r.plAmt, 0);
-    const todaysPlAmt    = rows.reduce((s, r) => s + r.todaysPlAmt, 0);
+    const todaysPlAmt = rows.every(r => r.todaysPlAmt != null) ? rows.reduce((s, r) => s + r.todaysPlAmt, 0) : null;
     const totalReturnPct = totalCostBasis > 0 ? (totalPlAmt / totalCostBasis) * 100 : 0;
     return { totalValue, totalPlAmt, totalReturnPct, todaysPlAmt, pricedCount: rows.length };
   }, [holdings, holdingStats]);
@@ -442,7 +420,7 @@ export default function Portfolio() {
         <div>
           <h1 className="text-xl font-semibold text-white">My Portfolio</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Track your holdings and get model-based recommendations
+            Track holdings and inspect dated historical model votes
           </p>
         </div>
         <button
@@ -469,8 +447,8 @@ export default function Portfolio() {
             color="border-green-600/40 bg-green-600/5"
           />
           <SummaryCard
-            label="Today's P&L"
-            value={portfolioSummary ? `${portfolioSummary.todaysPlAmt >= 0 ? "+" : ""}$${portfolioSummary.todaysPlAmt.toFixed(2)}` : "Loading…"}
+            label="Daily quote P&L"
+            value={portfolioSummary?.todaysPlAmt == null ? "Unavailable" : `${portfolioSummary.todaysPlAmt >= 0 ? "+" : ""}$${portfolioSummary.todaysPlAmt.toFixed(2)}`}
             sub="from live-priced holdings only"
             color="border-amber-600/40 bg-amber-600/5"
           />
@@ -536,7 +514,7 @@ export default function Portfolio() {
           <div className="text-4xl mb-3">📊</div>
           <p className="text-gray-400 text-sm mb-1">Your portfolio is empty</p>
           <p className="text-gray-600 text-xs mb-4">
-            Add your stock holdings to get personalised BUY / HOLD / SELL recommendations
+            Add holdings to track value and view historical model outputs
           </p>
           <button onClick={() => setShowForm(true)} className="btn-primary">
             + Add your first stock
@@ -554,7 +532,7 @@ export default function Portfolio() {
             <p className="text-xs text-amber-500 bg-amber-900/20 border border-amber-800 rounded-lg px-3 py-2">
               ⚠️ Current prices are fetched live from Yahoo Finance where available, shown with a ● live badge.
               If live data is unavailable, the last dataset price (Dec 2024) is used instead, shown as hist.
-              Model signals are based on historical training data — not financial advice.
+              Model votes are saved historical outputs. They are not current trading instructions.
             </p>
           </div>
           <div className="overflow-x-auto">
@@ -568,7 +546,7 @@ export default function Portfolio() {
                   <th>Value</th>
                   <th>P&amp;L</th>
                   <th>Model Signal</th>
-                  <th>Recommendation</th>
+                  <th>Signal date</th>
                   <th></th>
                 </tr>
               </thead>
@@ -580,9 +558,7 @@ export default function Portfolio() {
             </table>
           </div>
           <div className="px-5 py-3 border-t border-gray-800 text-xs text-gray-600">
-            <span className="text-amber-400 font-medium">◆ HOLD</span> — model says BUY, keep your position &nbsp;·&nbsp;
-            <span className="text-green-400 font-medium">▲▲ BUY MORE</span> — strong BUY signal + you're profitable &nbsp;·&nbsp;
-            <span className="text-red-400 font-medium">▼ SELL</span> — model says SELL, consider exiting
+            BUY and SELL are saved direction votes. HOLD means tied votes. These are not current portfolio actions; see each signal date.
           </div>
         </div>
       )}

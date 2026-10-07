@@ -47,7 +47,7 @@ export default function TrackRecord() {
     <div className="space-y-6">
       <div>
         <h1 className="text-xl font-semibold text-white flex items-center gap-2">
-          <span>🎯</span> Live Track Record
+          Forward results
         </h1>
         <p className="text-sm text-gray-500 mt-1 max-w-2xl">
           Predictions use a completed daily close and are recorded before the next

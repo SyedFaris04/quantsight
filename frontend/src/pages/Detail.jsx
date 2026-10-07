@@ -14,6 +14,7 @@ import { companyName } from "../data/companyNames";
 import RadialProgress from "../components/RadialProgress";
 import CandlestickChart from "../components/CandlestickChart";
 import FeatureAttribution from "../components/FeatureAttribution";
+import { savedProbabilityUp } from "../data/probability";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -150,7 +151,7 @@ function ScoreBar({ label, score, color }) {
 function ModelSignalCard({ model }) {
   const meta  = MODEL_META[model.model_key] || {};
   const isBuy = model.signal_label === "BUY";
-  const conf  = model.confidence ?? 50;
+  const conf  = savedProbabilityUp(model);
   return (
     <div className="bg-gray-800/60 rounded-xl p-3 border border-gray-700 flex flex-col gap-2">
       <div className="flex items-center gap-1.5">
@@ -165,10 +166,10 @@ function ModelSignalCard({ model }) {
       <div className="w-full bg-gray-700 rounded-full h-1">
         <div
           className={`h-1 rounded-full ${isBuy ? "bg-green-500" : "bg-red-500"}`}
-          style={{ width: `${conf}%` }}
+          style={{ width: `${conf ?? 0}%` }}
         />
       </div>
-      <span className="text-xs text-gray-500">{conf.toFixed(1)}% confidence</span>
+      <span className="text-xs text-gray-500">{conf == null ? "P(UP) unavailable" : `${conf.toFixed(1)}% P(UP)`}</span>
     </div>
   );
 }
@@ -304,7 +305,7 @@ function DecisionTimeline({ history, loading }) {
                   {isBuy ? "▲" : "▼"} {day.signal_label}
                 </div>
                 {day.confidence != null && (
-                  <div className="text-xs text-gray-500">{day.confidence}% conf.</div>
+                  <div className="text-xs text-gray-500">{day.confidence}% P(UP)</div>
                 )}
                 {isLast && (
                   <span className="text-xs font-medium text-indigo-400 mt-0.5">Latest</span>
@@ -553,21 +554,22 @@ function AttentionChart({ attention }) {
 // change needed). Compares the finance-only vs finance+sentiment prediction
 // for each model family, in BUY-direction confidence terms so the delta is
 // directly comparable regardless of which side each model landed on.
+function buyProbabilityKnown(p) { return savedProbabilityUp(p.fin) != null && savedProbabilityUp(p.sent) != null; }
 function SentimentImpactCard({ models, ticker }) {
   const byKey = Object.fromEntries((models || []).map(m => [m.model_key, m]));
   const pairs = [
     { label: "XGBoost",          fin: byKey.xgb_finance,  sent: byKey.xgb_sentiment  },
-    { label: "LSTM+Transformer", fin: byKey.lstm_finance, sent: byKey.lstm_sentiment },
-  ].filter(p => p.fin && p.sent);
+    { label: "LSTM with attention", fin: byKey.lstm_finance, sent: byKey.lstm_sentiment },
+  ].filter(p => buyProbabilityKnown(p));
 
   if (!pairs.length) return null;
 
-  const buyConf = (m) => (m.signal === 1 ? m.confidence : 100 - m.confidence);
+  const buyConf = savedProbabilityUp;
 
   return (
     <div className="card">
-      <SectionTitle sub={`Real per-ticker comparison — how ${ticker}'s BUY-direction confidence changed when sentiment+emotion features were added`}>
-        Sentiment Impact
+      <SectionTitle sub={`Saved ${ticker} model outputs. Differences do not establish a sentiment benefit or better accuracy.`}>
+        Input variant comparison
       </SectionTitle>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {pairs.map(p => {
@@ -579,16 +581,16 @@ function SentimentImpactCard({ models, ticker }) {
               <div className="text-sm font-medium text-white mb-3">{p.label}</div>
               <div className="flex items-center justify-between text-xs mb-2">
                 <span className="text-gray-500">Without sentiment</span>
-                <span className="font-mono text-gray-300">{withoutC.toFixed(1)}% BUY-lean</span>
+                <span className="font-mono text-gray-300">{withoutC.toFixed(1)}% P(UP)</span>
               </div>
               <div className="flex items-center justify-between text-xs mb-3">
                 <span className="text-gray-500">With sentiment</span>
-                <span className="font-mono text-gray-200">{withC.toFixed(1)}% BUY-lean</span>
+                <span className="font-mono text-gray-200">{withC.toFixed(1)}% P(UP)</span>
               </div>
               <div className={`text-center rounded-lg py-1.5 text-sm font-semibold ${
-                delta > 0 ? "bg-green-900/30 text-green-400" : delta < 0 ? "bg-red-900/30 text-red-400" : "bg-gray-800 text-gray-400"
+                "bg-gray-800 text-gray-300"
               }`}>
-                {delta >= 0 ? "+" : ""}{delta.toFixed(1)}pp {delta >= 0 ? "improvement" : "reduction"}
+                {delta >= 0 ? "+" : ""}{delta.toFixed(1)}pp P(UP) difference
               </div>
             </div>
           );
@@ -648,7 +650,7 @@ function AgreementBanner({ explanation }) {
           <div className={`text-lg font-bold ${signalStyle(overall_signal).color}`}>
             {signalStyle(overall_signal).arrow} {overall_signal}
           </div>
-          <div className="text-xs text-gray-500">{overall_confidence}% avg</div>
+          <div className="text-xs text-gray-500">{overall_confidence}% mean P(UP)</div>
           <div className="text-xs font-medium mt-0.5">{agreement_level} Agreement</div>
         </div>
         {risk_level && (
@@ -760,7 +762,7 @@ export default function Detail() {
             <RadialProgress
               value={explanation.overall_confidence}
               color={explanation.overall_signal === "BUY" ? "#22c55e" : explanation.overall_signal === "SELL" ? "#ef4444" : "#f59e0b"}
-              label="confidence"
+              label="mean P(UP)"
             />
             <div className="text-center">
               <div className={`text-2xl font-bold ${signalStyle(explanation.overall_signal).color}`}>
@@ -1127,12 +1129,12 @@ const GLOSSARY_TERMS = [
   {
     term : "Decision Timeline",
     short: "Shows how a stock's BUY/SELL signal has changed over the last 7 trading days.",
-    detail: "Each day's signal is shown with the reason behind it — for example, an RSI oversold reading or a MACD crossover. Watching the timeline helps you see whether a signal is brand new or has been consistent for several days. A signal that just flipped is often less certain than one that has held steady all week.",
+    detail: "Each day's signal is shown with the reason behind it — for example, an RSI oversold reading or a MACD crossover. Watching the timeline helps you see whether a signal is brand new or has been consistent for several days. A changed vote is descriptive history; this project has not established that persistent votes are more accurate.",
   },
   {
     term : "Investment Risk Level",
     short: "How volatile and uncertain a stock's prediction is — Low, Medium, or High.",
-    detail: "Combines the stock's price volatility, Average True Range (ATR), how close the model's confidence is to 50% (a coin flip), and whether the 4 models disagree with each other. A BUY signal with High risk means the prediction could be right, but the stock price swings a lot — so the outcome is less certain either way. Low risk means the stock is stable and the model is confident.",
+    detail: "A heuristic flag using historical volatility, ATR, distance of mean P(UP) from 50%, and model disagreement. It is not a validated estimate of loss or prediction reliability. Low does not mean safe.",
   },
   {
     term : "RSI (Relative Strength Index)",
@@ -1156,13 +1158,13 @@ const GLOSSARY_TERMS = [
   },
   {
     term : "BUY / SELL Signal",
-    short: "The model prediction — will this stock price be higher or lower tomorrow?",
-    detail: "BUY (1) = model predicts tomorrow close will be higher than today. SELL (0) = model predicts it will be lower. Confidence % shows how certain the model is. This is directional prediction only, not a price target.",
+    short: "The model predicts price direction five NYSE trading sessions ahead.",
+    detail: "UP means the future close is strictly higher; ties count as DOWN. Saved BUY/SELL labels use the raw model threshold. The displayed calibrated P(UP) can cross 50% without changing that saved label. This is not a price target or a trading instruction.",
   },
   {
-    term : "Model Confidence",
-    short: "How certain the model is about its BUY or SELL prediction.",
-    detail: "Shown as a percentage. Closer to 50% = model is uncertain. Above 65% = stronger signal. Never treat any confidence as a guarantee of profit.",
+    term : "Probability of an upward move — P(UP)",
+    short: "The calibrated upward probability, including for SELL labels.",
+    detail: "P(UP) is shown as a percentage. It is not measured accuracy or the probability of profit. No 65% reliability cutoff has been validated. The mean across models is a descriptive average, not a separately calibrated ensemble.",
   },
   {
     term : "Sentiment Score (VADER / GDELT)",
@@ -1172,17 +1174,17 @@ const GLOSSARY_TERMS = [
   {
     term : "WSB Sentiment (Reddit WallStreetBets)",
     short: "Social media mood from the WallStreetBets Reddit community.",
-    detail: "WSB is a Reddit community known for retail trading. High positive WSB sentiment = retail investors are bullish. This captures hype and fear, which sometimes predicts short-term price moves.",
+    detail: "WSB is a Reddit community known for retail trading. High positive WSB sentiment = retail investors are bullish. This is an old research archive, not current social sentiment. Predictive benefit must be measured separately.",
   },
   {
     term : "AUC-ROC",
     short: "A model quality metric — how well the model separates BUY from SELL days.",
-    detail: "Ranges from 0.5 (random) to 1.0 (perfect). Our models score 50–52%. This is consistent with academic research — stock markets are genuinely hard to predict consistently.",
+    detail: "AUC ranges from 0 to 1; 0.5 is chance ranking and 1 is perfect ranking. It measures ordering across labelled outcomes, not accuracy at a threshold. Use the dated evaluation results in Model comparison.",
   },
   {
     term : "Strong / Moderate / Mixed Agreement",
     short: "How much the 4 model variants agree on the signal for a stock.",
-    detail: "Strong = all 4 models agree (most reliable). Moderate = 3 of 4 agree. Mixed = 2 of 4 agree (treat with caution). Disagreement usually means the signal is genuinely ambiguous.",
+    detail: "Strong means all available variants vote the same way; Moderate usually means three of four; Mixed means a tied vote. Models share inputs and can share errors. Agreement does not establish reliability.",
   },
   {
     term : "LSTM Attention Weights",

@@ -666,30 +666,29 @@ def generate_summary(ticker: str, overall_signal: str, agreement: str,
     if sentiment_signals:
         if len(positive_sentiment) > len(negative_sentiment):
             parts.append(
-                f"Market sentiment from news and social media is broadly positive, "
-                f"supporting the {overall_signal} signal."
+                "The saved news and social sentiment features are broadly positive; "
+                "this descriptive summary does not measure their effect on the model."
             )
         elif len(negative_sentiment) > len(positive_sentiment):
             parts.append(
-                f"Market sentiment from news and social media is broadly negative, "
-                f"adding conviction to the {overall_signal} signal."
+                "The saved news and social sentiment features are broadly negative; "
+                "this descriptive summary does not measure their effect on the model."
             )
 
     # Part 3 — model agreement
     if agreement == "Strong":
         parts.append(
-            f"All 4 model variants agree on a {overall_signal} signal — "
-            f"this is a high-confidence recommendation."
+            f"All {len(models)} available model variants vote {overall_signal}. "
+            "Agreement does not establish prediction accuracy."
         )
     elif agreement == "Moderate":
         parts.append(
-            f"{len(agreeing_models)} out of 4 model variants signal {overall_signal} — "
-            f"moderate confidence, consider risk management."
+            f"{len(agreeing_models)} of {len(models)} available model variants vote {overall_signal}. "
+            "Agreement does not establish prediction accuracy."
         )
     else:
         parts.append(
-            f"Model variants are divided — treat this signal with caution "
-            f"and consider waiting for stronger confirmation."
+            "The saved model votes are divided; HOLD denotes a tied vote, not an instruction to hold a position."
         )
 
     return " ".join(parts)
@@ -992,7 +991,7 @@ def calculate_risk_level(row, model_predictions, overall_confidence: float) -> d
     confidence_margin = abs(overall_confidence - 50.0)  # 0 (uncertain) to 50 (certain)
     if confidence_margin <= 5:
         risk_points += 20
-        reasons.append("very low prediction confidence margin")
+        reasons.append("mean P(UP) is within five percentage points of 50%")
     elif confidence_margin <= 15:
         risk_points += 10
     else:

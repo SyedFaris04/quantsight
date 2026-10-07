@@ -79,21 +79,21 @@ const DIFFICULTIES = [
   {
     key   : "easy",
     label : "Easy",
-    desc  : "High-confidence signals — model is very sure",
+    desc  : "Saved P(UP) far from 50%",
     color : "text-green-400",
     bg    : "bg-green-900/20 border-green-800",
   },
   {
     key   : "medium",
     label : "Medium",
-    desc  : "Mixed confidence — requires more intuition",
+    desc  : "Any saved probability",
     color : "text-amber-400",
     bg    : "bg-amber-900/20 border-amber-800",
   },
   {
     key   : "hard",
     label : "Hard",
-    desc  : "Low-confidence signals — even the model is unsure",
+    desc  : "Saved P(UP) between 45% and 55%",
     color : "text-red-400",
     bg    : "bg-red-900/20 border-red-800",
   },
@@ -211,7 +211,7 @@ function ResultCard({ result, onNext }) {
                 {actual_signal === "BUY" ? "▲" : "▼"} {actual_signal}
               </span>
               <span className="text-gray-600 ml-2">
-                ({confidence?.toFixed(1)}% model confidence)
+                ({confidence?.toFixed(1)}% P(UP))
               </span>
             </div>
           </div>

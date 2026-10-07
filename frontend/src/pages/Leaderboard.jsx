@@ -38,6 +38,7 @@ const DEFAULT_COLOR = "#6b7280";
 // Cosmetic-only spacing for camelCase-ish model keys — doesn't touch the
 // underlying model_metrics.json values or any other page's lookups.
 const MODEL_DISPLAY_NAME = {
+  "LSTM+Transformer"    : "LSTM with attention",
   "RandomForest"       : "Random Forest",
   "LogisticRegression" : "Logistic Regression",
   "TransformerEncoder" : "Transformer Encoder",
@@ -142,7 +143,7 @@ export default function Leaderboard() {
       {/* ── Page header ── */}
       <div>
         <h1 className="text-xl font-semibold text-white flex items-center gap-2">
-          <span>🏆</span> Model Leaderboard
+          Model results
         </h1>
         <p className="text-sm text-gray-500 mt-1">
           Every model variant QuantSight has trained, ranked by test-set performance.

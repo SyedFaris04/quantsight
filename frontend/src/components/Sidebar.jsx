@@ -1,86 +1,98 @@
-/**
- * frontend/src/components/Sidebar.jsx
- * Left sidebar navigation. No Help link since it has no real content
- * behind it — Settings does (see pages/Settings.jsx) and is included.
- *
- * Responsive: below the `lg` breakpoint this is a fixed off-canvas drawer,
- * toggled by App.jsx's mobile header hamburger button (isOpen/onClose) and
- * dismissible via its own backdrop or close button. At `lg` and above it's
- * back to a static, always-visible column and isOpen/onClose have no
- * visible effect — this is the fix for the mobile bug where the sidebar
- * used to permanently occupy ~1/3 of a phone-width viewport, squeezing
- * every page's content into an unreadably narrow column.
- */
-
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
-
-const NAV_LINKS = [
-  { to: "/",          label: "Dashboard",  icon: "⬛" },
-  { to: "/market",    label: "Market",     icon: "📈" },
-  { to: "/compare",   label: "AI Compare", icon: "📊" },
-  { to: "/leaderboard", label: "Leaderboard", icon: "🏆" },
-  { to: "/track-record", label: "Track Record", icon: "🎯" },
-  { to: "/backtesting", label: "Backtesting", icon: "↗" },
-  { to: "/portfolio", label: "Portfolio",  icon: "💼" },
-  { to: "/game",       label: "Game",       icon: "🎮" },
-  { to: "/settings",   label: "Settings",   icon: "⚙️" },
+import Icon from "./Icon";
+const GROUPS = [
+  [
+    "Workspace",
+    [
+      ["/", "Dashboard", "dashboard"],
+      ["/market", "Market explorer", "market"],
+      ["/portfolio", "Portfolio", "portfolio"],
+    ],
+  ],
+  [
+    "Evaluation",
+    [
+      ["/backtesting", "Backtesting", "backtest"],
+      ["/track-record", "Forward results", "track"],
+      ["/compare", "Model comparison", "compare"],
+      ["/leaderboard", "Model results", "results"],
+    ],
+  ],
+  [
+    "Learning & account",
+    [
+      ["/game", "Prediction quiz", "learn"],
+      ["/settings", "Settings", "settings"],
+    ],
+  ],
 ];
-
 function AccountSection() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-
-  if (!user) {
+  if (!user)
     return (
       <button
         onClick={() => navigate("/login")}
-        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium
-                   text-gray-400 hover:text-gray-200 hover:bg-gray-800 border border-gray-800
-                   transition-colors"
+        className="btn-secondary w-full flex items-center gap-3"
       >
-        <span className="w-6 h-6 rounded-full bg-gray-800 flex items-center justify-center text-xs">
-          👤
-        </span>
-        Sign In
+        <Icon name="user" />
+        Sign in
       </button>
     );
-  }
-
-  const initial = (user.email?.[0] || "?").toUpperCase();
   return (
-    <div className="flex items-center gap-2.5 px-1">
-      <span className="w-7 h-7 rounded-full bg-indigo-500/20 border border-indigo-600/40
-                       flex items-center justify-center text-indigo-400 font-semibold text-xs flex-shrink-0">
-        {initial}
+    <div className="flex items-center gap-3 text-xs">
+      <span className="w-7 h-7 rounded-md bg-gray-800 flex items-center justify-center">
+        {(user.email?.[0] || "?").toUpperCase()}
       </span>
-      <span className="flex-1 min-w-0 text-xs text-gray-400 truncate" title={user.email}>
+      <span className="flex-1 truncate" title={user.email}>
         {user.email}
       </span>
-      <button
-        onClick={() => signOut()}
-        className="text-xs text-gray-500 hover:text-gray-300 flex-shrink-0"
-      >
-        Sign Out
+      <button onClick={() => signOut()} className="text-gray-400">
+        Sign out
       </button>
     </div>
   );
 }
-
 export default function Sidebar({ isOpen = false, onClose = () => {} }) {
-  const location = useLocation();
-
-  // Auto-close the mobile drawer whenever the route changes (e.g. after
-  // tapping a nav link) — no effect on desktop, where it's already static.
+  const { pathname } = useLocation();
+  const aside = useRef(null);
   useEffect(() => {
     onClose();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.pathname]);
-
+  }, [pathname]);
+  useEffect(() => {
+    if (!isOpen) return;
+    const previous = document.activeElement;
+    aside.current.querySelector("button")?.focus();
+    function keydown(e) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+      }
+      if (e.key === "Tab" && window.innerWidth < 1024) {
+        const targets = [...aside.current.querySelectorAll("a, button")].filter(
+          (el) => !el.disabled,
+        );
+        const first = targets[0],
+          last = targets.at(-1);
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+    document.addEventListener("keydown", keydown);
+    return () => {
+      document.removeEventListener("keydown", keydown);
+      if (previous?.isConnected) previous.focus();
+    };
+  }, [isOpen]);
   return (
     <>
-      {/* Backdrop — mobile only, closes the drawer on tap */}
       {isOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/60 lg:hidden"
@@ -88,71 +100,62 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
           aria-hidden="true"
         />
       )}
-
       <aside
-        className={`w-60 flex-shrink-0 h-screen fixed inset-y-0 left-0 z-50 border-r border-gray-800
-                    bg-gray-950 lg:bg-gray-900/60 backdrop-blur-sm flex flex-col
-                    transform transition-transform duration-200 ease-in-out
-                    lg:translate-x-0 lg:sticky lg:top-0 lg:z-auto
-                    ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
+        ref={aside}
+        id="primary-navigation"
+        className={`w-60 flex-shrink-0 h-screen fixed inset-y-0 left-0 z-50 border-r border-gray-800 bg-gray-950 flex flex-col transform transition-transform duration-200 lg:visible lg:translate-x-0 lg:sticky lg:top-0 lg:z-auto ${isOpen ? "visible translate-x-0" : "invisible -translate-x-full"}`}
       >
-
-        {/* Brand */}
-        <div className="flex items-center justify-between gap-2 px-5 h-16 border-b border-gray-800 flex-shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="w-7 h-7 rounded-lg bg-indigo-500/20 border border-indigo-600/40
-                             flex items-center justify-center text-indigo-400 font-bold text-sm">
+        <div className="flex items-center justify-between gap-2 px-5 h-20 border-b border-gray-800 flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <span className="w-8 h-8 rounded-md border border-indigo-500/40 bg-indigo-500/10 flex items-center justify-center text-indigo-300 font-semibold">
               Q
             </span>
-            <span className="font-bold text-lg tracking-tight text-white">
-              Quant<span className="text-indigo-400">Sight</span>
-            </span>
+            <div>
+              <p className="font-semibold text-lg tracking-tight">QuantSight</p>
+              <p className="text-[11px] text-gray-500">Financial research</p>
+            </div>
           </div>
           <button
             onClick={onClose}
             aria-label="Close navigation menu"
-            className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg text-gray-400
-                       hover:bg-gray-800 hover:text-white transition-colors"
+            className="lg:hidden p-2 text-gray-400"
           >
-            ✕
+            <Icon name="close" />
           </button>
         </div>
-
-        {/* Nav links */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          {NAV_LINKS.map(({ to, label, icon }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={to === "/"}
-              className={({ isActive }) =>
-                [
-                  "flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150",
-                  isActive
-                    ? "bg-indigo-600/20 text-indigo-400 border border-indigo-600/30"
-                    : "text-gray-400 hover:text-gray-200 hover:bg-gray-800 border border-transparent",
-                ].join(" ")
-              }
-            >
-              <span className="text-base leading-none w-5 text-center">{icon}</span>
-              <span>{label}</span>
-            </NavLink>
+        <nav
+          aria-label="Primary navigation"
+          className="flex-1 px-3 py-5 overflow-y-auto space-y-6"
+        >
+          {GROUPS.map(([group, links]) => (
+            <div key={group}>
+              <p className="px-3 mb-2 text-[10px] uppercase tracking-widest text-gray-500 font-medium">
+                {group}
+              </p>
+              <div className="space-y-1">
+                {links.map(([to, label, icon]) => (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    end={to === "/"}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-colors ${isActive ? "bg-indigo-500/10 text-indigo-300" : "text-gray-400 hover:text-gray-200 hover:bg-gray-900"}`
+                    }
+                  >
+                    <Icon name={icon} />
+                    <span>{label}</span>
+                  </NavLink>
+                ))}
+              </div>
+            </div>
           ))}
         </nav>
-
-        {/* Account */}
-        <div className="px-3 py-3 border-t border-gray-800 flex-shrink-0">
+        <div className="px-4 py-4 border-t border-gray-800">
           <AccountSection />
         </div>
-
-        {/* Product label; connection status is verified within each data view. */}
-        <div className="px-5 py-4 border-t border-gray-800 flex-shrink-0">
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
-            <span>Research & learning</span>
-          </div>
-          <p className="text-[10px] text-gray-600 mt-1">AI Decision Support</p>
-        </div>
+        <p className="px-5 py-4 border-t border-gray-800 text-[11px] text-gray-500">
+          Research & learning · Five-session horizon
+        </p>
       </aside>
     </>
   );

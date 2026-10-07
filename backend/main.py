@@ -541,7 +541,7 @@ def get_overview():
             risk_level = risk_info["level"]
         except Exception as e:
             logger.warning(f"Risk calc failed for {ticker}: {e}")
-            risk_level = "Medium"
+            risk_level = None
 
         overview.append({
             "ticker"             : ticker,
@@ -611,6 +611,7 @@ def get_dashboard():
 
     return {
         "snapshot": snapshot_metadata(rows),
+        "instruments": rows,
         "kpis": {
             "total_tickers"    : len(rows),
             "buy_signals"      : len(buy),
@@ -992,7 +993,7 @@ def get_game_question(
     # Filter by difficulty — confidence level determines difficulty
     if difficulty == "easy":
         # High confidence = easier to guess
-        df = df[df["confidence"] >= 70]
+        df = df[(df["confidence"] >= 70) | (df["confidence"] <= 30)]
     elif difficulty == "hard":
         # Confidence near 50% = hardest (model is uncertain)
         df = df[(df["confidence"] >= 45) & (df["confidence"] <= 55)]
@@ -1088,13 +1089,13 @@ def submit_game_answer(answer: GameAnswer) -> GameResult:
     if correct:
         explanation = (
             f"Correct! The model predicted {actual_signal} for {ticker} "
-            f"with {confidence:.1f}% confidence."
+            f"with a saved P(UP) of {confidence:.1f}%."
         )
     else:
         explanation = (
             f"Not quite — the model predicted {actual_signal} for {ticker} "
-            f"with {confidence:.1f}% confidence. "
-            f"{'High confidence suggests a strong signal.' if confidence > 70 else 'Low confidence means this was a tough one.'}"
+            f"with a saved P(UP) of {confidence:.1f}%. "
+            "This quiz matches a saved model label, not the actual future outcome."
         )
 
     # "Here's WHY" — the historical indicator reasons behind the model's call,

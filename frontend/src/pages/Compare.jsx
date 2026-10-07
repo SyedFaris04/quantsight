@@ -36,6 +36,7 @@ import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
 } from "recharts";
 import { useApi } from "../hooks/useApi";
+import XaiComparison from "../components/XaiComparison";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -56,14 +57,14 @@ const MODEL_ORDER = [
   },
   {
     key     : "LSTM+Transformer_Finance Only",
-    label   : "LSTM+Transformer",
+    label   : "LSTM with attention",
     variant : "Finance Only",
     color   : "#f59e0b",   // amber
     short   : "LSTM-F",
   },
   {
     key     : "LSTM+Transformer_Finance + Sentiment",
-    label   : "LSTM+Transformer",
+    label   : "LSTM with attention",
     variant : "Finance + Sentiment",
     color   : "#a855f7",   // purple
     short   : "LSTM-S",
@@ -216,7 +217,7 @@ function TickerCompare({ tickers }) {
                 >
                   {data.overall_signal}
                 </span>
-                {" "}({data.overall_confidence?.toFixed(1)}% avg confidence)
+                {" "}({data.overall_confidence?.toFixed(1)}% mean P(UP))
               </span>
             </div>
             <span
@@ -265,7 +266,7 @@ function TickerCompare({ tickers }) {
                     />
                   </div>
                   <span className="text-xs text-gray-400">
-                    {m.confidence?.toFixed(1)}% confidence
+                    {m.confidence?.toFixed(1)}% P(UP)
                   </span>
                   <span className="text-xs text-gray-600">
                     {m.uses_sentiment ? "📰 incl. sentiment" : "📈 finance only"}
@@ -370,6 +371,7 @@ export default function Compare() {
     return (
       <div className="space-y-8">
         <h1 className="text-xl font-semibold text-white">Model Comparison</h1>
+        <XaiComparison />
         <DevelopmentComparison />
         <ResearchComparison />
         <div className="card text-sm text-gray-400" role="alert">
@@ -391,6 +393,7 @@ export default function Compare() {
         </p>
       </div>
 
+      <XaiComparison />
       <DevelopmentComparison />
       <ResearchComparison />
 
@@ -433,14 +436,14 @@ export default function Compare() {
               <div className="text-xs text-gray-500 mt-0.5">F1 vs finance-only</div>
             </div>
             <div className="card border border-purple-600/40 bg-purple-600/5">
-              <div className="text-xs text-gray-500 uppercase tracking-wider">Confidence difference</div>
+              <div className="text-xs text-gray-500 uppercase tracking-wider">XGBoost P(UP) difference</div>
               <div className="text-2xl font-semibold text-white mt-1">
-                {confBoostLoading ? "—" : confBoost?.best && confBoost[confBoost.best]
-                  ? `${confBoost[confBoost.best].avg_confidence_boost >= 0 ? "+" : ""}${confBoost[confBoost.best].avg_confidence_boost.toFixed(2)}pp`
+                {confBoostLoading ? "—" : confBoost?.xgb
+                  ? `${confBoost.xgb.avg_confidence_boost >= 0 ? "+" : ""}${confBoost.xgb.avg_confidence_boost.toFixed(2)}pp`
                   : "—"}
               </div>
               <div className="text-xs text-gray-500 mt-0.5">
-                {confBoost?.best ? `avg ${confBoost.best.toUpperCase()} confidence Δ` : "avg confidence delta"}
+                {"Signed output change; not an accuracy gain"}
               </div>
             </div>
           </>
@@ -643,7 +646,7 @@ export default function Compare() {
                 <div className="flex items-center gap-2 mb-3">
                   <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
                   <span className="text-sm font-medium text-white">
-                    LSTM+Transformer — sentiment + emotion impact
+                    LSTM with attention — input variant comparison
                   </span>
                 </div>
                 {METRICS.map(({ key, label }) => {

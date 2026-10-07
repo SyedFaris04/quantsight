@@ -13,6 +13,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import Icon from "./Icon";
 
 const STORAGE_KEY = "quantsight_chat_history";
 const MAX_STORED = 30;
@@ -177,13 +178,13 @@ export default function ChatWidget() {
       <button
         onClick={() => setIsOpen(o => !o)}
         aria-label={isOpen ? "Close AI Assistant" : "Open AI Assistant"}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full
-                   bg-gradient-to-br from-indigo-500 to-indigo-700 text-white
+        className="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-lg
+                   bg-indigo-700 text-white
                    shadow-lg shadow-indigo-950/50 border border-indigo-400/30
                    flex items-center justify-center text-2xl
                    hover:scale-105 active:scale-95 transition-transform duration-150"
       >
-        {isOpen ? "✕" : "💬"}
+        <Icon name={isOpen ? "close" : "chat"} />
       </button>
 
       {isOpen && (
@@ -197,7 +198,7 @@ export default function ChatWidget() {
           <div className="flex items-center gap-2.5 px-4 h-14 border-b border-gray-800 flex-shrink-0">
             <span className="w-7 h-7 rounded-full bg-indigo-500/20 border border-indigo-600/40
                              flex items-center justify-center text-sm flex-shrink-0">
-              🤖
+              <Icon name="chat" className="w-4 h-4" />
             </span>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-semibold text-white">QuantSight Assistant</div>

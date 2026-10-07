@@ -5,11 +5,30 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response
 from research.development_report import validate_report
 from research.confidence_report import load as load_confidence
+from research.xai_report import load as load_xai
 
 REPORT = Path(__file__).resolve().parents[1] / 'data/research_reports/news_comparison.json'
 DEVELOPMENT_REPORT = REPORT.with_name('development_models.json')
 CONFIDENCE_REPORT = REPORT.with_name('development_confidence.json')
 router = APIRouter(prefix='/research', tags=['Research'])
+
+
+@router.get('/xai-comparison')
+def xai_comparison():
+    try:
+        report = load_xai()
+        return {'available': report is not None, **({'report': report} if report else {})}
+    except (OSError, ValueError, KeyError, TypeError, OverflowError, StopIteration) as exc:
+        raise HTTPException(503, 'XAI comparison is unavailable, invalid or does not match current source files.') from exc
+
+
+@router.get('/xai-comparison/export')
+def export_xai_comparison():
+    result = xai_comparison()
+    if not result['available']:
+        raise HTTPException(404, 'XAI comparison is unavailable.')
+    return Response(json.dumps(result['report'], indent=2, allow_nan=False), media_type='application/json',
+                    headers={'Content-Disposition': 'attachment; filename="quantsight-xai-comparison.json"'})
 
 
 @router.get('/news-comparison')
