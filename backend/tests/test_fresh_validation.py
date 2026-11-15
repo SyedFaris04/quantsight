@@ -2,9 +2,11 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 import pandas as pd
 from market_calendar import schedule
+from research import freeze_prices
 from research.freeze_prices import audit_prices, digest, load_development
 from research.validation import calendar_labels, purged_segments
 
@@ -109,6 +111,32 @@ class FreshValidationTests(unittest.TestCase):
             manifest_path.write_text(json.dumps(manifest))
             with self.assertRaisesRegex(ValueError, 'quality'):
                 load_development(root, 'AAA')
+
+    def test_internal_gap_before_2015_fails_audit(self):
+        expected = schedule('2004-01-01', '2026-01-01').index
+        expected = expected[expected < pd.Timestamp('2026-01-01')]
+        gap = pd.Timestamp('2005-06-15')
+        dates = expected[expected != gap]
+        frame = pd.DataFrame({c: 10.0 for c in ['Open', 'High', 'Low', 'Close', 'Adj Close']} | {'Volume': 1.0},
+                             index=dates)
+        result = audit_prices(frame, expected, '2025-01-01')
+        self.assertFalse(result['valid'])
+        self.assertEqual(result['missing_internal_sessions'], ['2005-06-15'])
+
+    def test_freeze_reads_given_protocol(self):
+        source = Path(freeze_prices.__file__).parent / 'protocols/fresh_price_snapshot_v2.json'
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / 'backend'
+            (root.parent / 'docs/research').mkdir(parents=True)
+            protocol = Path(tmp) / 'protocol.json'
+            protocol.write_text(source.read_text(encoding='utf-8'), encoding='utf-8')
+            with patch.object(freeze_prices, 'ROOT', root), patch('yfinance.download', return_value=pd.DataFrame()):
+                manifest = freeze_prices.freeze(protocol)
+            request = json.loads((root / 'data/research/fresh_prices' / manifest['attempt_id'] / 'request.json').read_text())
+            self.assertEqual(request['protocol']['protocol_id'], 'fresh_price_snapshot_v2')
+            self.assertEqual(request['protocol']['download_start'], '2004-01-01')
+            self.assertEqual(request['protocol_sha256'], digest(protocol))
+            self.assertFalse(manifest['data_quality_passed'])
 
 
 if __name__ == '__main__':

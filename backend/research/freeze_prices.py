@@ -60,10 +60,10 @@ def audit_prices(frame, expected, holdout_start):
     }
 
 
-def freeze():
+def freeze(protocol_path=PROTOCOL):
     import yfinance as yf
-    protocol = json.loads(PROTOCOL.read_text(encoding='utf-8'))
-    protocol_hash = digest(PROTOCOL)
+    protocol = json.loads(Path(protocol_path).read_text(encoding='utf-8'))
+    protocol_hash = digest(Path(protocol_path))
     attempt_id = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
     directory = ROOT / 'data/research/fresh_prices' / attempt_id
     directory.mkdir(parents=True, exist_ok=False)
@@ -136,5 +136,6 @@ def load_development(directory, ticker):
 
 
 if __name__ == '__main__':
-    argparse.ArgumentParser(description=__doc__).parse_args()
-    freeze()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--protocol', type=Path, default=PROTOCOL)
+    freeze(parser.parse_args().protocol)
