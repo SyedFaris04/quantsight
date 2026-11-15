@@ -10,6 +10,7 @@ from research.xai_report import load as load_xai
 REPORT = Path(__file__).resolve().parents[1] / 'data/research_reports/news_comparison.json'
 DEVELOPMENT_REPORT = REPORT.with_name('development_models.json')
 CONFIDENCE_REPORT = REPORT.with_name('development_confidence.json')
+TIMELINE_REPORT = REPORT.with_name('timeline_comparison.json')
 router = APIRouter(prefix='/research', tags=['Research'])
 
 
@@ -91,3 +92,16 @@ def export_development_confidence():
         raise HTTPException(404, 'Confidence audit is unavailable.')
     return Response(json.dumps(report, indent=2, allow_nan=False), media_type='application/json',
                     headers={'Content-Disposition': 'attachment; filename="quantsight-development-confidence.json"'})
+
+
+@router.get('/timeline-comparison')
+def timeline_comparison():
+    if not TIMELINE_REPORT.exists():
+        return {'available': False}
+    try:
+        report = json.loads(TIMELINE_REPORT.read_text(encoding='utf-8'))
+        if report['schema_version'] != 1 or set(report['timelines']) != {'2015', '2005'}:
+            raise ValueError('Invalid timeline report')
+        return {'available': True, 'report': report}
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise HTTPException(503, 'Timeline comparison is unavailable or invalid.') from exc

@@ -49,7 +49,7 @@ import random
 import numpy as np
 import pandas as pd
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -98,6 +98,11 @@ PROCESSED_DIR   = BASE_DIR / "data" / "processed"
 PREDICTIONS_DIR = BASE_DIR / "data" / "predictions"
 NEWS_DIR        = BASE_DIR / "data" / "raw" / "news"
 METRICS_FILE    = PREDICTIONS_DIR / "model_metrics.json"
+# Served models retrained from 2015 and from 2005 (research/timeline_comparison.py);
+# only the Dashboard reads them. Live tracking and other pages use PREDICTIONS_DIR.
+TIMELINE_DIR    = PREDICTIONS_DIR / "timelines"
+TIMELINES       = ("2015", "2005")
+TIMELINE_REPORT = BASE_DIR / "data" / "research_reports" / "timeline_comparison.json"
 
 PREDICTION_FILES = {
     "xgb_finance"    : PREDICTIONS_DIR / "xgb_finance_predictions.csv",
@@ -143,7 +148,7 @@ _startup_timings: dict = {}
 _vader = SentimentIntensityAnalyzer()
 
 
-def load_predictions() -> dict[str, pd.DataFrame]:
+def load_predictions(directory: Path = PREDICTIONS_DIR) -> dict[str, pd.DataFrame]:
     """
     Load all prediction CSVs into memory at startup.
     Handles both new 4-variant files and old xgb_predictions/lstm_predictions files.
@@ -151,17 +156,17 @@ def load_predictions() -> dict[str, pd.DataFrame]:
     preds = {}
 
     new_files = {
-        "xgb_finance"    : PREDICTIONS_DIR / "xgb_finance_predictions.csv",
-        "xgb_sentiment"  : PREDICTIONS_DIR / "xgb_sentiment_predictions.csv",
-        "lstm_finance"   : PREDICTIONS_DIR / "lstm_finance_predictions.csv",
-        "lstm_sentiment" : PREDICTIONS_DIR / "lstm_sentiment_predictions.csv",
+        "xgb_finance"    : directory / "xgb_finance_predictions.csv",
+        "xgb_sentiment"  : directory / "xgb_sentiment_predictions.csv",
+        "lstm_finance"   : directory / "lstm_finance_predictions.csv",
+        "lstm_sentiment" : directory / "lstm_sentiment_predictions.csv",
     }
 
-    # Old files used as fallback before retraining is done
+    # Old files used as fallback before retraining is done (production only)
     old_files = {
         "xgb_finance"  : PREDICTIONS_DIR / "xgb_predictions.csv",
         "lstm_finance" : PREDICTIONS_DIR / "lstm_predictions.csv",
-    }
+    } if directory == PREDICTIONS_DIR else {}
 
     for key, path in new_files.items():
         if path.exists():
@@ -291,15 +296,41 @@ async def startup_event():
     if not _readiness["ready"]:
         logger.error("Required saved data unavailable: %s", _readiness["problems"])
         raise RuntimeError("Required saved data failed readiness checks")
-    _cache["latest_prediction_rows"] = {
-        name: frame.sort_values("date").groupby("ticker", sort=False).tail(1)
-                   .set_index("ticker", drop=False)
-        for name, frame in _cache["predictions"].items()
-    }
+    _cache["latest_prediction_rows"] = latest_rows(_cache["predictions"])
+    timeline_latest = {}
+    for timeline in TIMELINES:
+        try:
+            frames = load_predictions(TIMELINE_DIR / timeline)
+            if set(frames) == set(PREDICTION_FILES):
+                timeline_latest[timeline] = latest_rows(frames)
+            else:
+                logger.warning("Timeline %s predictions incomplete; dashboard switch unavailable", timeline)
+        except Exception:
+            logger.exception("Timeline %s predictions failed to load", timeline)
+    if len(timeline_latest) == len(TIMELINES):
+        _cache["timeline_latest"] = timeline_latest
     seed_latest_finance_features(_cache["features"])
     _startup_timings["data_startup_seconds"] = round(time.perf_counter() - started, 3)
     logger.info("Startup timings: %s", json.dumps(_startup_timings))
     logger.info("Ready: %s tickers, release %s", len(_cache["tickers"]), release_id())
+
+
+def latest_rows(predictions: dict) -> dict:
+    """Most recent prediction row per ticker for each model, indexed by ticker."""
+    return {
+        name: frame.sort_values("date").groupby("ticker", sort=False).tail(1)
+                   .set_index("ticker", drop=False)
+        for name, frame in predictions.items()
+    }
+
+
+def timeline_backtest(timeline: str):
+    """That timeline's ensemble-vs-SPY simulation from the comparison report, or None."""
+    try:
+        report = json.loads(TIMELINE_REPORT.read_text(encoding="utf-8"))
+        return report["timelines"][timeline]["backtest"]
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
 
 
 # ── Pydantic Models (request/response shapes) ─────────────────────────────────
@@ -322,12 +353,14 @@ class GameResult(BaseModel):
 
 # ── Helper Functions ───────────────────────────────────────────────────────────
 
-def get_latest_signals_for_ticker(ticker: str) -> dict:
+def get_latest_signals_for_ticker(ticker: str, latest_by_model: Optional[dict] = None) -> dict:
     """Get the most recent prediction from each of the 4 models for a ticker."""
     ticker  = ticker.upper()
     signals = {}
+    if latest_by_model is None:
+        latest_by_model = _cache.get("latest_prediction_rows", {})
 
-    for model_key, latest in _cache.get("latest_prediction_rows", {}).items():
+    for model_key, latest in latest_by_model.items():
         if ticker in latest.index:
             row = latest.loc[ticker]
 
@@ -465,6 +498,11 @@ def get_tickers():
 
 @app.get("/overview")
 def get_overview():
+    """All tickers with their latest production signal from all 4 models (see _overview)."""
+    return _overview(None, "overview_rows")
+
+
+def _overview(latest_by_model: Optional[dict], cache_key: str):
     """
     Returns all tickers with their latest signal from all 4 models.
     This is the main data source for the Overview page table.
@@ -489,8 +527,8 @@ def get_overview():
     # request bought nothing but real latency on Render's throttled free
     # tier (observed 7-17s per call vs. low-milliseconds once cached).
     # /dashboard calls this function too, so both get the speedup.
-    if "overview_rows" in _cache:
-        return _cache["overview_rows"]
+    if cache_key in _cache:
+        return _cache[cache_key]
 
     tickers = _cache.get("tickers", [])
     if not tickers:
@@ -503,7 +541,7 @@ def get_overview():
 
     overview = []
     for ticker in tickers:
-        signals = get_latest_signals_for_ticker(ticker)
+        signals = get_latest_signals_for_ticker(ticker, latest_by_model)
         if not signals:
             continue
 
@@ -555,7 +593,7 @@ def get_overview():
         })
 
     result = {"data": overview, "count": len(overview)}
-    _cache["overview_rows"] = result
+    _cache[cache_key] = result
     return result
 
 
@@ -569,7 +607,7 @@ def get_market_news_endpoint(limit: int = Query(default=8, ge=1, le=30)):
 
 
 @app.get("/dashboard")
-def get_dashboard():
+def get_dashboard(timeline: Literal["2015", "2005"] = Query(default="2015")):
     """
     Aggregated summary for the Dashboard (home) page — computed from the
     same real data as /overview, returned in a single call so the home
@@ -581,9 +619,11 @@ def get_dashboard():
         top_opportunities: top 5 BUY tickers by confidence (Strong first)
         news: recent market-wide headlines
     """
-    # Reuse the overview computation
-    overview_resp = get_overview()
-    rows = overview_resp["data"]
+    # Reuse the overview computation on the chosen training timeline's models
+    latest_by_model = _cache.get("timeline_latest", {}).get(timeline)
+    if latest_by_model is None:
+        raise HTTPException(status_code=503, detail="Timeline predictions are not available on this server.")
+    rows = _overview(latest_by_model, f"overview_rows_{timeline}")["data"]
 
     if not rows:
         raise HTTPException(status_code=503, detail="No prediction data loaded")
@@ -612,6 +652,8 @@ def get_dashboard():
     ]
 
     return {
+        "timeline": timeline,
+        "backtest": timeline_backtest(timeline),
         "snapshot": snapshot_metadata(rows),
         "instruments": rows,
         "kpis": {
