@@ -460,7 +460,10 @@ def main():
 
 
 if __name__ == "__main__":
-    args = training_arguments().parse_args()
+    parser = training_arguments()
+    args = parser.parse_args()
+    if args.start and not args.split_date:
+        parser.error("--start needs --split-date, otherwise the test window would move")
     if args.features_dir:
         FINANCE_CSV   = args.features_dir / "features_finance.csv"
         SENTIMENT_CSV = args.features_dir / "features_sentiment.csv"
