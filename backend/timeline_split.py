@@ -29,8 +29,8 @@ def calib_split_at(dates, calib_split, embargo_days=DEFAULT_EMBARGO_TRADING_DAYS
     return train_mask, calib_mask
 
 
-def training_arguments(lstm=False):
-    """Shared CLI for train_xgboost.py / train_lstm.py. No options = the original production run."""
+def training_arguments():
+    """CLI for train_xgboost.py. No options = the original production run."""
     import argparse
     from pathlib import Path
     parser = argparse.ArgumentParser()
@@ -39,7 +39,4 @@ def training_arguments(lstm=False):
     parser.add_argument("--split-date", help="pinned test boundary; default is the 80%% date quantile")
     parser.add_argument("--out-models", type=Path)
     parser.add_argument("--out-predictions", type=Path)
-    if lstm:
-        parser.add_argument("--seed", type=int)
-        parser.add_argument("--calib-split", help="pinned calibration boundary; default is the 85%% quantile")
     return parser
