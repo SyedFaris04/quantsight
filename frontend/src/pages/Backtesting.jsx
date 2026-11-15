@@ -65,7 +65,6 @@ export default function Backtesting() {
   return <div className="max-w-7xl mx-auto space-y-6">
     <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-5">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-indigo-400">Research & evaluation</p>
         <h1 className="text-3xl font-semibold tracking-tight text-white mt-2">Backtesting</h1>
         <p className="text-gray-400 text-sm mt-2 max-w-2xl">Historical portfolio performance after trading costs, compared on the same dates.
           This simulation is separate from the live prediction track record.</p>

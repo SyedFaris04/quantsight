@@ -42,8 +42,8 @@ export default function DevelopmentComparison() {
   const baseline = report.summaries.find(row => row.candidate === 'fit_prior');
   const modelWin = report.summaries.some(row => !['fit_prior', 'calibration_prior', 'always_up'].includes(row.candidate)
     && row.mean_metrics.brier_score < baseline.mean_metrics.brier_score);
-  return <section className="rounded-2xl border border-cyan-500/30 bg-gray-900 overflow-hidden" aria-label="Finance development comparison">
-    <div className="p-5 sm:p-6 border-b border-gray-800 bg-gradient-to-r from-cyan-950/40 to-gray-900">
+  return <section className="rounded-md border border-gray-800 bg-gray-900 overflow-hidden" aria-label="Finance development comparison">
+    <div className="p-5 sm:p-6 border-b border-gray-800">
       <div className="flex flex-wrap gap-2 text-xs"><span className="rounded-full bg-amber-400/10 text-amber-200 px-3 py-1">Development only · 2022–2024</span>
         <span className="text-gray-400 py-1">2025 candidate test remains unopened</span></div>
       <h2 className="text-xl font-semibold text-white mt-3">Do the models beat a simple baseline?</h2>
@@ -71,14 +71,14 @@ export default function DevelopmentComparison() {
       </div>
       {exportError && <p role="alert" className="text-sm text-red-300">{exportError}</p>}
       <p className="text-xs text-gray-500 sm:hidden">Swipe the table sideways to see all metrics.</p>
-      <div tabIndex={0} role="region" aria-label="Model scores, scroll horizontally for all metrics" className="overflow-x-auto focus:outline-none focus:ring-2 focus:ring-cyan-500 rounded-lg">
+      <div tabIndex={0} role="region" aria-label="Model scores, scroll horizontally for all metrics" className="overflow-x-auto focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg">
         <table className="w-full text-sm whitespace-nowrap text-left">
           <thead className="text-xs text-gray-400"><tr>{['Candidate', 'Accuracy ↑', 'Balanced acc. ↑', 'MCC ↑', 'ROC-AUC ↑', 'Brier loss ↓', 'Predicts UP'].map(title => <th key={title} className="py-3 px-3">{title}</th>)}</tr></thead>
-          <tbody>{rows.map(row => <tr key={row.candidate} className={`border-t border-gray-800 ${row.candidate === 'fit_prior' ? 'bg-cyan-900/15' : ''}`}>
+          <tbody>{rows.map(row => <tr key={row.candidate} className={`border-t border-gray-800 ${row.candidate === 'fit_prior' ? 'bg-indigo-900/15' : ''}`}>
             <th scope="row" className="px-3 py-3 font-medium text-gray-200">{names[row.candidate]}</th>
             <td className="px-3 text-gray-300">{pct(row.metrics.accuracy)}</td><td className="px-3 text-gray-300">{pct(row.metrics.balanced_accuracy)}</td>
             <td className="px-3 text-gray-300">{row.metrics.mcc.toFixed(3)}</td><td className="px-3 text-gray-300">{row.metrics.roc_auc.toFixed(3)}</td>
-            <td className="px-3 text-cyan-200 font-mono">{score(row.metrics.brier_score)}</td><td className="px-3 text-gray-300">{pct(row.metrics.buy_fraction)}</td>
+            <td className="px-3 text-indigo-200 font-mono">{score(row.metrics.brier_score)}</td><td className="px-3 text-gray-300">{pct(row.metrics.buy_fraction)}</td>
           </tr>)}</tbody>
         </table>
       </div>

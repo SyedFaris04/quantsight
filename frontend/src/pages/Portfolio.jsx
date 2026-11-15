@@ -259,7 +259,7 @@ function WhatToBuyNext({ portfolioTickers }) {
 function SummaryCard({ label, value, sub, color }) {
   return (
     <div className={`card border ${color}`}>
-      <div className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">{label}</div>
+      <div className="text-xs text-gray-400 font-medium mb-1">{label}</div>
       <div className="text-2xl font-bold text-white">{value}</div>
       {sub && <div className="text-xs text-gray-500 mt-0.5">{sub}</div>}
     </div>

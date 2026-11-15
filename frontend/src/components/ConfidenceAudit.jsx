@@ -27,7 +27,7 @@ export default function ConfidenceAudit({ names, parentRunId }) {
   }
   return <details className="rounded-xl border border-gray-700 bg-gray-950/40 p-4 sm:p-5"
     onToggle={event => { if (event.currentTarget.open) setRequested(true); }}>
-    <summary className="cursor-pointer font-medium text-cyan-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-400">Does stronger confidence improve accuracy?</summary>
+    <summary className="cursor-pointer font-medium text-indigo-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-400">Does stronger confidence improve accuracy?</summary>
     <div className="mt-4 space-y-4" role="region" aria-label="Confidence and coverage audit">
       <p className="text-sm leading-relaxed text-gray-300">See what happens when only predictions with stronger model confidence are retained. Higher confidence can mean fewer predictions; it does not guarantee fewer mistakes.</p>
       {loading && <p className="text-sm text-gray-400" role="status">Loading confidence audit…</p>}
@@ -52,7 +52,7 @@ export default function ConfidenceAudit({ names, parentRunId }) {
         </div>
         {exportError && <p role="alert" className="text-sm text-red-300">{exportError}</p>}
         <p className="text-xs leading-relaxed text-gray-400">{selected.total_rows.toLocaleString()} eligible ticker-days. Confidence is the larger of P(UP) and P(DOWN). The training-prior baseline is evaluated on the exact same retained rows as the selected candidate.</p>
-        <div className="overflow-x-auto rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-400"
+        <div className="overflow-x-auto rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-400"
           role="region" aria-label="Confidence threshold comparison" tabIndex={0}>
           <table className="w-full whitespace-nowrap text-sm text-left">
             <caption className="sr-only">{names[candidate]} confidence thresholds, coverage and conditional prediction quality. Empty selections have undefined scores. All-years results are weighted by retained observations.</caption>
@@ -62,7 +62,7 @@ export default function ConfidenceAudit({ names, parentRunId }) {
               <td className="px-3 text-gray-300">{row.retained_rows.toLocaleString()}{row.small_sample && <span className="block text-xs text-amber-200">Small sample</span>}</td>
               <td className="px-3 text-gray-300">{pct(row.coverage)}</td><td className="px-3 text-gray-300">{row.retained_dates.toLocaleString()}</td>
               <td className="px-3 text-gray-300">{pct(row.mean_confidence)}</td><td className="px-3 text-gray-300">{pct(row.accuracy)}</td>
-              <td className="px-3 text-gray-300">{pct(row.baseline_accuracy)}</td><td className="px-3 font-mono text-cyan-200">{score(row.brier_score)}</td>
+              <td className="px-3 text-gray-300">{pct(row.baseline_accuracy)}</td><td className="px-3 font-mono text-indigo-200">{score(row.brier_score)}</td>
               <td className="px-3 font-mono text-gray-300">{score(row.baseline_brier)}</td><td className="px-3 text-gray-300">{pct(row.predicts_up)}</td>
             </tr>)}</tbody>
           </table>

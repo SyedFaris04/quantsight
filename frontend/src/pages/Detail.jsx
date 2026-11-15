@@ -11,7 +11,6 @@ import {
 } from "recharts";
 import { useApi } from "../hooks/useApi";
 import { companyName } from "../data/companyNames";
-import RadialProgress from "../components/RadialProgress";
 import CandlestickChart from "../components/CandlestickChart";
 import FeatureAttribution from "../components/FeatureAttribution";
 import { savedProbabilityUp } from "../data/probability";
@@ -19,10 +18,10 @@ import { savedProbabilityUp } from "../data/probability";
 // ── Constants ──────────────────────────────────────────────────────────────────
 
 const MODEL_META = {
-  xgb_finance    : { label: "XGBoost Finance",    color: "#3b82f6", icon: "📈" },
-  xgb_sentiment  : { label: "XGBoost +Sentiment", color: "#6366f1", icon: "📰" },
-  lstm_finance   : { label: "LSTM Finance",        color: "#f59e0b", icon: "📈" },
-  lstm_sentiment : { label: "LSTM +Sentiment",     color: "#a855f7", icon: "📰" },
+  xgb_finance    : { label: "XGBoost Finance",    color: "#3b82f6"},
+  xgb_sentiment  : { label: "XGBoost +Sentiment", color: "#6366f1"},
+  lstm_finance   : { label: "LSTM Finance",        color: "#f59e0b"},
+  lstm_sentiment : { label: "LSTM +Sentiment",     color: "#a855f7"},
 };
 
 // No "1D" option — the dataset is daily-granularity only (one row = one
@@ -97,7 +96,7 @@ function ChartTooltip({ active, payload, label, showSignal }) {
   if (!active || !payload?.length) return null;
   const d = payload[0]?.payload;
   return (
-    <div className="bg-gray-800 border border-gray-700 rounded-lg p-3 text-xs shadow-xl min-w-32">
+    <div className="bg-gray-800 border border-gray-700 rounded-lg p-3 text-xs min-w-32">
       <p className="text-gray-400 mb-2 font-medium">{label}</p>
       {d?.Close != null && (
         <p className="text-white font-semibold mb-1">
@@ -138,10 +137,10 @@ function ScoreBar({ label, score, color }) {
           <span className="text-gray-500">{pct.toFixed(1)}%</span>
         </div>
       </div>
-      <div className="w-full bg-gray-800 rounded-full h-2">
+      <div className="w-full bg-gray-800 rounded-full h-1.5">
         <div
-          className="h-2 rounded-full transition-all duration-500"
-          style={{ width: `${pct}%`, background: color }}
+          className="h-1.5 rounded-full bg-gray-500"
+          style={{ width: `${pct}%` }}
         />
       </div>
     </div>
@@ -153,9 +152,9 @@ function ModelSignalCard({ model }) {
   const isBuy = model.signal_label === "BUY";
   const conf  = savedProbabilityUp(model);
   return (
-    <div className="bg-gray-800/60 rounded-xl p-3 border border-gray-700 flex flex-col gap-2">
+    <div className="bg-gray-800/60 rounded-md p-3 border border-gray-700 flex flex-col gap-2">
       <div className="flex items-center gap-1.5">
-        <span className="text-sm">{meta.icon}</span>
+        
         <span className="text-xs font-medium" style={{ color: meta.color }}>
           {meta.label}
         </span>
@@ -184,8 +183,8 @@ function EvaluativePanel({ explanation }) {
   if (!bull.length && !bear.length && !explanation?.reliability) return null;
 
   const Case = ({ title, points, tone }) => (
-    <div className={`rounded-xl border p-4 flex flex-col gap-3 ${
-      tone === "bull" ? "border-green-800/60 bg-green-900/10" : "border-red-800/60 bg-red-900/10"}`}>
+    <div className={`rounded-md border p-4 flex flex-col gap-3 ${
+      tone === "bull" ? "border-gray-800" : "border-gray-800"}`}>
       <div className="flex items-center gap-2">
         <span className={`text-sm font-bold ${tone === "bull" ? "text-green-400" : "text-red-400"}`}>
           {tone === "bull" ? "▲ Bull case" : "▼ Bear case"}
@@ -208,8 +207,8 @@ function EvaluativePanel({ explanation }) {
   );
 
   const rel = explanation?.reliability;
-  const relTone = rel?.level === "Strong" ? "text-green-300 border-green-800/60 bg-green-900/15"
-                : rel?.level === "Moderate" ? "text-amber-300 border-amber-800/60 bg-amber-900/15"
+  const relTone = rel?.level === "Strong" ? "text-green-300 border-gray-800"
+                : rel?.level === "Moderate" ? "text-amber-300 border-gray-800"
                 : "text-gray-300 border-gray-700 bg-gray-800/40";
 
   return (
@@ -219,9 +218,9 @@ function EvaluativePanel({ explanation }) {
       </SectionTitle>
 
       {rel && (
-        <div className={`rounded-xl border px-4 py-3 ${relTone}`}>
+        <div className={`rounded-md border px-4 py-3 ${relTone}`}>
           <div className="flex items-center justify-between gap-3 mb-1">
-            <p className="text-xs font-semibold uppercase tracking-wide">How much to trust this signal</p>
+            <p className="text-sm font-medium">How much to trust this signal</p>
             <span className="text-sm font-bold tabular-nums">{rel.historical_accuracy}%</span>
           </div>
           <p className="text-xs leading-relaxed opacity-90">{rel.statement}</p>
@@ -229,7 +228,7 @@ function EvaluativePanel({ explanation }) {
       )}
 
       {explanation.verdict && (
-        <div className="rounded-xl border border-indigo-800/50 bg-indigo-900/15 px-4 py-3">
+        <div className="rounded-md border border-gray-800 px-4 py-3">
           <p className="text-xs font-semibold text-indigo-300 mb-1">The honest read</p>
           <p className="text-sm text-gray-200 leading-relaxed">{explanation.verdict}</p>
         </div>
@@ -265,7 +264,7 @@ function DecisionTimeline({ history, loading }) {
     return (
       <div className="flex gap-2 overflow-x-auto pb-2">
         {[1,2,3,4,5,6,7].map(i => (
-          <div key={i} className="flex-shrink-0 w-32 h-32 bg-gray-800 rounded-xl animate-pulse" />
+          <div key={i} className="flex-shrink-0 w-32 h-32 bg-gray-800 rounded-md animate-pulse" />
         ))}
       </div>
     );
@@ -289,14 +288,14 @@ function DecisionTimeline({ history, loading }) {
           return (
             <div key={day.date || i} className="flex items-center flex-shrink-0">
               <div
-                className={`w-32 rounded-xl border p-3 flex flex-col gap-1.5 ${
+                className={`w-32 rounded-md border p-3 flex flex-col gap-1.5 ${
                   isLast
                     ? isBuy
-                      ? "bg-green-900/30 border-green-600 ring-1 ring-green-600/50"
-                      : "bg-red-900/30 border-red-600 ring-1 ring-red-600/50"
+                      ? " border-gray-800"
+                      : " border-gray-800"
                     : isBuy
-                      ? "bg-green-900/10 border-green-800/60"
-                      : "bg-red-900/10 border-red-800/60"
+                      ? " border-gray-800"
+                      : " border-gray-800"
                 }`}
               >
                 <div className="text-xs text-gray-500">{weekday}</div>
@@ -345,9 +344,9 @@ function TrackRecordCard({ model }) {
   const overallAcc = model.overall?.accuracy;
   const good = recentAcc != null && recentAcc >= 50;
   return (
-    <div className="bg-gray-800/60 rounded-xl p-3 border border-gray-700 flex flex-col gap-2">
+    <div className="bg-gray-800/60 rounded-md p-3 border border-gray-700 flex flex-col gap-2">
       <div className="flex items-center gap-1.5">
-        <span className="text-sm">{meta.icon}</span>
+        
         <span className="text-xs font-medium" style={{ color: meta.color }}>
           {meta.label}
         </span>
@@ -381,7 +380,7 @@ function TrackRecordPanel({ data, loading }) {
   if (loading) {
     return (
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {[1,2,3,4].map(i => <div key={i} className="h-28 bg-gray-800 rounded-xl animate-pulse" />)}
+        {[1,2,3,4].map(i => <div key={i} className="h-28 bg-gray-800 rounded-md animate-pulse" />)}
       </div>
     );
   }
@@ -397,13 +396,13 @@ function TrackRecordPanel({ data, loading }) {
 
 function IndicatorCard({ signal }) {
   const c = {
-    bullish: { bg: "bg-green-900/20", border: "border-green-800", dot: "bg-green-500", text: "text-green-400" },
-    bearish: { bg: "bg-red-900/20",   border: "border-red-800",   dot: "bg-red-500",   text: "text-red-400"  },
+    bullish: { bg: "", border: "border-gray-800", dot: "bg-green-500", text: "text-green-400" },
+    bearish: { bg: "",   border: "border-gray-800",   dot: "bg-red-500",   text: "text-red-400"  },
     neutral: { bg: "bg-gray-800/40",  border: "border-gray-700",  dot: "bg-gray-500",  text: "text-gray-400" },
   }[signal.signal] || { bg: "bg-gray-800/40", border: "border-gray-700", dot: "bg-gray-500", text: "text-gray-400" };
 
   return (
-    <div className={`rounded-xl p-4 border ${c.bg} ${c.border}`}>
+    <div className={`rounded-md p-4 border ${c.bg} ${c.border}`}>
       <div className="flex items-center justify-between mb-2">
         <span className="text-sm font-medium text-white">{signal.name}</span>
         <div className="flex items-center gap-1.5">
@@ -429,15 +428,15 @@ function RiskMeterGauge({ explanation }) {
   if (!risk_level) return null;
 
   const config = {
-    Low    : { color: "#22c55e", bg: "bg-green-900/20", border: "border-green-800", text: "text-green-400", pct: 20 },
-    Medium : { color: "#f59e0b", bg: "bg-amber-900/20", border: "border-amber-800", text: "text-amber-400", pct: 55 },
-    High   : { color: "#ef4444", bg: "bg-red-900/20",   border: "border-red-800",   text: "text-red-400",   pct: 88 },
+    Low    : { color: "#22c55e", bg: "", border: "border-gray-800", text: "text-green-400", pct: 20 },
+    Medium : { color: "#f59e0b", bg: "", border: "border-gray-800", text: "text-amber-400", pct: 55 },
+    High   : { color: "#ef4444", bg: "",   border: "border-gray-800",   text: "text-red-400",   pct: 88 },
   }[risk_level] || { color: "#6b7280", bg: "bg-gray-800/40", border: "border-gray-700", text: "text-gray-400", pct: 50 };
 
   const gaugePct = risk_score != null ? Math.min(Math.max(risk_score, 0), 100) : config.pct;
 
   return (
-    <div className={`rounded-xl p-4 border ${config.bg} ${config.border}`}>
+    <div className={`rounded-md p-4 border ${config.bg} ${config.border}`}>
       <div className="flex items-center justify-between mb-3">
         <span className="text-sm font-medium text-white">Investment Risk Level</span>
         <span className={`text-sm font-bold ${config.text}`}>{risk_level}</span>
@@ -479,16 +478,15 @@ function RiskMeterGauge({ explanation }) {
 
 function SentimentCard({ signal }) {
   const c = {
-    positive: { bg: "bg-green-900/20", border: "border-green-800", text: "text-green-400", icon: "📈" },
-    negative: { bg: "bg-red-900/20",   border: "border-red-800",   text: "text-red-400",   icon: "📉" },
-    neutral:  { bg: "bg-gray-800/40",  border: "border-gray-700",  text: "text-gray-400",  icon: "➖" },
-  }[signal.signal] || { bg: "bg-gray-800/40", border: "border-gray-700", text: "text-gray-400", icon: "➖" };
+    positive: { bg: "", border: "border-gray-800", text: "text-green-400"},
+    negative: { bg: "",   border: "border-gray-800",   text: "text-red-400" },
+    neutral:  { bg: "bg-gray-800/40",  border: "border-gray-700",  text: "text-gray-400" },
+  }[signal.signal] || { bg: "bg-gray-800/40", border: "border-gray-700", text: "text-gray-400"};
 
   return (
-    <div className={`rounded-xl p-4 border ${c.bg} ${c.border}`}>
+    <div className={`rounded-md p-4 border ${c.bg} ${c.border}`}>
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <span>{c.icon}</span>
           <span className="text-sm font-medium text-white">{signal.source}</span>
         </div>
         <span className={`text-xs font-semibold ${c.text} capitalize`}>{signal.signal}</span>
@@ -577,7 +575,7 @@ function SentimentImpactCard({ models, ticker }) {
           const withC    = buyConf(p.sent);
           const delta    = withC - withoutC;
           return (
-            <div key={p.label} className="bg-gray-800/40 rounded-xl p-4 border border-gray-700">
+            <div key={p.label} className="bg-gray-800/40 rounded-md p-4 border border-gray-700">
               <div className="text-sm font-medium text-white mb-3">{p.label}</div>
               <div className="flex items-center justify-between text-xs mb-2">
                 <span className="text-gray-500">Without sentiment</span>
@@ -605,7 +603,7 @@ function NewsCard({ article }) {
     <a
       href={article.url} target="_blank" rel="noopener noreferrer"
       className="block bg-gray-800/40 hover:bg-gray-800 border border-gray-700
-                 hover:border-gray-600 rounded-xl p-4 transition-all group"
+                 hover:border-gray-600 rounded-md p-4 transition-all group"
     >
       <p className="text-sm text-gray-200 group-hover:text-white leading-snug mb-2 line-clamp-2">
         {article.title}
@@ -630,36 +628,13 @@ function signalStyle(signal) {
 
 function AgreementBanner({ explanation }) {
   if (!explanation) return null;
-  const { agreement_level, overall_signal, overall_confidence, risk_level } = explanation;
-  const styles = {
-    Strong  : "bg-green-900/20 border-green-800",
-    Moderate: "bg-amber-900/20 border-amber-800",
-    Mixed   : "bg-gray-800 border-gray-700",
-  };
-  const riskStyles = {
-    Low    : "text-green-400 border-green-800 bg-green-900/20",
-    Medium : "text-amber-400 border-amber-800 bg-amber-900/20",
-    High   : "text-red-400 border-red-800 bg-red-900/20",
-  };
-  const riskIcons = { Low: "●", Medium: "●●", High: "●●●" };
+  const { risk_level } = explanation;
+  const riskColor = { Low: "text-green-400", Medium: "text-amber-300", High: "text-red-300" }[risk_level] || "text-gray-300";
+  // Consensus, P(up) and agreement are already in the page header; this states the reading and the risk.
   return (
-    <div className={`rounded-xl px-4 py-3 border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ${styles[agreement_level] || styles.Mixed}`}>
-      <p className="text-sm text-gray-300 leading-relaxed">{explanation.summary}</p>
-      <div className="sm:ml-4 flex-shrink-0 flex items-center gap-4">
-        <div className="text-center">
-          <div className={`text-lg font-bold ${signalStyle(overall_signal).color}`}>
-            {signalStyle(overall_signal).arrow} {overall_signal}
-          </div>
-          <div className="text-xs text-gray-500">{overall_confidence}% mean P(UP)</div>
-          <div className="text-xs font-medium mt-0.5">{agreement_level} Agreement</div>
-        </div>
-        {risk_level && (
-          <div className={`text-center border rounded-lg px-3 py-1.5 ${riskStyles[risk_level] || riskStyles.Medium}`}>
-            <div className="text-xs font-bold tracking-tighter">{riskIcons[risk_level]}</div>
-            <div className="text-xs font-semibold">{risk_level} Risk</div>
-          </div>
-        )}
-      </div>
+    <div className="border-y border-gray-800 py-3 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-2">
+      <p className="text-sm text-gray-300 leading-relaxed max-w-4xl">{explanation.summary}</p>
+      {risk_level && <p className={`text-sm font-medium flex-shrink-0 ${riskColor}`}>{risk_level} risk</p>}
     </div>
   );
 }
@@ -749,28 +724,25 @@ export default function Detail() {
           {companyName(ticker) && (
             <p className="text-sm text-gray-400">{companyName(ticker)}</p>
           )}
-          <p className="text-sm text-gray-500 mt-0.5">AI Copilot Analysis — all 4 model variants</p>
+          <p className="text-sm text-gray-400 mt-0.5">Saved votes and explanations from all four models</p>
         </div>
         {explanation && !explLoading && (
-          <div className={`flex items-center gap-4 px-6 py-3 rounded-xl border ${
-            explanation.overall_signal === "BUY"
-              ? "bg-green-900/20 border-green-700"
-              : explanation.overall_signal === "SELL"
-                ? "bg-red-900/20 border-red-700"
-                : "bg-amber-900/20 border-amber-700"
-          }`}>
-            <RadialProgress
-              value={explanation.overall_confidence}
-              color={explanation.overall_signal === "BUY" ? "#22c55e" : explanation.overall_signal === "SELL" ? "#ef4444" : "#f59e0b"}
-              label="mean P(UP)"
-            />
-            <div className="text-center">
-              <div className={`text-2xl font-bold ${signalStyle(explanation.overall_signal).color}`}>
+          <dl className="flex gap-8 text-sm">
+            <div>
+              <dt className="text-xs text-gray-400">Consensus</dt>
+              <dd className={`mt-0.5 text-xl font-semibold ${signalStyle(explanation.overall_signal).color}`}>
                 {signalStyle(explanation.overall_signal).arrow} {explanation.overall_signal}
-              </div>
-              <div className="text-xs text-gray-500 mt-0.5">{explanation.agreement_level} Agreement</div>
+              </dd>
             </div>
-          </div>
+            <div>
+              <dt className="text-xs text-gray-400">Mean P(up)</dt>
+              <dd className="mt-0.5 text-xl font-semibold tabular-nums">{Number(explanation.overall_confidence).toFixed(1)}%</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-gray-400">Agreement</dt>
+              <dd className="mt-0.5 text-xl font-semibold">{explanation.agreement_level}</dd>
+            </div>
+          </dl>
         )}
       </div>
 
@@ -796,7 +768,7 @@ export default function Detail() {
 
       {/* ── AI summary banner ── */}
       {explLoading
-        ? <div className="h-20 bg-gray-900 rounded-xl border border-gray-800 animate-pulse" />
+        ? <div className="h-20 bg-gray-900 rounded-md border border-gray-800 animate-pulse" />
         : <AgreementBanner explanation={explanation} />
       }
 
@@ -957,10 +929,10 @@ export default function Detail() {
             <p className="text-red-600 text-sm text-center py-8">Could not load explanation — {explError}</p>
           ) : explanation ? (
             <>
-              <ScoreBar label="Technical Indicators" score={explanation.technical_score}  color="#6366f1" />
-              <ScoreBar label="Sentiment (GDELT+WSB)" score={explanation.sentiment_score} color="#10b981" />
-              <ScoreBar label="Emotion (WSB/GoEmotions)" score={explanation.emotion_score} color="#ec4899" />
-              <ScoreBar label="Average Model P(UP)"    score={explanation.model_score}     color="#f59e0b" />
+              <ScoreBar label="Technical Indicators" score={explanation.technical_score} />
+              <ScoreBar label="Sentiment (GDELT+WSB)" score={explanation.sentiment_score} />
+              <ScoreBar label="Emotion (WSB/GoEmotions)" score={explanation.emotion_score} />
+              <ScoreBar label="Average Model P(UP)"    score={explanation.model_score} />
 
               <div className="border-t border-gray-800 pt-4">
                 <p className="section-title">4 Model Signals</p>
@@ -987,7 +959,7 @@ export default function Detail() {
           Risk Assessment
         </SectionTitle>
         {explLoading ? (
-          <div className="h-40 bg-gray-800 rounded-xl animate-pulse" />
+          <div className="h-40 bg-gray-800 rounded-md animate-pulse" />
         ) : explanation?.risk_level ? (
           <RiskMeterGauge explanation={explanation} />
         ) : (
@@ -1005,7 +977,7 @@ export default function Detail() {
         </SectionTitle>
         {explLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {[1,2,3,4].map(i => <div key={i} className="h-24 bg-gray-800 rounded-xl animate-pulse" />)}
+            {[1,2,3,4].map(i => <div key={i} className="h-24 bg-gray-800 rounded-md animate-pulse" />)}
           </div>
         ) : explanation?.indicator_signals?.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1017,7 +989,7 @@ export default function Detail() {
       </div>
 
       {explLoading ? (
-        <div className="card"><div className="h-40 bg-gray-800 rounded-xl animate-pulse" /></div>
+        <div className="card"><div className="h-40 bg-gray-800 rounded-md animate-pulse" /></div>
       ) : explanation?.lstm_attention?.length > 0 ? (
         <div className="card">
           <SectionTitle sub="The LSTM attention layer weights the last 10 input sessions. These weights show internal weighting, not exact reasoning, causal importance or SHAP attribution.">
@@ -1081,7 +1053,7 @@ export default function Detail() {
         </SectionTitle>
         {newsLoading ? (
           <div className="space-y-3">
-            {[1,2,3,4].map(i => <div key={i} className="h-16 bg-gray-800 rounded-xl animate-pulse" />)}
+            {[1,2,3,4].map(i => <div key={i} className="h-16 bg-gray-800 rounded-md animate-pulse" />)}
           </div>
         ) : articles.length === 0 ? (
           <p className="text-gray-600 text-sm">
@@ -1219,7 +1191,7 @@ function GlossarySection() {
       {open && (
         <div className="mt-5 space-y-2">
           {GLOSSARY_TERMS.map((item, i) => (
-            <div key={i} className="border border-gray-800 rounded-xl overflow-hidden">
+            <div key={i} className="border border-gray-800 rounded-md overflow-hidden">
               <button
                 onClick={() => setExpanded(expanded === i ? null : i)}
                 className="w-full flex items-center justify-between px-4 py-3

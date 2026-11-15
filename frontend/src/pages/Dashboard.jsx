@@ -366,6 +366,10 @@ export default function Dashboard() {
               <p>
                 Showing {all ? rows.length : Math.min(rows.length, 8)} of{" "}
                 {rows.length} instruments · agreement is not measured accuracy
+                <span className="block mt-1">
+                  Votes here come from the models trained from {timeline}; the
+                  analysis page shows the live models, so a few can differ.
+                </span>
               </p>
               {rows.length > 8 && (
                 <button

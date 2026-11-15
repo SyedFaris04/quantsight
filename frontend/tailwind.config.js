@@ -7,8 +7,10 @@ export default {
   theme: {
     extend: {
       colors: {
-        gray: { 400: "#a1aab8", 500: "#939dab", 600: "#7f8a99", 700: "#343d49", 800: "#252d38", 900: "#151b23", 950: "#0c1118" },
-        indigo: { 200: "#99f6e4", 300: "#5eead4", 400: "#2dd4bf", 500: "#14b8a6", 600: "#0d9488", 700: "#0f766e", 800: "#115e59", 900: "#134e4a", 950: "#042f2e" },
+        gray: { 300: "#c9c7c3", 400: "#a9a8a4", 500: "#92918d", 600: "#83827e", 700: "#3a3b3f", 800: "#26282c", 900: "#18191c", 950: "#111214" },
+        white: "#ebe9e6",
+        // Single interface accent (links, selection, focus). Named indigo so existing classes follow it.
+        indigo: { 200: "#cfdffb", 300: "#a7c4f7", 400: "#86aef4", 500: "#6ea0f2", 600: "#4f86e4", 700: "#3a6cc4", 800: "#2d548f", 900: "#223f6a", 950: "#172a47" },
         // NuroQuant brand colours
         brand: {
           50:  "#eef2ff",
@@ -24,8 +26,8 @@ export default {
         hold: "#d97706",   // amber-600
       },
       fontFamily: {
-        sans: ["Inter", "ui-sans-serif", "system-ui"],
-        mono: ["JetBrains Mono", "ui-monospace"],
+        sans: ["IBM Plex Sans", "ui-sans-serif", "system-ui", "sans-serif"],
+        mono: ["IBM Plex Mono", "ui-monospace", "monospace"],
       },
     },
   },

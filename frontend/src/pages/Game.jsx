@@ -187,7 +187,7 @@ function ResultCard({ result, onNext }) {
   const { correct, actual_signal, confidence, explanation, points_earned, reasons } = result;
   return (
     <div
-      className={`qs-card-in rounded-2xl border p-6 space-y-4 ${
+      className={`qs-card-in rounded-md border p-6 space-y-4 ${
         correct
           ? "bg-green-900/20 border-green-700"
           : "bg-red-900/20 border-red-700"
@@ -934,7 +934,7 @@ export default function Game() {
               ref={buyBtnRef}
               onClick={() => handleAnswer("BUY")}
               disabled={answering}
-              className={`py-5 rounded-2xl border-2 border-green-700 bg-green-900/20
+              className={`py-5 rounded-md border-2 border-green-700 bg-green-900/20
                          hover:bg-green-900/40 text-green-400 font-bold text-xl
                          transition-all active:scale-95 disabled:cursor-not-allowed
                          ${selectedAnswer === "BUY" ? "qs-locked scale-95" : ""}
@@ -946,7 +946,7 @@ export default function Game() {
               ref={sellBtnRef}
               onClick={() => handleAnswer("SELL")}
               disabled={answering}
-              className={`py-5 rounded-2xl border-2 border-red-700 bg-red-900/20
+              className={`py-5 rounded-md border-2 border-red-700 bg-red-900/20
                          hover:bg-red-900/40 text-red-400 font-bold text-xl
                          transition-all active:scale-95 disabled:cursor-not-allowed
                          ${selectedAnswer === "SELL" ? "qs-locked scale-95" : ""}

@@ -33,7 +33,6 @@ import { useNavigate } from "react-router-dom";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer,
-  RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
 } from "recharts";
 import { useApi } from "../hooks/useApi";
 import XaiComparison from "../components/XaiComparison";
@@ -358,15 +357,6 @@ export default function Compare() {
     };
   }, [models]);
 
-  // ── Radar chart data ───────────────────────────────────────────
-  const radarData = useMemo(() => {
-    return METRICS.map(({ key, label }) => {
-      const entry = { metric: label };
-      models.forEach(m => { entry[m.short] = m[key]; });
-      return entry;
-    });
-  }, [models]);
-
   if (metricsError) {
     return (
       <div className="space-y-8">
@@ -404,51 +394,22 @@ export default function Compare() {
       </div>
 
       {/* ══ KPI summary row — all values derived from model_metrics.json ═══ */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      <dl className="flex flex-wrap gap-x-10 gap-y-3 border-y border-gray-800 py-3 text-sm">
         {metricsLoading ? (
-          [1, 2, 3, 4, 5].map(i => <div key={i} className="h-20 bg-gray-900 rounded-xl animate-pulse" />)
+          <p role="status" className="text-gray-400">Loading saved metrics…</p>
         ) : summaryKpis ? (
           <>
-            <div className="card border border-indigo-600/40 bg-indigo-600/5">
-              <div className="text-xs text-gray-500 uppercase tracking-wider">Highest historical accuracy</div>
-              <div className="text-lg font-semibold text-white mt-1">{summaryKpis.bestModelLabel}</div>
-            </div>
-            <div className="card border border-green-600/40 bg-green-600/5">
-              <div className="text-xs text-gray-500 uppercase tracking-wider">Highest Accuracy</div>
-              <div className="text-2xl font-semibold text-white mt-1">{summaryKpis.bestAccuracy.toFixed(2)}%</div>
-            </div>
-            <div className="card border border-amber-600/40 bg-amber-600/5">
-              <div className="text-xs text-gray-500 uppercase tracking-wider">Variant accuracy difference</div>
-              <div className="text-2xl font-semibold text-white mt-1">
-                {summaryKpis.bestAccDelta != null
-                  ? `${summaryKpis.bestAccDelta >= 0 ? "+" : ""}${summaryKpis.bestAccDelta.toFixed(2)}pp`
-                  : "—"}
-              </div>
-              <div className="text-xs text-gray-500 mt-0.5">accuracy vs finance-only</div>
-            </div>
-            <div className="card border border-blue-600/40 bg-blue-600/5">
-              <div className="text-xs text-gray-500 uppercase tracking-wider">Variant F1 difference</div>
-              <div className="text-2xl font-semibold text-white mt-1">
-                {summaryKpis.bestF1Delta != null
-                  ? `${summaryKpis.bestF1Delta >= 0 ? "+" : ""}${summaryKpis.bestF1Delta.toFixed(2)}pp`
-                  : "—"}
-              </div>
-              <div className="text-xs text-gray-500 mt-0.5">F1 vs finance-only</div>
-            </div>
-            <div className="card border border-purple-600/40 bg-purple-600/5">
-              <div className="text-xs text-gray-500 uppercase tracking-wider">XGBoost P(UP) difference</div>
-              <div className="text-2xl font-semibold text-white mt-1">
-                {confBoostLoading ? "—" : confBoost?.xgb
-                  ? `${confBoost.xgb.avg_confidence_boost >= 0 ? "+" : ""}${confBoost.xgb.avg_confidence_boost.toFixed(2)}pp`
-                  : "—"}
-              </div>
-              <div className="text-xs text-gray-500 mt-0.5">
-                {"Signed output change; not an accuracy gain"}
-              </div>
-            </div>
+            <div><dt className="text-xs text-gray-400">Highest accuracy</dt>
+              <dd className="mt-0.5 text-lg font-medium tabular-nums">{summaryKpis.bestAccuracy.toFixed(2)}% <span className="text-sm font-normal text-gray-400">{summaryKpis.bestModelLabel}</span></dd></div>
+            <div><dt className="text-xs text-gray-400">Sentiment variant, accuracy change</dt>
+              <dd className="mt-0.5 text-lg font-medium tabular-nums">{summaryKpis.bestAccDelta != null ? `${summaryKpis.bestAccDelta >= 0 ? "+" : "−"}${Math.abs(summaryKpis.bestAccDelta).toFixed(2)} pts` : "—"}</dd></div>
+            <div><dt className="text-xs text-gray-400">Sentiment variant, F1 change</dt>
+              <dd className="mt-0.5 text-lg font-medium tabular-nums">{summaryKpis.bestF1Delta != null ? `${summaryKpis.bestF1Delta >= 0 ? "+" : "−"}${Math.abs(summaryKpis.bestF1Delta).toFixed(2)} pts` : "—"}</dd></div>
+            <div><dt className="text-xs text-gray-400">XGBoost P(up) change (not an accuracy gain)</dt>
+              <dd className="mt-0.5 text-lg font-medium tabular-nums">{confBoostLoading ? "—" : confBoost?.xgb?.avg_confidence_boost != null ? `${confBoost?.xgb?.avg_confidence_boost >= 0 ? "+" : "−"}${Math.abs(confBoost?.xgb?.avg_confidence_boost).toFixed(2)} pts` : "—"}</dd></div>
           </>
         ) : null}
-      </div>
+      </dl>
 
       {/* ══ Section 1 — Accuracy Metrics Table ══════════════════════════════ */}
       <div className="card">
@@ -678,50 +639,6 @@ export default function Compare() {
               </div>
             )}
           </div>
-        )}
-      </div>
-
-      {/* ══ Section 4 — Radar Chart ══════════════════════════════════════════ */}
-      <div className="card">
-        <SectionTitle
-          sub="Spider chart view — shows relative strengths of each model across all metrics"
-        >
-          Model Profile — Radar Chart
-        </SectionTitle>
-
-        {metricsLoading ? (
-          <div className="h-72 bg-gray-800 rounded animate-pulse" />
-        ) : (
-          <ResponsiveContainer width="100%" height={300}>
-            <RadarChart data={radarData}>
-              <PolarGrid stroke="#1f2937" />
-              <PolarAngleAxis
-                dataKey="metric"
-                tick={{ fill: "#9ca3af", fontSize: 11 }}
-              />
-              <PolarRadiusAxis
-                angle={90}
-                domain={[0, 100]}
-                tick={{ fill: "#4b5563", fontSize: 9 }}
-                tickCount={4}
-              />
-              {MODEL_ORDER.map(m => (
-                <Radar
-                  key={m.short}
-                  name={m.short}
-                  dataKey={m.short}
-                  stroke={m.color}
-                  fill={m.color}
-                  fillOpacity={0.08}
-                  strokeWidth={2}
-                />
-              ))}
-              <Legend
-                wrapperStyle={{ fontSize: "12px", color: "#9ca3af" }}
-              />
-              <Tooltip content={<CustomBarTooltip />} />
-            </RadarChart>
-          </ResponsiveContainer>
         )}
       </div>
 

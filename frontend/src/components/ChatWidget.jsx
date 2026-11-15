@@ -98,6 +98,11 @@ export default function ChatWidget() {
 
   useEffect(() => { saveHistory(messages); }, [messages]);
   useEffect(() => () => requestRef.current?.abort(), []);
+  useEffect(() => {
+    const open = () => setIsOpen(true);
+    window.addEventListener("qs:open-chat", open);
+    return () => window.removeEventListener("qs:open-chat", open);
+  }, []);
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -178,28 +183,24 @@ export default function ChatWidget() {
       <button
         onClick={() => setIsOpen(o => !o)}
         aria-label={isOpen ? "Close AI Assistant" : "Open AI Assistant"}
-        className="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-lg
-                   bg-indigo-700 text-white
-                   shadow-lg shadow-indigo-950/50 border border-indigo-400/30
-                   flex items-center justify-center text-2xl
-                   hover:scale-105 active:scale-95 transition-transform duration-150"
+        aria-expanded={isOpen}
+        className="lg:hidden fixed bottom-4 right-4 z-50 h-9 px-3 rounded border border-gray-700
+                   bg-gray-900 text-sm text-gray-200 hover:border-gray-500 hover:text-white
+                   flex items-center gap-2"
       >
-        <Icon name={isOpen ? "close" : "chat"} />
+        <Icon name={isOpen ? "close" : "chat"} className="w-4 h-4" />
+        <span>{isOpen ? "Close" : "AI Assistant"}</span>
       </button>
 
       {isOpen && (
         <div
-          className="qs-card-in fixed z-50 bottom-24 right-4 sm:right-6
-                     w-[min(24rem,calc(100vw-2rem))] h-[min(34rem,calc(100vh-8rem))]
-                     bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl
+          className="qs-card-in fixed z-50 bottom-16 lg:bottom-4 right-4
+                     w-[min(24rem,calc(100vw-2rem))] h-[min(34rem,calc(100vh-6rem))]
+                     bg-gray-900 border border-gray-700 rounded-md
                      flex flex-col overflow-hidden"
         >
           {/* Header */}
           <div className="flex items-center gap-2.5 px-4 h-14 border-b border-gray-800 flex-shrink-0">
-            <span className="w-7 h-7 rounded-full bg-indigo-500/20 border border-indigo-600/40
-                             flex items-center justify-center text-sm flex-shrink-0">
-              <Icon name="chat" className="w-4 h-4" />
-            </span>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-semibold text-white">QuantSight Assistant</div>
               <div className="text-[10px] text-gray-500">Grounded in real model data</div>
@@ -213,6 +214,10 @@ export default function ChatWidget() {
                 Clear
               </button>
             )}
+            <button onClick={() => setIsOpen(false)} aria-label="Close AI Assistant"
+              className="text-gray-400 hover:text-gray-200 flex-shrink-0">
+              <Icon name="close" className="w-4 h-4" />
+            </button>
           </div>
 
           {/* Messages */}
@@ -240,7 +245,7 @@ export default function ChatWidget() {
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div
-                  className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
+                  className={`max-w-[85%] rounded-md px-3.5 py-2.5 text-sm leading-relaxed ${
                     m.role === "user"
                       ? "bg-indigo-600 text-white rounded-br-sm"
                       : "bg-gray-800 text-gray-200 rounded-bl-sm"

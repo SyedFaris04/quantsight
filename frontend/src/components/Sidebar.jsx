@@ -152,7 +152,16 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
             </div>
           ))}
         </nav>
-        <div className="px-4 py-4 border-t border-gray-800">
+        <div className="px-4 py-4 border-t border-gray-800 space-y-2">
+          {/* Desktop home of the chat launcher; phones keep the floating button. */}
+          <button
+            onClick={() => window.dispatchEvent(new Event("qs:open-chat"))}
+            aria-label="Open AI Assistant"
+            className="hidden lg:flex btn-secondary w-full items-center gap-3"
+          >
+            <Icon name="chat" />
+            <span>AI Assistant</span>
+          </button>
           <AccountSection />
         </div>
         <p className="px-5 py-4 border-t border-gray-800 text-[11px] text-gray-500">

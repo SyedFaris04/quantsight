@@ -23,8 +23,8 @@ export default function ResearchComparison() {
     : high < 0 ? 'Higher Brier loss than VADER in this exploratory comparison.'
       : 'No clear improvement over VADER: the interval includes zero.';
   return (
-    <section className="overflow-hidden rounded-2xl border border-indigo-500/30 bg-gray-900" aria-labelledby="news-study-title">
-      <div className="border-b border-gray-800 bg-gradient-to-r from-indigo-950/60 to-gray-900 p-5 sm:p-6">
+    <section className="overflow-hidden rounded-md border border-indigo-500/30 bg-gray-900" aria-labelledby="news-study-title">
+      <div className="border-b border-gray-800 p-5 sm:p-6">
         <div className="flex flex-wrap items-center gap-3">
           <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 text-xs font-medium text-amber-200">Exploratory study</span>
           <span className="text-xs text-gray-400">Five-session direction · 2023 evaluation</span>
