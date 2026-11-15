@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useMemo, useRef, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { useApi } from "../hooks/useApi";
 import { companyName } from "../data/companyNames";
+import { parseTimeline, TIMELINES } from "../lib/timeline";
 
 const pct = (v) =>
   Number.isFinite(v) ? `${(v * 100).toFixed(2)}%` : "Unavailable";
@@ -16,8 +17,44 @@ function Failure({ message, retry }) {
     </div>
   );
 }
-function BacktestPreview() {
-  const { data, loading, error, refetch, isSlow } = useApi("/backtest/summary");
+function TimelineSwitch({ value, onChange }) {
+  const buttons = useRef([]);
+  const move = (index) => {
+    const next = (index + TIMELINES.length) % TIMELINES.length;
+    onChange(TIMELINES[next]);
+    buttons.current[next]?.focus();
+  };
+  return (
+    <div
+      role="radiogroup"
+      aria-label="Training history of the models shown"
+      className="inline-flex rounded-md border border-gray-700 p-0.5"
+    >
+      {TIMELINES.map((t, i) => (
+        <button
+          key={t}
+          ref={(el) => (buttons.current[i] = el)}
+          role="radio"
+          aria-checked={value === t}
+          tabIndex={value === t ? 0 : -1}
+          onClick={() => onChange(t)}
+          onKeyDown={(e) => {
+            if (["ArrowRight", "ArrowDown"].includes(e.key)) { e.preventDefault(); move(i + 1); }
+            if (["ArrowLeft", "ArrowUp"].includes(e.key)) { e.preventDefault(); move(i - 1); }
+          }}
+          className={`px-3 py-1.5 text-sm rounded ${
+            value === t ? "bg-gray-700 text-white" : "text-gray-400 hover:text-gray-200"
+          }`}
+        >
+          Trained from {t}
+        </button>
+      ))}
+    </div>
+  );
+}
+function BacktestPreview({ data: dashboard, loading, error, refetch, isSlow, timeline }) {
+  const data = dashboard?.backtest;
+  const rows = data ? [["Model ensemble", data.ensemble], ["SPY benchmark", data.spy]] : [];
   return (
     <section className="card" aria-labelledby="performance-title">
       <div className="flex flex-wrap justify-between items-center gap-3">
@@ -36,15 +73,16 @@ function BacktestPreview() {
         </p>
       ) : error ? (
         <Failure message={error} retry={refetch} />
-      ) : !data?.available ? (
+      ) : !data ? (
         <p className="mt-4 text-sm text-gray-400">
-          {data?.message || "Backtest unavailable."}
+          Backtest for this training history is unavailable.
         </p>
       ) : (
         <>
           <p className="mt-2 text-xs text-gray-400">
             {data.evaluation.start} to {data.evaluation.end} ·{" "}
-            {data.evaluation.sessions} sessions · net of costs
+            {data.evaluation.sessions} sessions · net of costs · four served
+            models averaged, trained from {timeline}
           </p>
           <div className="overflow-x-auto mt-4">
             <table className="data-table">
@@ -60,23 +98,17 @@ function BacktestPreview() {
                 </tr>
               </thead>
               <tbody>
-                {data.strategies.map((s) => (
-                  <tr key={s.key}>
+                {rows.map(([name, m]) => (
+                  <tr key={name}>
                     <th
                       scope="row"
                       className="px-4 py-3 text-left text-sm font-medium"
                     >
-                      {s.key === "ensemble"
-                        ? "Model ensemble"
-                        : "SPY benchmark"}
+                      {name}
                     </th>
-                    <td className="tabular-nums">
-                      {pct(s.metrics.total_return)}
-                    </td>
-                    <td className="tabular-nums">{score(s.metrics.sharpe)}</td>
-                    <td className="tabular-nums">
-                      {pct(s.metrics.max_drawdown)}
-                    </td>
+                    <td className="tabular-nums">{pct(m.total_return)}</td>
+                    <td className="tabular-nums">{score(m.sharpe)}</td>
+                    <td className="tabular-nums">{pct(m.max_drawdown)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -92,7 +124,10 @@ function BacktestPreview() {
             {data.config.slippage_bps} bps slippage per side. Risk-free rate:{" "}
             {pct(data.config.annual_risk_free_rate)}.
           </p>
-          <p className="mt-3 text-xs text-amber-200/90">{data.limitation}</p>
+          <p className="mt-3 text-xs text-amber-200/90">
+            Exploratory simulation on reused historical data; not an independent
+            test or a live result.
+          </p>
         </>
       )}
     </section>
@@ -158,7 +193,11 @@ function NewsArchive() {
   );
 }
 export default function Dashboard() {
-  const { data, loading, error, refetch, isSlow } = useApi("/dashboard");
+  const [params, setParams] = useSearchParams();
+  const timeline = parseTimeline(`?${params}`);
+  const setTimeline = (t) => setParams({ timeline: t }, { replace: true });
+  const api = useApi(`/dashboard?timeline=${timeline}`);
+  const { data, loading, error, refetch, isSlow } = api;
   const [query, setQuery] = useState("");
   const [all, setAll] = useState(false);
   const [archive, setArchive] = useState(false);
@@ -189,9 +228,12 @@ export default function Dashboard() {
             Find an instrument, inspect its prediction, and check the evidence.
           </p>
         </div>
-        <Link to="/market" className="btn-secondary">
-          Market explorer →
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <TimelineSwitch value={timeline} onChange={setTimeline} />
+          <Link to="/timeline" className="text-sm text-indigo-300">
+            Compare timelines →
+          </Link>
+        </div>
       </header>
       <section
         className="border-y border-gray-800 py-4 flex flex-wrap gap-x-10 gap-y-3 text-sm"
@@ -202,7 +244,8 @@ export default function Dashboard() {
             Historical model snapshot
           </h2>
           <p className="mt-1 text-xs text-gray-400">
-            Saved outputs · five NYSE trading sessions ahead
+            Saved outputs · five NYSE trading sessions ahead · models trained
+            from {timeline}
           </p>
         </div>
         <div>
@@ -337,7 +380,7 @@ export default function Dashboard() {
         )}
       </section>
       <div className="grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        <BacktestPreview />
+        <BacktestPreview {...api} timeline={timeline} />
         <section className="card" aria-labelledby="forward-title">
           <p className="eyebrow">Independent of historical simulation</p>
           <h2 id="forward-title" className="mt-2 text-lg font-semibold">
@@ -379,6 +422,7 @@ export default function Dashboard() {
         </h2>
         <p className="mt-2 text-xs text-gray-400">
           Optional context with publication dates and VADER language scores.
+          Not a model output; the same for both training histories.
         </p>
         <div id="archive-content">{archive && <NewsArchive />}</div>
       </section>

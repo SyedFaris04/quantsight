@@ -15,7 +15,6 @@ import xgboost as xgb
 
 from backtesting.engine import BacktestConfig, performance_metrics, simulate
 from research.crisis_walkforward import paired_difference
-from research.development_models import reliability
 from research.freeze_prices import ROOT, digest
 from timeline_split import fixed_split
 
@@ -55,13 +54,20 @@ def common(frames):
             .reset_index(drop=True) for frame in frames]
 
 
+def equal_count_reliability(signal, p, bins=10):
+    """Reliability bins holding equal numbers of predictions; probabilities here cluster near 50%."""
+    order = np.argsort(p, kind='stable')
+    return [{'n': len(part), 'mean_probability': float(p[part].mean()), 'observed_up_rate': float(signal[part].mean())}
+            for part in np.array_split(order, bins)]
+
+
 def score(frame):
     signal, p = frame.signal.to_numpy(int), frame.confidence.to_numpy(float) / 100
     predicted = frame.predicted_signal.to_numpy(int)
     return {'rows': len(frame), 'accuracy': float((predicted == signal).mean()),
             'balanced_accuracy': float(balanced_accuracy_score(signal, predicted)),
             'auc': float(roc_auc_score(signal, p)), 'brier': float(np.mean((p - signal) ** 2)),
-            'buy_fraction': float(predicted.mean()), 'reliability': reliability(signal, p)}
+            'buy_fraction': float(predicted.mean()), 'reliability': equal_count_reliability(signal, p)}
 
 
 def agreement(a, b, labels):

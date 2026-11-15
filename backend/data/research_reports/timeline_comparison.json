@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "exploratory",
-  "created_at": "2026-11-15T16:20:36.216239+00:00",
+  "created_at": "2026-11-15T16:24:08.233486+00:00",
   "protocol": {
     "protocol_id": "two_timeline_served_models_v1",
     "snapshot_id": "20261115T154430187216Z",
@@ -69,74 +69,54 @@
           "buy_fraction": 0.7817124735729387,
           "reliability": [
             {
-              "lower": 0.0,
-              "upper": 0.1,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2082,
+              "mean_probability": 0.5522,
+              "observed_up_rate": 0.49279538904899134
             },
             {
-              "lower": 0.1,
-              "upper": 0.2,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2082,
+              "mean_probability": 0.5522,
+              "observed_up_rate": 0.5931796349663785
             },
             {
-              "lower": 0.2,
-              "upper": 0.3,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2081,
+              "mean_probability": 0.5522,
+              "observed_up_rate": 0.4324843825084094
             },
             {
-              "lower": 0.3,
-              "upper": 0.4,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2081,
+              "mean_probability": 0.5522,
+              "observed_up_rate": 0.616530514175877
             },
             {
-              "lower": 0.4,
-              "upper": 0.5,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2081,
+              "mean_probability": 0.5522,
+              "observed_up_rate": 0.6054781355117732
             },
             {
-              "lower": 0.5,
-              "upper": 0.6,
-              "n": 20812,
-              "mean_probability": 0.55276854699212,
-              "observed_up_rate": 0.5418989044781857
+              "n": 2081,
+              "mean_probability": 0.5522,
+              "observed_up_rate": 0.5487746275828929
             },
             {
-              "lower": 0.6,
-              "upper": 0.7,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2081,
+              "mean_probability": 0.5522,
+              "observed_up_rate": 0.45458913983661703
             },
             {
-              "lower": 0.7,
-              "upper": 0.8,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2081,
+              "mean_probability": 0.5522,
+              "observed_up_rate": 0.5747236905333974
             },
             {
-              "lower": 0.8,
-              "upper": 0.9,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2081,
+              "mean_probability": 0.5523262854396925,
+              "observed_up_rate": 0.49927919269581933
             },
             {
-              "lower": 0.9,
-              "upper": 1.0,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2081,
+              "mean_probability": 0.5577597308986064,
+              "observed_up_rate": 0.6011532916866891
             }
           ]
         },
@@ -149,74 +129,54 @@
           "buy_fraction": 0.7788295214299442,
           "reliability": [
             {
-              "lower": 0.0,
-              "upper": 0.1,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2082,
+              "mean_probability": 0.5531033141210374,
+              "observed_up_rate": 0.5153698366954851
             },
             {
-              "lower": 0.1,
-              "upper": 0.2,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2082,
+              "mean_probability": 0.5533,
+              "observed_up_rate": 0.5470701248799231
             },
             {
-              "lower": 0.2,
-              "upper": 0.3,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2081,
+              "mean_probability": 0.5533,
+              "observed_up_rate": 0.5069678039404133
             },
             {
-              "lower": 0.3,
-              "upper": 0.4,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2081,
+              "mean_probability": 0.5533,
+              "observed_up_rate": 0.5185007208073041
             },
             {
-              "lower": 0.4,
-              "upper": 0.5,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2081,
+              "mean_probability": 0.5533,
+              "observed_up_rate": 0.6194137433925997
             },
             {
-              "lower": 0.5,
-              "upper": 0.6,
-              "n": 20812,
-              "mean_probability": 0.5535838746876802,
-              "observed_up_rate": 0.5418989044781857
+              "n": 2081,
+              "mean_probability": 0.5533,
+              "observed_up_rate": 0.565112926477655
             },
             {
-              "lower": 0.6,
-              "upper": 0.7,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2081,
+              "mean_probability": 0.5533,
+              "observed_up_rate": 0.5372417107160019
             },
             {
-              "lower": 0.7,
-              "upper": 0.8,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2081,
+              "mean_probability": 0.5533,
+              "observed_up_rate": 0.5132148005766458
             },
             {
-              "lower": 0.8,
-              "upper": 0.9,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2081,
+              "mean_probability": 0.5533,
+              "observed_up_rate": 0.5569437770302739
             },
             {
-              "lower": 0.9,
-              "upper": 1.0,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2081,
+              "mean_probability": 0.5563358000961077,
+              "observed_up_rate": 0.5391638635271504
             }
           ]
         },
@@ -229,74 +189,54 @@
           "buy_fraction": 0.5736795601806401,
           "reliability": [
             {
-              "lower": 0.0,
-              "upper": 0.1,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2038,
+              "mean_probability": 0.43727654563297347,
+              "observed_up_rate": 0.5093228655544652
             },
             {
-              "lower": 0.1,
-              "upper": 0.2,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2038,
+              "mean_probability": 0.46450000000000014,
+              "observed_up_rate": 0.5019627085377821
             },
             {
-              "lower": 0.2,
-              "upper": 0.3,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2037,
+              "mean_probability": 0.4704855179185075,
+              "observed_up_rate": 0.5051546391752577
             },
             {
-              "lower": 0.3,
-              "upper": 0.4,
-              "n": 523,
-              "mean_probability": 0.39079999999999987,
-              "observed_up_rate": 0.44933078393881454
+              "n": 2037,
+              "mean_probability": 0.4834928816887581,
+              "observed_up_rate": 0.5503190967108493
             },
             {
-              "lower": 0.4,
-              "upper": 0.5,
-              "n": 12957,
-              "mean_probability": 0.4769529057652235,
-              "observed_up_rate": 0.5282858686424327
+              "n": 2037,
+              "mean_probability": 0.48840000000000017,
+              "observed_up_rate": 0.5375552282768777
             },
             {
-              "lower": 0.5,
-              "upper": 0.6,
-              "n": 6892,
-              "mean_probability": 0.5076098810214742,
-              "observed_up_rate": 0.589959373186303
+              "n": 2037,
+              "mean_probability": 0.48840000000000017,
+              "observed_up_rate": 0.5189003436426117
             },
             {
-              "lower": 0.6,
-              "upper": 0.7,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2037,
+              "mean_probability": 0.4947442808051056,
+              "observed_up_rate": 0.5699558173784978
             },
             {
-              "lower": 0.7,
-              "upper": 0.8,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2037,
+              "mean_probability": 0.5072,
+              "observed_up_rate": 0.5743740795287187
             },
             {
-              "lower": 0.8,
-              "upper": 0.9,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2037,
+              "mean_probability": 0.5072,
+              "observed_up_rate": 0.6023564064801178
             },
             {
-              "lower": 0.9,
-              "upper": 1.0,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2037,
+              "mean_probability": 0.5094606774668631,
+              "observed_up_rate": 0.6013745704467354
             }
           ],
           "lstm_seeds": {
@@ -331,74 +271,54 @@
           "buy_fraction": 0.37703710975849203,
           "reliability": [
             {
-              "lower": 0.0,
-              "upper": 0.1,
-              "n": 79,
-              "mean_probability": 0.0005835443037974684,
-              "observed_up_rate": 0.620253164556962
+              "n": 2038,
+              "mean_probability": 0.38141908734053,
+              "observed_up_rate": 0.5088321884200196
             },
             {
-              "lower": 0.1,
-              "upper": 0.2,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2038,
+              "mean_probability": 0.446906084396467,
+              "observed_up_rate": 0.5176643768400393
             },
             {
-              "lower": 0.2,
-              "upper": 0.3,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2037,
+              "mean_probability": 0.49412798232695154,
+              "observed_up_rate": 0.4634266077565047
             },
             {
-              "lower": 0.3,
-              "upper": 0.4,
-              "n": 1327,
-              "mean_probability": 0.3790712886209495,
-              "observed_up_rate": 0.49284099472494347
+              "n": 2037,
+              "mean_probability": 0.49570000000000014,
+              "observed_up_rate": 0.5679921453117329
             },
             {
-              "lower": 0.4,
-              "upper": 0.5,
-              "n": 8505,
-              "mean_probability": 0.4790437977660201,
-              "observed_up_rate": 0.5094650205761316
+              "n": 2037,
+              "mean_probability": 0.4965184094256261,
+              "observed_up_rate": 0.48699067255768286
             },
             {
-              "lower": 0.5,
-              "upper": 0.6,
-              "n": 10461,
-              "mean_probability": 0.5025698308001147,
-              "observed_up_rate": 0.5840741802886913
+              "n": 2037,
+              "mean_probability": 0.5019,
+              "observed_up_rate": 0.5719194894452626
             },
             {
-              "lower": 0.6,
-              "upper": 0.7,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2037,
+              "mean_probability": 0.5019,
+              "observed_up_rate": 0.5449189985272459
             },
             {
-              "lower": 0.7,
-              "upper": 0.8,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2037,
+              "mean_probability": 0.5019,
+              "observed_up_rate": 0.6067746686303387
             },
             {
-              "lower": 0.8,
-              "upper": 0.9,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2037,
+              "mean_probability": 0.5019,
+              "observed_up_rate": 0.602847324496809
             },
             {
-              "lower": 0.9,
-              "upper": 1.0,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2037,
+              "mean_probability": 0.5053650957290132,
+              "observed_up_rate": 0.5999018163966617
             }
           ],
           "lstm_seeds": {
@@ -613,74 +533,54 @@
           "buy_fraction": 0.8201037862771478,
           "reliability": [
             {
-              "lower": 0.0,
-              "upper": 0.1,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2082,
+              "mean_probability": 0.5391554274735831,
+              "observed_up_rate": 0.5437079731027857
             },
             {
-              "lower": 0.1,
-              "upper": 0.2,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2082,
+              "mean_probability": 0.5469892891450527,
+              "observed_up_rate": 0.5139289145052833
             },
             {
-              "lower": 0.2,
-              "upper": 0.3,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2081,
+              "mean_probability": 0.5483000000000001,
+              "observed_up_rate": 0.54925516578568
             },
             {
-              "lower": 0.3,
-              "upper": 0.4,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2081,
+              "mean_probability": 0.5483000000000001,
+              "observed_up_rate": 0.5324363286881307
             },
             {
-              "lower": 0.4,
-              "upper": 0.5,
-              "n": 14,
-              "mean_probability": 0.48887857142857155,
-              "observed_up_rate": 0.6428571428571429
+              "n": 2081,
+              "mean_probability": 0.5491108121095627,
+              "observed_up_rate": 0.5314752522825564
             },
             {
-              "lower": 0.5,
-              "upper": 0.6,
-              "n": 20798,
-              "mean_probability": 0.549649778824887,
-              "observed_up_rate": 0.5418309452832003
+              "n": 2081,
+              "mean_probability": 0.5496999999999999,
+              "observed_up_rate": 0.5593464680442095
             },
             {
-              "lower": 0.6,
-              "upper": 0.7,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2081,
+              "mean_probability": 0.5496999999999999,
+              "observed_up_rate": 0.5228255646323883
             },
             {
-              "lower": 0.7,
-              "upper": 0.8,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2081,
+              "mean_probability": 0.5542397405093704,
+              "observed_up_rate": 0.5309947140797694
             },
             {
-              "lower": 0.8,
-              "upper": 0.9,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2081,
+              "mean_probability": 0.5552999999999999,
+              "observed_up_rate": 0.5588659298414224
             },
             {
-              "lower": 0.9,
-              "upper": 1.0,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2081,
+              "mean_probability": 0.5552999999999999,
+              "observed_up_rate": 0.5761653051417588
             }
           ]
         },
@@ -693,74 +593,54 @@
           "buy_fraction": 0.8258216413607534,
           "reliability": [
             {
-              "lower": 0.0,
-              "upper": 0.1,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2082,
+              "mean_probability": 0.5405018731988471,
+              "observed_up_rate": 0.5273775216138329
             },
             {
-              "lower": 0.1,
-              "upper": 0.2,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2082,
+              "mean_probability": 0.5466406340057636,
+              "observed_up_rate": 0.5456292026897214
             },
             {
-              "lower": 0.2,
-              "upper": 0.3,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2081,
+              "mean_probability": 0.5484000000000001,
+              "observed_up_rate": 0.5204228736184526
             },
             {
-              "lower": 0.3,
-              "upper": 0.4,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2081,
+              "mean_probability": 0.5484000000000001,
+              "observed_up_rate": 0.4983181162902451
             },
             {
-              "lower": 0.4,
-              "upper": 0.5,
-              "n": 67,
-              "mean_probability": 0.4934000000000002,
-              "observed_up_rate": 0.6119402985074627
+              "n": 2081,
+              "mean_probability": 0.5484000000000001,
+              "observed_up_rate": 0.6045170591061989
             },
             {
-              "lower": 0.5,
-              "upper": 0.6,
-              "n": 20745,
-              "mean_probability": 0.5493568426126777,
-              "observed_up_rate": 0.5416726922149916
+              "n": 2081,
+              "mean_probability": 0.5484000000000001,
+              "observed_up_rate": 0.5314752522825564
             },
             {
-              "lower": 0.6,
-              "upper": 0.7,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2081,
+              "mean_probability": 0.5484000000000001,
+              "observed_up_rate": 0.5636713118692936
             },
             {
-              "lower": 0.7,
-              "upper": 0.8,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2081,
+              "mean_probability": 0.5498298894762135,
+              "observed_up_rate": 0.48678519942335413
             },
             {
-              "lower": 0.8,
-              "upper": 0.9,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2081,
+              "mean_probability": 0.5563999999999999,
+              "observed_up_rate": 0.5598270062469967
             },
             {
-              "lower": 0.9,
-              "upper": 1.0,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2081,
+              "mean_probability": 0.5563999999999999,
+              "observed_up_rate": 0.58097068716963
             }
           ]
         },
@@ -773,74 +653,54 @@
           "buy_fraction": 0.5882583938739446,
           "reliability": [
             {
-              "lower": 0.0,
-              "upper": 0.1,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2038,
+              "mean_probability": 0.4767484789008832,
+              "observed_up_rate": 0.5314033366045142
             },
             {
-              "lower": 0.1,
-              "upper": 0.2,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2038,
+              "mean_probability": 0.4783,
+              "observed_up_rate": 0.4975466143277723
             },
             {
-              "lower": 0.2,
-              "upper": 0.3,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2037,
+              "mean_probability": 0.48864084437898864,
+              "observed_up_rate": 0.5424644084437898
             },
             {
-              "lower": 0.3,
-              "upper": 0.4,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2037,
+              "mean_probability": 0.49699999999999994,
+              "observed_up_rate": 0.5679921453117329
             },
             {
-              "lower": 0.4,
-              "upper": 0.5,
-              "n": 20366,
-              "mean_probability": 0.49245856820190514,
-              "observed_up_rate": 0.5469900815083963
+              "n": 2037,
+              "mean_probability": 0.49699999999999994,
+              "observed_up_rate": 0.39813451153657337
             },
             {
-              "lower": 0.5,
-              "upper": 0.6,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2037,
+              "mean_probability": 0.49699999999999994,
+              "observed_up_rate": 0.6941580756013745
             },
             {
-              "lower": 0.6,
-              "upper": 0.7,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2037,
+              "mean_probability": 0.49699999999999994,
+              "observed_up_rate": 0.5400098183603338
             },
             {
-              "lower": 0.7,
-              "upper": 0.8,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2037,
+              "mean_probability": 0.49699999999999994,
+              "observed_up_rate": 0.572901325478645
             },
             {
-              "lower": 0.8,
-              "upper": 0.9,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2037,
+              "mean_probability": 0.4973291114383897,
+              "observed_up_rate": 0.5115365733922435
             },
             {
-              "lower": 0.9,
-              "upper": 1.0,
-              "n": 6,
-              "mean_probability": 1.0,
-              "observed_up_rate": 1.0
+              "n": 2037,
+              "mean_probability": 0.5000768777614137,
+              "observed_up_rate": 0.6151202749140894
             }
           ],
           "lstm_seeds": {
@@ -875,74 +735,54 @@
           "buy_fraction": 0.49445317101904573,
           "reliability": [
             {
-              "lower": 0.0,
-              "upper": 0.1,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2038,
+              "mean_probability": 0.4434000000000001,
+              "observed_up_rate": 0.5436702649656526
             },
             {
-              "lower": 0.1,
-              "upper": 0.2,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2038,
+              "mean_probability": 0.45767590775269856,
+              "observed_up_rate": 0.5039254170755643
             },
             {
-              "lower": 0.2,
-              "upper": 0.3,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2037,
+              "mean_probability": 0.4865500736377026,
+              "observed_up_rate": 0.5301914580265096
             },
             {
-              "lower": 0.3,
-              "upper": 0.4,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2037,
+              "mean_probability": 0.4935632302405499,
+              "observed_up_rate": 0.5272459499263623
             },
             {
-              "lower": 0.4,
-              "upper": 0.5,
-              "n": 11798,
-              "mean_probability": 0.4777160366163757,
-              "observed_up_rate": 0.5286489235463638
+              "n": 2037,
+              "mean_probability": 0.4943000000000001,
+              "observed_up_rate": 0.5439371624938635
             },
             {
-              "lower": 0.5,
-              "upper": 0.6,
-              "n": 8567,
-              "mean_probability": 0.5068074004902534,
-              "observed_up_rate": 0.5726625423135286
+              "n": 2037,
+              "mean_probability": 0.49667594501718215,
+              "observed_up_rate": 0.5277368679430535
             },
             {
-              "lower": 0.6,
-              "upper": 0.7,
-              "n": 1,
-              "mean_probability": 0.6358,
-              "observed_up_rate": 0.0
+              "n": 2037,
+              "mean_probability": 0.5057,
+              "observed_up_rate": 0.5797741777123221
             },
             {
-              "lower": 0.7,
-              "upper": 0.8,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2037,
+              "mean_probability": 0.5057,
+              "observed_up_rate": 0.5439371624938635
             },
             {
-              "lower": 0.8,
-              "upper": 0.9,
-              "n": 0,
-              "mean_probability": null,
-              "observed_up_rate": null
+              "n": 2037,
+              "mean_probability": 0.5057,
+              "observed_up_rate": 0.5822287677957781
             },
             {
-              "lower": 0.9,
-              "upper": 1.0,
-              "n": 6,
-              "mean_probability": 0.98995,
-              "observed_up_rate": 0.5
+              "n": 2037,
+              "mean_probability": 0.5118576828669612,
+              "observed_up_rate": 0.5886107020127639
             }
           ],
           "lstm_seeds": {

@@ -33,6 +33,17 @@ class TimelineComparisonUnitTests(unittest.TestCase):
         self.assertAlmostEqual(result['a_correct_when_disagree'], 2 / 3)
         self.assertAlmostEqual(result['b_correct_when_disagree'], 1 / 3)
 
+    def test_equal_count_reliability_bins(self):
+        rng = np.random.default_rng(1)
+        p = rng.normal(.52, .02, 1000).clip(0, 1)
+        signal = (rng.uniform(size=1000) < p).astype(int)
+        bins = tc.equal_count_reliability(signal, p, bins=10)
+        self.assertEqual(len(bins), 10)
+        self.assertEqual(sum(b['n'] for b in bins), 1000)
+        self.assertTrue(all(90 <= b['n'] <= 110 for b in bins))
+        means = [b['mean_probability'] for b in bins]
+        self.assertEqual(means, sorted(means))
+
     def test_ensemble_common_rows_only(self):
         one = frame([('A', '2023-03-01', 1, 60), ('A', '2023-03-02', 0, 40)])
         two = frame([('A', '2023-03-01', 0, 40)])

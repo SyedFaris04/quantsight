@@ -16,8 +16,8 @@ def verify(base_url, browser_path, output):
         errors, responses = [], {}
         page.on("pageerror", lambda e: errors.append(str(e)))
         def capture(response):
-            path = urlparse(response.url).path
-            if path in ["/dashboard", "/backtest/summary", "/market-sentiment"] and response.status == 200:
+            path = "/" + urlparse(response.url).path.rsplit("/", 1)[-1]
+            if path in ["/dashboard", "/market-sentiment"] and response.status == 200:
                 responses[path] = response.json()
         page.on("response", capture)
         page.goto(base_url.rstrip("/") + "/", wait_until="networkidle")
@@ -38,12 +38,13 @@ def verify(base_url, browser_path, output):
         expect(instruments.get_by_role("row")).to_have_count(45)
         instruments.get_by_role("button", name="Show fewer").click()
         performance = page.get_by_role("region", name="Historical performance", exact=True)
-        summary = responses["/backtest/summary"]
-        assert summary["available"]
+        # The backtest card reads the selected training timeline's block of /dashboard.
+        summary = dashboard["backtest"]
+        assert summary
         expect(performance).to_contain_text(summary["evaluation"]["start"])
-        for strategy in summary["strategies"]:
-            expect(performance).to_contain_text(f'{strategy["metrics"]["total_return"] * 100:.2f}%')
-            expect(performance).to_contain_text(f'{strategy["metrics"]["sharpe"]:.2f}')
+        for metrics in [summary["ensemble"], summary["spy"]]:
+            expect(performance).to_contain_text(f'{metrics["total_return"] * 100:.2f}%')
+            expect(performance).to_contain_text(f'{metrics["sharpe"]:.2f}')
         expect(performance).to_contain_text("not an independent test")
         assert "/market-sentiment" not in responses, "Archive should load only on request"
         page.evaluate("window.scrollTo(0, 0)")
@@ -62,31 +63,24 @@ def verify(base_url, browser_path, output):
             page.keyboard.press("Escape")
             expect(page.get_by_role("button", name="Open navigation menu")).to_be_focused()
             page.screenshot(path=str(output / f"mobile_{width}.png"), full_page=True, animations="disabled")
-        page.route("**/dashboard", lambda r: r.fulfill(status=503, body="Unavailable"))
+        page.route("**/dashboard*", lambda r: r.fulfill(status=503, body="Unavailable"))
         page.reload(wait_until="networkidle")
         expect(instruments.get_by_role("alert")).to_be_visible()
         expect(instruments.get_by_role("row")).to_have_count(0)
         expect(page.get_by_role("region", name="Historical model snapshot")).to_contain_text("Unavailable")
-        expect(performance).to_contain_text("SPY benchmark")
-        page.unroute("**/dashboard")
+        expect(performance.get_by_role("alert")).to_be_visible()
+        page.unroute("**/dashboard*")
         instruments.get_by_role("button", name="Try again").click()
         expect(instruments.get_by_role("row")).to_have_count(9)
-        page.route("**/backtest/summary", lambda r: r.fulfill(status=503, body="Unavailable"))
-        page.reload(wait_until="networkidle")
-        expect(performance.get_by_role("alert")).to_be_visible()
-        expect(performance.get_by_role("row")).to_have_count(0)
-        expect(instruments.get_by_role("row")).to_have_count(9)
-        page.unroute("**/backtest/summary")
-        performance.get_by_role("button", name="Try again").click()
         expect(performance).to_contain_text("SPY benchmark")
         legacy = dict(dashboard)
         legacy.pop("snapshot")
         legacy.pop("instruments")
-        page.route("**/dashboard", lambda r: r.fulfill(content_type="application/json", body=json.dumps(legacy)))
+        page.route("**/dashboard*", lambda r: r.fulfill(content_type="application/json", body=json.dumps(legacy)))
         page.reload(wait_until="networkidle")
         expect(page.get_by_role("region", name="Historical model snapshot")).to_contain_text("Date unavailable")
         expect(instruments).to_contain_text("backend version")
-        page.unroute("**/dashboard")
+        page.unroute("**/dashboard*")
         page.route("**/market-sentiment", lambda r: r.fulfill(content_type="application/json", body='{"article_count":0}'))
         page.get_by_role("button", name="Saved news archive", exact=True).click()
         expect(page.get_by_role("region", name="Saved news archive")).to_contain_text("No dated headlines")
