@@ -1,3 +1,4 @@
+import importlib.util
 import json
 from pathlib import Path
 import tempfile
@@ -7,8 +8,11 @@ from unittest.mock import patch
 from fastapi.testclient import TestClient
 import pandas as pd
 
-import main
 from research import routes
+
+# main.py needs the serving stack; CI runs this file in its serving job instead.
+SERVING = all(importlib.util.find_spec(name) for name in ['dotenv', 'vaderSentiment', 'yfinance'])
+main = __import__('main') if SERVING else None
 
 MODELS = ['xgb_finance', 'xgb_sentiment', 'lstm_finance', 'lstm_sentiment']
 
@@ -21,6 +25,7 @@ def latest(direction):
     return {model: frame for model in MODELS}
 
 
+@unittest.skipUnless(SERVING, 'serving dependencies not installed')
 class DashboardTimelineTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()

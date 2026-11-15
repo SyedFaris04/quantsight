@@ -30,6 +30,8 @@ jobs:
         working-directory: backend
       - run: python -m research.verify_runtime
         working-directory: backend
+      - run: python -m unittest discover -s tests -p "test_dashboard_timeline.py" -v
+        working-directory: backend
   database:
     runs-on: ubuntu-latest
     steps:

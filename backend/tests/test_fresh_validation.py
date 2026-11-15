@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
+import sys
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -130,7 +132,10 @@ class FreshValidationTests(unittest.TestCase):
             (root.parent / 'docs/research').mkdir(parents=True)
             protocol = Path(tmp) / 'protocol.json'
             protocol.write_text(source.read_text(encoding='utf-8'), encoding='utf-8')
-            with patch.object(freeze_prices, 'ROOT', root), patch('yfinance.download', return_value=pd.DataFrame()):
+            # yfinance is a download-only dependency, absent from the CI evaluation environment.
+            fake = SimpleNamespace(download=lambda *args, **kwargs: pd.DataFrame())
+            with patch.object(freeze_prices, 'ROOT', root), patch.dict(sys.modules, {'yfinance': fake}), \
+                    patch('importlib.metadata.version', return_value='test'):
                 manifest = freeze_prices.freeze(protocol)
             request = json.loads((root / 'data/research/fresh_prices' / manifest['attempt_id'] / 'request.json').read_text())
             self.assertEqual(request['protocol']['protocol_id'], 'fresh_price_snapshot_v2')
