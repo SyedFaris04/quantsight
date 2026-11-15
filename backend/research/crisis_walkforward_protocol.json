@@ -1,0 +1,164 @@
+{
+  "protocol_id": "crisis_walkforward_v1",
+  "status": "development_only_exploratory",
+  "snapshot_id": "20261115T154430187216Z",
+  "holdout_start": "2025-01-01",
+  "horizon_sessions": 5,
+  "features": [
+    "return_1",
+    "return_5",
+    "return_10",
+    "return_20",
+    "volatility_20",
+    "drawdown_20",
+    "ma20_distance",
+    "ma60_distance",
+    "intraday_range",
+    "volume_relative_20",
+    "rsi_14",
+    "spy_return_5",
+    "excess_return_5"
+  ],
+  "feature_policy": "Fixed compact finance-only features; trailing windows include the completed signal session, no feature selection or ticker identity. No news inputs. Reindex to NYSE sessions before calculating lags; do not fill gaps.",
+  "price_policy": "Returns, trend and labels use frozen Adj Close. Intraday range uses same-session vendor High/Low/Close; volume uses a trailing ratio. Vendor adjustments are retrieval-time, not point-in-time vintages.",
+  "models": {
+    "logistic": {
+      "C": 1.0,
+      "max_iter": 1000,
+      "random_state": 42
+    },
+    "hist_boost": {
+      "learning_rate": 0.05,
+      "max_iter": 150,
+      "max_leaf_nodes": 8,
+      "max_depth": 3,
+      "min_samples_leaf": 100,
+      "l2_regularization": 10.0,
+      "early_stopping": false,
+      "random_state": 42
+    },
+    "xgboost": {
+      "n_estimators": 200,
+      "max_depth": 3,
+      "learning_rate": 0.03,
+      "min_child_weight": 20,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 5.0,
+      "reg_alpha": 0.1,
+      "objective": "binary:logistic",
+      "eval_metric": "logloss",
+      "tree_method": "hist",
+      "n_jobs": 2,
+      "random_state": 42
+    }
+  },
+  "preprocessing": "StandardScaler fitted only on fit rows for logistic; trees use raw ratio features. Drop rows missing any fixed feature equally for all candidates.",
+  "calibration": {
+    "method": "logistic_sigmoid_of_clipped_raw_logit",
+    "C": 1.0,
+    "max_iter": 1000,
+    "probability_clip": 1e-06,
+    "data": "Separate immediately preceding calendar year; no validation outcomes used"
+  },
+  "arms": {
+    "2005": {
+      "fit_start": "2005-01-01",
+      "years": [
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ]
+    },
+    "2015": {
+      "fit_start": "2015-01-01",
+      "years": [
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ]
+    }
+  },
+  "fold_rule": "Expanding window. Fit [fit_start, Jan 1 of year-1); sigmoid calibration on year-1; validation is the calendar year. Each segment's five-session labels end before the next segment starts.",
+  "baselines": [
+    "fit_prior",
+    "always_up"
+  ],
+  "episodes": [
+    {
+      "key": "gfc",
+      "label": "2008 financial crisis",
+      "start": "2008-09-01",
+      "end": "2009-03-31"
+    },
+    {
+      "key": "debt_ceiling_2011",
+      "label": "2011 debt-ceiling selloff",
+      "start": "2011-07-22",
+      "end": "2011-10-03"
+    },
+    {
+      "key": "china_oil_2015",
+      "label": "2015-16 China and oil selloff",
+      "start": "2015-08-10",
+      "end": "2016-02-11"
+    },
+    {
+      "key": "q4_2018",
+      "label": "Late-2018 selloff",
+      "start": "2018-10-01",
+      "end": "2018-12-24"
+    },
+    {
+      "key": "covid_2020",
+      "label": "COVID crash and rebound",
+      "start": "2020-02-19",
+      "end": "2020-04-30"
+    },
+    {
+      "key": "rate_shock_2022",
+      "label": "2022 rate shock",
+      "start": "2022-01-03",
+      "end": "2022-10-12"
+    }
+  ],
+  "fit_budget": {
+    "predictors": 75,
+    "calibrators": 75
+  },
+  "uncertainty": {
+    "method": "Paired circular date-block bootstrap pooled over 2017-2024 overlapping years; all tickers on a sampled date kept together",
+    "block_sessions": 20,
+    "repetitions": 1000,
+    "seed": 42
+  },
+  "promotion_policy": "Never changes serving models. Results describe how a fixed compact finance model behaved in each year and episode.",
+  "limitations": [
+    "Development years were previously examined",
+    "Fixed survivor universe",
+    "Retrieval-time adjusted data can be revised",
+    "Finance-only comparison does not test sentiment",
+    "Prediction metrics do not establish profitable trading",
+    "Pre-2015 years overstate how well a 2005 investor could have chosen this survivor universe.",
+    "Episode windows are fixed, approximate calendar ranges chosen before scoring."
+  ]
+}
