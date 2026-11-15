@@ -20,6 +20,12 @@ convincing sentiment improvement in the first experiment. See the
 The five-session live tracker is implemented locally; its Supabase migration and
 hosted integration are still outstanding. Legacy hit rates are not the new evaluation.
 
+**Training history (2015 vs 2005):** price history now extends back to 2005,
+which covers the 2008 financial crisis. The served models are trained both ways
+and compared on identical test rows, with a crisis-year walk-forward. Open
+**Training history** (`/timeline`) for the comparison, or use the Dashboard's
+2015/2005 switch. See [the write-up](docs/research/TIMELINE_COMPARISON.md).
+
 ---
 
 ## What This System Does

@@ -109,6 +109,16 @@ Still required:
   disclosure. No reliable raw-XGBoost improvement or live cutoff change is established;
   risk/position-sizing ablations remain separate work. See
   [confidence audit](research/CONFIDENCE_COVERAGE_AUDIT.md).
+- [x] Extend price history to 2005 (frozen 2004–2025 snapshot). Train the served
+  models from 2015 and from 2005 on identical 2023–24 test rows, and run a
+  2008–2024 crisis-year walk-forward with 75 predictor and 75 calibrator fits.
+  - Served-model accuracy differences include zero.
+  - The longer history helps raw walk-forward scores, but calibrated models gain
+    only Brier −0.0005.
+  - Production serving is unchanged. The Dashboard has a 2015/2005 switch, and
+    `/timeline` shows the comparison.
+
+  See [training history comparison](research/TIMELINE_COMPARISON.md).
 
 Gate: performance relative to baselines, with uncertainty, on untouched data; no required
 accuracy percentage and no promise that complexity must outperform simpler models.
