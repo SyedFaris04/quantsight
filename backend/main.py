@@ -38,6 +38,7 @@ CORS allows the deployed frontend and local development origins.
 ─────────────────────────────────────────────────────────────────────────────
 """
 
+import hmac
 import time
 _IMPORT_STARTED = time.perf_counter()
 
@@ -116,7 +117,7 @@ SENTIMENT_CSV = PROCESSED_DIR / "features_sentiment.csv"
 
 # ── App Setup ──────────────────────────────────────────────────────────────────
 app = FastAPI(
-    title       = "NuroQuant API",
+    title       = "QuantSight API",
     description = "Sentiment-enhanced stock signal prediction — FYP backend",
     version     = "1.0.0",
 )
@@ -151,7 +152,6 @@ _vader = SentimentIntensityAnalyzer()
 def load_predictions(directory: Path = PREDICTIONS_DIR) -> dict[str, pd.DataFrame]:
     """
     Load all prediction CSVs into memory at startup.
-    Handles both new 4-variant files and old xgb_predictions/lstm_predictions files.
     """
     preds = {}
 
@@ -161,12 +161,6 @@ def load_predictions(directory: Path = PREDICTIONS_DIR) -> dict[str, pd.DataFram
         "lstm_finance"   : directory / "lstm_finance_predictions.csv",
         "lstm_sentiment" : directory / "lstm_sentiment_predictions.csv",
     }
-
-    # Old files used as fallback before retraining is done (production only)
-    old_files = {
-        "xgb_finance"  : PREDICTIONS_DIR / "xgb_predictions.csv",
-        "lstm_finance" : PREDICTIONS_DIR / "lstm_predictions.csv",
-    } if directory == PREDICTIONS_DIR else {}
 
     for key, path in new_files.items():
         if path.exists():
@@ -179,37 +173,7 @@ def load_predictions(directory: Path = PREDICTIONS_DIR) -> dict[str, pd.DataFram
             except Exception as e:
                 logger.warning(f"Failed to load {path.name}: {e}")
         else:
-            # Try old file as fallback
-            old_path = old_files.get(key)
-            if old_path and old_path.exists():
-                try:
-                    df = pd.read_csv(old_path)
-                    df.columns = df.columns.str.strip()
-
-                    # Normalise column names
-                    col_map = {}
-                    if "Ticker" in df.columns: col_map["Ticker"] = "ticker"
-                    if "Date"   in df.columns: col_map["Date"]   = "date"
-                    if "xgb_pred"  in df.columns: col_map["xgb_pred"]  = "predicted_signal"
-                    if "xgb_prob"  in df.columns: col_map["xgb_prob"]  = "confidence_raw"
-                    if "lstm_pred" in df.columns: col_map["lstm_pred"] = "predicted_signal"
-                    if "lstm_prob" in df.columns: col_map["lstm_prob"] = "confidence_raw"
-                    if "Target"    in df.columns: col_map["Target"]    = "actual_signal"
-                    df = df.rename(columns=col_map)
-
-                    if "confidence_raw" in df.columns:
-                        df["confidence"] = (df["confidence_raw"] * 100).round(2)
-                    if "predicted_signal" in df.columns:
-                        df["signal_label"] = df["predicted_signal"].map({1: "BUY", 0: "SELL"})
-
-                    df["date"] = pd.to_datetime(df["date"])
-                    df["ticker"] = df["ticker"].astype(str).str.upper()
-                    preds[key] = df
-                    logger.info(f"Loaded {key} (fallback from {old_path.name}): {len(df):,} rows")
-                except Exception as e:
-                    logger.warning(f"Failed to load fallback {old_path.name}: {e}")
-            else:
-                logger.warning(f"No prediction file found for {key} — run train_xgboost.py / train_lstm.py")
+            logger.warning(f"No prediction file found for {key} — run train_xgboost.py / train_lstm.py")
 
     return preds
 
@@ -1250,9 +1214,18 @@ TOOL_EXECUTORS = {
 _chat_rate_limit: dict[str, list[float]] = {}
 CHAT_RATE_LIMIT_PER_MIN = 12
 
+def client_key(request) -> str:
+    """Visitor address for rate limiting. Render sits behind Cloudflare, which sets
+    CF-Connecting-IP itself; X-Forwarded-For is client-controlled there, so it is ignored."""
+    return request.headers.get("cf-connecting-ip") or (request.client.host if request.client else "unknown")
+
+
 def _check_rate_limit(client_id: str):
     now = time.time()
     hits = [t for t in _chat_rate_limit.get(client_id, []) if now - t < 60]
+    if len(_chat_rate_limit) > 10_000:  # real visitor addresses now; drop idle ones
+        for key in [k for k, v in _chat_rate_limit.items() if not v or now - v[-1] >= 60]:
+            del _chat_rate_limit[key]
     if len(hits) >= CHAT_RATE_LIMIT_PER_MIN:
         raise HTTPException(status_code=429, detail="Too many messages — please wait a moment before sending another.")
     hits.append(now)
@@ -1269,7 +1242,7 @@ def chat(req: ChatRequest, request: Request):
     if not req.messages:
         raise HTTPException(status_code=400, detail="messages must not be empty")
 
-    _check_rate_limit(request.client.host if request.client else "unknown")
+    _check_rate_limit(client_key(request))
 
     messages = [m.model_dump() for m in req.messages]
 
@@ -1291,7 +1264,8 @@ def run_daily_predictions(request: Request):
     the frontend to call. Requires the ADMIN_JOB_SECRET shared secret.
     """
     admin_secret = os.environ.get("ADMIN_JOB_SECRET")
-    if not admin_secret or request.headers.get("X-Admin-Key") != admin_secret:
+    supplied = request.headers.get("X-Admin-Key", "").encode()
+    if not admin_secret or not hmac.compare_digest(supplied, admin_secret.encode()):
         raise HTTPException(status_code=403, detail="Forbidden")
 
     tickers = _cache.get("tickers", [])

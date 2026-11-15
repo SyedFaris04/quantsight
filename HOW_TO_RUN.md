@@ -17,7 +17,6 @@ includes benchmark curves, metrics, costs, uncertainty and downloadable executio
 records. See [docs/BACKTESTING.md](docs/BACKTESTING.md) for the full protocol.
 The local frontend currently uses port **8001** in `VITE_API_URL`; use that port
 for Uvicorn, or deliberately configure both sides to the same port.
-The legacy `data/predictions/backtest_results.csv` is not the corrected report.
 
 This project lives in `quantsightv2/`. Two servers must run **at the same time**:
 a Python backend (FastAPI) and a React frontend (Vite). The serving data, trained

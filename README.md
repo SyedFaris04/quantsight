@@ -54,10 +54,9 @@ baseline, and simulates next-open execution with daily portfolio accounting.
 Each report records its inputs' SHA-256 hashes; the API warns if those files change.
 
 The prior return/Sharpe claims have been withdrawn: the old weekly script selected
-using information from within the same week whose return it credited. Existing
-`backend/data/predictions/backtest_results.csv`, `portfolio_values.csv` and
-`weekly_holdings.csv` are legacy artifacts, not current evidence. The new page
-does not consume them. Sentiment features are all zero in the current shared
+using information from within the same week whose return it credited. Its
+output files (`backtest_results.csv`, `portfolio_values.csv`, `weekly_holdings.csv`)
+were removed on 16 November 2026 and remain only in git history. Sentiment features are all zero in the current shared
 test sample, so performance differences cannot establish a benefit from fresh text.
 
 ### Beyond the base prediction

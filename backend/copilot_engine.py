@@ -37,18 +37,12 @@ PROCESSED_DIR   = BASE_DIR / "data" / "processed"
 PREDICTIONS_DIR = BASE_DIR / "data" / "predictions"
 METRICS_FILE    = PREDICTIONS_DIR / "model_metrics.json"
 
-# Prediction file mapping — new 4-variant files first, old files as fallback
+# Prediction file mapping
 PREDICTION_FILES = {
     "xgb_finance"    : PREDICTIONS_DIR / "xgb_finance_predictions.csv",
     "xgb_sentiment"  : PREDICTIONS_DIR / "xgb_sentiment_predictions.csv",
     "lstm_finance"   : PREDICTIONS_DIR / "lstm_finance_predictions.csv",
     "lstm_sentiment" : PREDICTIONS_DIR / "lstm_sentiment_predictions.csv",
-}
-
-# Old prediction files from the original training notebooks (fallback)
-OLD_PREDICTION_FILES = {
-    "xgb_finance"   : PREDICTIONS_DIR / "xgb_predictions.csv",
-    "lstm_finance"  : PREDICTIONS_DIR / "lstm_predictions.csv",
 }
 
 # Per-prediction LSTM attention weights (extract_lstm_attention.py) — the model's
@@ -901,37 +895,6 @@ def get_latest_prediction(ticker: str, model_key: str) -> Optional[dict]:
         except Exception as e:
             logger.error(f"Error loading {pred_file.name}: {e}")
 
-    # Fall back to old prediction files — normalise column names
-    old_file = OLD_PREDICTION_FILES.get(model_key)
-    if old_file and old_file.exists():
-        try:
-            df = _read_csv_cached(old_file).copy()
-            df.columns = df.columns.str.strip()
-
-            # Normalise column names to match what the rest of the code expects
-            col_map = {}
-            if "Ticker" in df.columns: col_map["Ticker"] = "ticker"
-            if "Date"   in df.columns: col_map["Date"]   = "date"
-            if "xgb_pred"  in df.columns: col_map["xgb_pred"]  = "predicted_signal"
-            if "xgb_prob"  in df.columns: col_map["xgb_prob"]  = "confidence_raw"
-            if "lstm_pred" in df.columns: col_map["lstm_pred"] = "predicted_signal"
-            if "lstm_prob" in df.columns: col_map["lstm_prob"] = "confidence_raw"
-            if "Target"    in df.columns: col_map["Target"]    = "actual_signal"
-            df = df.rename(columns=col_map)
-
-            # Convert probability (0-1) to confidence (0-100)
-            if "confidence_raw" in df.columns:
-                df["confidence"] = df["confidence_raw"] * 100
-            if "predicted_signal" in df.columns:
-                df["signal_label"] = df["predicted_signal"].map({1: "BUY", 0: "SELL"})
-
-            df["ticker"] = df["ticker"].astype(str).str.upper()
-            df = df[df["ticker"] == ticker.upper()].sort_values("date")
-            if not df.empty:
-                return df.iloc[-1].to_dict()
-        except Exception as e:
-            logger.error(f"Error loading fallback {old_file.name}: {e}")
-
     logger.warning(f"No prediction found for {ticker} ({model_key})")
     return None
 
@@ -1097,30 +1060,6 @@ def get_prediction_history(ticker: str, model_key: str = "xgb_sentiment", days: 
             pred_df = pred_df[pred_df["ticker"] == ticker].sort_values("date")
         except Exception as e:
             logger.warning(f"History: failed to load {pred_file.name}: {e}")
-
-    if pred_df is None or pred_df.empty:
-        # Fall back to old prediction files, same normalisation as get_latest_prediction
-        old_file = OLD_PREDICTION_FILES.get(model_key)
-        if old_file and old_file.exists():
-            try:
-                df = _read_csv_cached(old_file).copy()
-                df.columns = df.columns.str.strip()
-                col_map = {}
-                if "Ticker" in df.columns: col_map["Ticker"] = "ticker"
-                if "Date"   in df.columns: col_map["Date"]   = "date"
-                if "xgb_pred"  in df.columns: col_map["xgb_pred"]  = "predicted_signal"
-                if "xgb_prob"  in df.columns: col_map["xgb_prob"]  = "confidence_raw"
-                if "lstm_pred" in df.columns: col_map["lstm_pred"] = "predicted_signal"
-                if "lstm_prob" in df.columns: col_map["lstm_prob"] = "confidence_raw"
-                df = df.rename(columns=col_map)
-                if "confidence_raw" in df.columns:
-                    df["confidence"] = df["confidence_raw"] * 100
-                if "predicted_signal" in df.columns:
-                    df["signal_label"] = df["predicted_signal"].map({1: "BUY", 0: "SELL"})
-                df["ticker"] = df["ticker"].astype(str).str.upper()
-                pred_df = df[df["ticker"] == ticker].sort_values("date")
-            except Exception as e:
-                logger.warning(f"History: failed to load fallback {old_file.name}: {e}")
 
     if pred_df is None or pred_df.empty:
         return []
