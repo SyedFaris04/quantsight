@@ -1,0 +1,114 @@
+{
+  "XGBoost_Finance Only": {
+    "model": "XGBoost",
+    "variant": "Finance Only",
+    "accuracy": 52.9,
+    "f1": 65.42,
+    "precision": 54.32,
+    "recall": 82.21,
+    "auc_roc": 51.1,
+    "calibration_method": "isotonic",
+    "cv_robustness": {
+      "accuracy": {
+        "mean": 52.93,
+        "std": 0.71
+      },
+      "f1": {
+        "mean": 63.66,
+        "std": 1.59
+      },
+      "auc_roc": {
+        "mean": 50.79,
+        "std": 0.68
+      }
+    },
+    "calibration_check": {
+      "raw_confidence_vs_correctness_corr": 0.031,
+      "calibrated_confidence_vs_correctness_corr": 0.061
+    }
+  },
+  "XGBoost_Finance + Sentiment": {
+    "model": "XGBoost",
+    "variant": "Finance + Sentiment",
+    "accuracy": 52.83,
+    "f1": 65.51,
+    "precision": 54.25,
+    "recall": 82.67,
+    "auc_roc": 50.98,
+    "calibration_method": "isotonic",
+    "cv_robustness": {
+      "accuracy": {
+        "mean": 52.91,
+        "std": 0.73
+      },
+      "f1": {
+        "mean": 63.63,
+        "std": 1.63
+      },
+      "auc_roc": {
+        "mean": 50.78,
+        "std": 0.6
+      }
+    },
+    "calibration_check": {
+      "raw_confidence_vs_correctness_corr": 0.032,
+      "calibrated_confidence_vs_correctness_corr": 0.063
+    }
+  },
+  "LSTM+Transformer_Finance Only": {
+    "model": "LSTM+Transformer",
+    "variant": "Finance Only",
+    "accuracy": 51.26,
+    "f1": 57.09,
+    "precision": 53.65,
+    "recall": 61.01,
+    "auc_roc": 51.34,
+    "calibration_method": "isotonic",
+    "cv_robustness": {
+      "accuracy": {
+        "mean": 51.36,
+        "std": 1.49
+      },
+      "f1": {
+        "mean": 53.3,
+        "std": 9.01
+      },
+      "auc_roc": {
+        "mean": 51.26,
+        "std": 0.32
+      }
+    },
+    "calibration_check": {
+      "raw_confidence_vs_correctness_corr": 0.038,
+      "calibrated_confidence_vs_correctness_corr": -0.013
+    }
+  },
+  "LSTM+Transformer_Finance + Sentiment": {
+    "model": "LSTM+Transformer",
+    "variant": "Finance + Sentiment",
+    "accuracy": 51.76,
+    "f1": 53.94,
+    "precision": 54.77,
+    "recall": 53.14,
+    "auc_roc": 52.4,
+    "calibration_method": "isotonic",
+    "cv_robustness": {
+      "accuracy": {
+        "mean": 50.77,
+        "std": 0.95
+      },
+      "f1": {
+        "mean": 53.34,
+        "std": 6.2
+      },
+      "auc_roc": {
+        "mean": 50.91,
+        "std": 0.4
+      }
+    },
+    "calibration_check": {
+      "raw_confidence_vs_correctness_corr": 0.026,
+      "calibrated_confidence_vs_correctness_corr": -0.006
+    }
+  }
+}
