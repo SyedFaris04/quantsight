@@ -1,0 +1,16 @@
+{
+  "protocol_id": "two_timeline_served_models_v1",
+  "snapshot_id": "20261115T154430187216Z",
+  "features_dir": "data/research/timelines",
+  "split_date": "2023-02-03",
+  "test_window": {"start": "2023-02-06", "end": "2024-12-20", "rows": 20812},
+  "starts": {"2015": "2015-05-01", "2005": "2005-01-03"},
+  "lstm_seeds": [42, 43, 44],
+  "lstm_calib_split": "2021-12-09",
+  "models": ["xgb_finance", "xgb_sentiment", "lstm_finance", "lstm_sentiment"],
+  "notes": [
+    "split_date is the exact 80% date quantile of the current production features_finance.csv, so the test rows equal production's.",
+    "lstm_calib_split is the 85% date quantile of the 2015 timeline's training rows; both timelines early-stop and calibrate on the same window.",
+    "Hyperparameters, features and seeds are unchanged from the production training scripts; only the first training date differs."
+  ]
+}

@@ -43,6 +43,7 @@ from sklearn.metrics import (
 import xgboost as xgb
 import logging
 
+from timeline_split import fixed_split, training_arguments
 from cv_utils import (
     pick_best_calibration, apply_calibrator,
     make_purged_folds, summarize_cv_metrics, purge_train_test_boundary,
@@ -97,6 +98,10 @@ NON_TRAINED_DERIVED_COLS = {"spy_return_5"}
 
 NON_FEATURE_COLS = NON_FEATURE_COLS | RAW_PRICE_LEVEL_COLS | NON_TRAINED_DERIVED_COLS
 
+# Set from the command line by the timeline study; None keeps the production split.
+SPLIT_DATE = None
+START      = None
+
 # ── XGBoost Hyperparameters ────────────────────────────────────────────────────
 # Same for both variants — fair comparison
 XGB_PARAMS = {
@@ -139,11 +144,15 @@ def load_and_split(csv_path: Path):
     logger.info(f"  Rows    : {len(df):,}")
     logger.info(f"  Tickers : {df['ticker'].nunique()}")
 
-    # Time-based train/test split (80/20), embargoed at the boundary
-    split_date   = df["date"].quantile(0.80)
-    train_cutoff = purge_train_test_boundary(df["date"], split_date)
-    train_df = df[df["date"] <= train_cutoff]
-    test_df  = df[df["date"] >  split_date]
+    # Time-based train/test split (80/20), embargoed at the boundary. The
+    # timeline study pins the boundary so older history can't move it.
+    if SPLIT_DATE is None:
+        split_date   = df["date"].quantile(0.80)
+        train_cutoff = purge_train_test_boundary(df["date"], split_date)
+        train_df = df[df["date"] <= train_cutoff]
+        test_df  = df[df["date"] >  split_date]
+    else:
+        train_df, test_df = fixed_split(df, SPLIT_DATE, START)
 
     logger.info(
         f"  Train: {train_df['date'].min().date()} → {train_df['date'].max().date()} "
@@ -451,4 +460,12 @@ def main():
 
 
 if __name__ == "__main__":
+    args = training_arguments().parse_args()
+    if args.features_dir:
+        FINANCE_CSV   = args.features_dir / "features_finance.csv"
+        SENTIMENT_CSV = args.features_dir / "features_sentiment.csv"
+    MODELS_DIR      = args.out_models or MODELS_DIR
+    PREDICTIONS_DIR = args.out_predictions or PREDICTIONS_DIR
+    METRICS_FILE    = PREDICTIONS_DIR / "model_metrics.json"
+    SPLIT_DATE, START = args.split_date, args.start
     main()

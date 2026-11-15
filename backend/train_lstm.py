@@ -35,6 +35,7 @@ import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 import logging
 
+from timeline_split import calib_split_at, fixed_split, training_arguments
 from cv_utils import (
     make_train_calib_split, pick_best_calibration, apply_calibrator,
     make_purged_folds, summarize_cv_metrics, purge_train_test_boundary,
@@ -80,6 +81,11 @@ PREDICTIONS_DIR = BASE_DIR / "data" / "predictions"
 FINANCE_CSV     = PROCESSED_DIR / "features_finance.csv"
 SENTIMENT_CSV   = PROCESSED_DIR / "features_sentiment.csv"
 METRICS_FILE    = PREDICTIONS_DIR / "model_metrics.json"
+
+# Set from the command line by the timeline study; None keeps the production split.
+SPLIT_DATE  = None
+START       = None
+CALIB_SPLIT = None
 
 NON_FEATURE_COLS = {"ticker", "date", "signal", "Date", "Ticker"}
 
@@ -504,10 +510,13 @@ def train_variant(csv_path: Path, variant_name: str,
     # — so the last ~15% (by date) becomes a validation set used ONLY for
     # early stopping, threshold search, and confidence calibration. The test
     # set is never touched until the final, one-time evaluation.
-    split_test        = df["date"].quantile(0.80)
-    trainval_cutoff    = purge_train_test_boundary(df["date"], split_test)
-    trainval_df   = df[df["date"] <= trainval_cutoff].copy()
-    test_df       = df[df["date"] >  split_test].copy()
+    if SPLIT_DATE is None:
+        split_test        = df["date"].quantile(0.80)
+        trainval_cutoff    = purge_train_test_boundary(df["date"], split_test)
+        trainval_df   = df[df["date"] <= trainval_cutoff].copy()
+        test_df       = df[df["date"] >  split_test].copy()
+    else:
+        trainval_df, test_df = (part.copy() for part in fixed_split(df, SPLIT_DATE, START))
 
     # ── Purged walk-forward CV — robustness check within the training period only ──
     logger.info("Running purged walk-forward CV (robustness check, training period only) ...")
@@ -518,7 +527,10 @@ def train_variant(csv_path: Path, variant_name: str,
             f"CV AUC: {cv_summary['auc_roc']['mean']}% ± {cv_summary['auc_roc']['std']}%"
         )
 
-    train_mask, val_mask = make_train_calib_split(trainval_df["date"], calib_frac=0.15)
+    if CALIB_SPLIT is None:
+        train_mask, val_mask = make_train_calib_split(trainval_df["date"], calib_frac=0.15)
+    else:
+        train_mask, val_mask = calib_split_at(trainval_df["date"], CALIB_SPLIT)
     train_df = trainval_df.loc[train_mask].copy()
     val_df   = trainval_df.loc[val_mask].copy()
 
@@ -761,4 +773,13 @@ def main():
 
 
 if __name__ == "__main__":
+    args = training_arguments(lstm=True).parse_args()
+    if args.features_dir:
+        FINANCE_CSV   = args.features_dir / "features_finance.csv"
+        SENTIMENT_CSV = args.features_dir / "features_sentiment.csv"
+    MODELS_DIR      = args.out_models or MODELS_DIR
+    PREDICTIONS_DIR = args.out_predictions or PREDICTIONS_DIR
+    METRICS_FILE    = PREDICTIONS_DIR / "model_metrics.json"
+    SPLIT_DATE, START, CALIB_SPLIT = args.split_date, args.start, args.calib_split
+    SEED = args.seed if args.seed is not None else SEED
     main()
